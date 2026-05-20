@@ -1,4 +1,6 @@
 import './index.css'
+import bgImg from '../../assets/phone.png'
+import '@fortawesome/fontawesome-free/css/all.min.css'
 
 function Register() {
   return (
@@ -9,14 +11,15 @@ function Register() {
         <div className="overlay"></div>
 
         <div className="phone-frame">
-          <img
-            src="https://images.unsplash.com/photo-1464226184884-fa280b87c399?q=80&w=1200&auto=format&fit=crop"
-            alt="background"
-          />
+         <img
+          src={bgImg}
+          alt="background"
+        />
 
           <div className="info-card">
             <div className="logo">
-              🍃
+              <i className="fa-solid fa-leaf"></i>
+              
             </div>
 
             <h1>Chợ Tới Cửa</h1>
@@ -27,7 +30,7 @@ function Register() {
             </p>
 
             <div className="feature">
-              <span>✔</span>
+              <span><i class="fa-regular fa-circle-check"></i></span>
               <div>
                 <h4>Tiếp cận khách hàng mới</h4>
                 <p>Hàng ngàn khách hàng tiềm năng mỗi ngày.</p>
@@ -35,7 +38,7 @@ function Register() {
             </div>
 
             <div className="feature">
-              <span>↗</span>
+              <span><i className="fa-solid fa-arrow-trend-up"></i></span>
               <div>
                 <h4>Tăng trưởng doanh thu</h4>
                 <p>Giải pháp bán hàng trực tuyến hiệu quả.</p>
@@ -43,7 +46,7 @@ function Register() {
             </div>
 
             <div className="feature">
-              <span>🎧</span>
+              <span><i class="fa-solid fa-headphones"></i></span>
               <div>
                 <h4>Hỗ trợ 24/7</h4>
                 <p>Đội ngũ chuyên gia luôn sẵn sàng giúp đỡ.</p>
@@ -66,7 +69,8 @@ function Register() {
 
           <div className="card">
             <div className="card-title">
-              🧾 Thông tin cửa hàng
+              <i class="fa-solid fa-store"></i>
+              Thông tin cửa hàng
             </div>
 
             <div className="form-group">
@@ -100,7 +104,8 @@ function Register() {
 
           <div className="card">
             <div className="card-title">
-              👤 Thông tin liên hệ
+              <i class="fa-regular fa-user"></i>
+              Thông tin liên hệ
             </div>
 
             <div className="form-group">
