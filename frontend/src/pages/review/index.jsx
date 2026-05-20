@@ -1,7 +1,8 @@
+﻿import './review.css';
 import { useEffect, useRef, useState } from "react";
 import { fetchReviewOrder, getOrderIdFromUrl, postReviews } from "./reviewApi.js";
 
-const STAR_HINTS = ["", "Rất tệ", "Tệ", "Bình thường", "Tốt", "Xuất sắc!"];
+const STAR_HINTS = ["", "Ráº¥t tá»‡", "Tá»‡", "BÃ¬nh thÆ°á»ng", "Tá»‘t", "Xuáº¥t sáº¯c!"];
 const EMPTY_IMAGE =
   "data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%22100%22 height=%22100%22%3E%3Crect fill=%22%23f1f5f9%22 width=%22100%22 height=%22100%22/%3E%3C/svg%3E";
 
@@ -36,7 +37,7 @@ export default function App() {
           ),
         );
       } catch (err) {
-        showToast(err.message ?? "Không thể tải trang đánh giá.", "error");
+        showToast(err.message ?? "KhÃ´ng thá»ƒ táº£i trang Ä‘Ã¡nh giÃ¡.", "error");
       } finally {
         if (active) setLoading(false);
       }
@@ -120,7 +121,7 @@ export default function App() {
     setErrorIds(invalidIds);
 
     if (invalidIds.length > 0) {
-      showToast("Vui lòng chọn số sao cho tất cả sản phẩm.", "error");
+      showToast("Vui lÃ²ng chá»n sá»‘ sao cho táº¥t cáº£ sáº£n pháº©m.", "error");
       cardRefs.current[invalidIds[0]]?.scrollIntoView({
         behavior: "smooth",
         block: "center",
@@ -147,11 +148,11 @@ export default function App() {
 
     try {
       const result = await postReviews(order.orderId, anonymous, payload, imageMap);
-      showToast(result.message ?? "Đánh giá thành công!", "success");
+      showToast(result.message ?? "ÄÃ¡nh giÃ¡ thÃ nh cÃ´ng!", "success");
       setSubmitted(true);
     } catch (err) {
-      console.error("[Review] Lỗi gửi đánh giá:", err);
-      showToast(err.message ?? "Gửi đánh giá thất bại. Vui lòng thử lại.", "error");
+      console.error("[Review] Lá»—i gá»­i Ä‘Ã¡nh giÃ¡:", err);
+      showToast(err.message ?? "Gá»­i Ä‘Ã¡nh giÃ¡ tháº¥t báº¡i. Vui lÃ²ng thá»­ láº¡i.", "error");
     } finally {
       setSubmitting(false);
     }
@@ -169,7 +170,7 @@ export default function App() {
           <>
             {order && <OrderSummary order={order} />}
 
-            <section aria-label="Danh sách sản phẩm cần đánh giá">
+            <section aria-label="Danh sÃ¡ch sáº£n pháº©m cáº§n Ä‘Ã¡nh giÃ¡">
               <ol className="review-list" aria-live="polite">
                 {order?.products.map((product) => (
                   <ReviewCard
@@ -209,12 +210,12 @@ function Header() {
   return (
     <header className="site-header" role="banner">
       <div className="header-inner container">
-        <Logo size={28} ariaLabel="Chợ Tới Cửa - trang chủ" />
+        <Logo size={28} ariaLabel="Chá»£ Tá»›i Cá»­a - trang chá»§" />
 
-        <nav className="site-nav" aria-label="Điều hướng chính">
-          <a href="#" className="nav-link">Sản phẩm</a>
-          <a href="#" className="nav-link">Khuyến mãi</a>
-          <a href="#" className="nav-link">Cửa hàng</a>
+        <nav className="site-nav" aria-label="Äiá»u hÆ°á»›ng chÃ­nh">
+          <a href="#" className="nav-link">Sáº£n pháº©m</a>
+          <a href="#" className="nav-link">Khuyáº¿n mÃ£i</a>
+          <a href="#" className="nav-link">Cá»­a hÃ ng</a>
         </nav>
 
         <div className="header-tools">
@@ -223,21 +224,21 @@ function Header() {
             <input
               className="search-input"
               type="search"
-              placeholder="Tìm kiếm sản phẩm..."
-              aria-label="Tìm kiếm sản phẩm"
+              placeholder="TÃ¬m kiáº¿m sáº£n pháº©m..."
+              aria-label="TÃ¬m kiáº¿m sáº£n pháº©m"
             />
           </div>
 
-          <button className="icon-btn" aria-label="Thông báo" type="button">
+          <button className="icon-btn" aria-label="ThÃ´ng bÃ¡o" type="button">
             <BellIcon />
           </button>
 
-          <button className="icon-btn" aria-label="Giỏ hàng" type="button">
+          <button className="icon-btn" aria-label="Giá» hÃ ng" type="button">
             <CartIcon />
-            <span className="badge" aria-label="2 sản phẩm trong giỏ">2</span>
+            <span className="badge" aria-label="2 sáº£n pháº©m trong giá»">2</span>
           </button>
 
-          <button className="icon-btn" aria-label="Tài khoản" type="button">
+          <button className="icon-btn" aria-label="TÃ i khoáº£n" type="button">
             <UserIcon />
           </button>
         </div>
@@ -252,12 +253,12 @@ function Breadcrumb() {
       <div className="container">
         <nav aria-label="Breadcrumb">
           <ol className="breadcrumb">
-            <li><a href="#">Đơn hàng của tôi</a></li>
-            <li aria-hidden="true">›</li>
-            <li aria-current="page">Đánh giá sản phẩm</li>
+            <li><a href="#">ÄÆ¡n hÃ ng cá»§a tÃ´i</a></li>
+            <li aria-hidden="true">â€º</li>
+            <li aria-current="page">ÄÃ¡nh giÃ¡ sáº£n pháº©m</li>
           </ol>
         </nav>
-        <h1 className="page-title">Đánh giá trải nghiệm</h1>
+        <h1 className="page-title">ÄÃ¡nh giÃ¡ tráº£i nghiá»‡m</h1>
       </div>
     </div>
   );
@@ -265,10 +266,10 @@ function Breadcrumb() {
 
 function OrderSummary({ order }) {
   return (
-    <section className="order-summary" aria-label="Thông tin đơn hàng">
+    <section className="order-summary" aria-label="ThÃ´ng tin Ä‘Æ¡n hÃ ng">
       <div className="order-id-row">
         <div>
-          <p className="order-id-label">Mã đơn hàng</p>
+          <p className="order-id-label">MÃ£ Ä‘Æ¡n hÃ ng</p>
           <p className="order-id-value">#{order.orderId}</p>
         </div>
         <div className="order-status-badge">
@@ -278,9 +279,9 @@ function OrderSummary({ order }) {
       </div>
 
       <div className="order-meta">
-        <MetaItem label="Ngày nhận" value={order.receivedAt} />
-        <MetaItem label="Người đặt" value={order.customerName} />
-        <MetaItem label="Địa chỉ" value={order.address} />
+        <MetaItem label="NgÃ y nháº­n" value={order.receivedAt} />
+        <MetaItem label="NgÆ°á»i Ä‘áº·t" value={order.customerName} />
+        <MetaItem label="Äá»‹a chá»‰" value={order.address} />
       </div>
     </section>
   );
@@ -326,13 +327,13 @@ function ReviewCard({
 
       <div className="review-content">
         <h3 className="product-name">{product.name}</h3>
-        <p className="product-origin">Xuất xứ: {product.origin}</p>
+        <p className="product-origin">Xuáº¥t xá»©: {product.origin}</p>
 
-        <p className="star-label">Chất lượng sản phẩm</p>
+        <p className="star-label">Cháº¥t lÆ°á»£ng sáº£n pháº©m</p>
         <div
           className="stars"
           role="radiogroup"
-          aria-label="Chọn số sao đánh giá"
+          aria-label="Chá»n sá»‘ sao Ä‘Ã¡nh giÃ¡"
           data-rating={rating}
           onMouseLeave={() => setHoverRating(0)}
         >
@@ -346,7 +347,7 @@ function ReviewCard({
               onMouseEnter={() => setHoverRating(value)}
               onClick={() => onChange({ rating: value })}
             >
-              {value <= activeRating ? "★" : "☆"}
+              {value <= activeRating ? "â˜…" : "â˜†"}
             </button>
           ))}
           <span className="star-hint" aria-live="polite">
@@ -354,47 +355,47 @@ function ReviewCard({
           </span>
         </div>
         <p className="field-error" role="alert">
-          Vui lòng chọn số sao đánh giá.
+          Vui lÃ²ng chá»n sá»‘ sao Ä‘Ã¡nh giÃ¡.
         </p>
 
         <textarea
           className="review-input"
           rows="3"
           maxLength="1000"
-          placeholder="Bạn thấy sản phẩm này thế nào? Chia sẻ cảm nhận về độ tươi, mùi vị..."
-          aria-label={`Nhận xét về ${product.name}`}
+          placeholder="Báº¡n tháº¥y sáº£n pháº©m nÃ y tháº¿ nÃ o? Chia sáº» cáº£m nháº­n vá» Ä‘á»™ tÆ°Æ¡i, mÃ¹i vá»‹..."
+          aria-label={`Nháº­n xÃ©t vá» ${product.name}`}
           value={review?.comment ?? ""}
           onChange={(event) => onChange({ comment: event.target.value })}
         />
 
         <div className="upload-area">
-          <label className="upload-box" title="Thêm ảnh từ thiết bị">
+          <label className="upload-box" title="ThÃªm áº£nh tá»« thiáº¿t bá»‹">
             <input
               type="file"
               accept="image/*"
               multiple
               hidden
-              aria-label="Tải ảnh lên"
+              aria-label="Táº£i áº£nh lÃªn"
               onChange={(event) => {
                 onAddImages(event.target.files);
                 event.target.value = "";
               }}
             />
             <ImageIcon />
-            <span>Thêm ảnh</span>
+            <span>ThÃªm áº£nh</span>
           </label>
 
-          <div className="preview-thumbnails" aria-label="Ảnh đã chọn">
+          <div className="preview-thumbnails" aria-label="áº¢nh Ä‘Ã£ chá»n">
             {review?.images.map((image) => (
               <div className="preview-thumb" key={image.id}>
                 <img src={image.url} alt={image.file.name} />
                 <button
                   className="remove-btn"
                   type="button"
-                  aria-label={`Xóa ảnh ${image.file.name}`}
+                  aria-label={`XÃ³a áº£nh ${image.file.name}`}
                   onClick={() => onRemoveImage(image.id)}
                 >
-                  ×
+                  Ã—
                 </button>
               </div>
             ))}
@@ -417,8 +418,8 @@ function SubmitBar({ anonymous, onAnonymousChange, onSubmit, submitting, submitt
         />
         <span className="checkbox-custom" aria-hidden="true"></span>
         <span className="anonymous-text">
-          Đánh giá ẩn danh
-          <small>Tên của bạn sẽ được ẩn đi trong phần nhận xét.</small>
+          ÄÃ¡nh giÃ¡ áº©n danh
+          <small>TÃªn cá»§a báº¡n sáº½ Ä‘Æ°á»£c áº©n Ä‘i trong pháº§n nháº­n xÃ©t.</small>
         </span>
       </label>
 
@@ -431,10 +432,10 @@ function SubmitBar({ anonymous, onAnonymousChange, onSubmit, submitting, submitt
       >
         <span>
           {submitted
-            ? "Đã gửi đánh giá ✓"
+            ? "ÄÃ£ gá»­i Ä‘Ã¡nh giÃ¡ âœ“"
             : submitting
-              ? "Đang gửi..."
-              : "Gửi đánh giá tất cả"}
+              ? "Äang gá»­i..."
+              : "Gá»­i Ä‘Ã¡nh giÃ¡ táº¥t cáº£"}
         </span>
         <SendIcon />
       </button>
@@ -445,7 +446,7 @@ function SubmitBar({ anonymous, onAnonymousChange, onSubmit, submitting, submitt
 function LoadingReview() {
   return (
     <>
-      <section className="order-summary" aria-label="Đang tải thông tin đơn hàng">
+      <section className="order-summary" aria-label="Äang táº£i thÃ´ng tin Ä‘Æ¡n hÃ ng">
         <div className="order-id-row">
           <div>
             <p className="order-id-label skeleton">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</p>
@@ -484,17 +485,17 @@ function Footer() {
     <footer className="site-footer" role="contentinfo">
       <div className="footer-inner container">
         <div className="footer-brand">
-          <Logo size={24} ariaLabel="Chợ Tới Cửa" />
+          <Logo size={24} ariaLabel="Chá»£ Tá»›i Cá»­a" />
           <p className="footer-tagline">
-            © 2024 Chợ Tới Cửa. Tươi ngon từ nông trại
+            Â© 2024 Chá»£ Tá»›i Cá»­a. TÆ°Æ¡i ngon tá»« nÃ´ng tráº¡i
             <br />
-            đến tận cửa nhà.
+            Ä‘áº¿n táº­n cá»­a nhÃ .
           </p>
         </div>
 
-        <FooterColumn title="Khám phá" links={["Về chúng tôi", "Tuyển dụng"]} />
-        <FooterColumn title="Hỗ trợ" links={["Liên hệ hỗ trợ", "Trung tâm giúp đỡ"]} />
-        <FooterColumn title="Pháp lý" links={["Chính sách bảo mật", "Điều khoản dịch vụ"]} />
+        <FooterColumn title="KhÃ¡m phÃ¡" links={["Vá» chÃºng tÃ´i", "Tuyá»ƒn dá»¥ng"]} />
+        <FooterColumn title="Há»— trá»£" links={["LiÃªn há»‡ há»— trá»£", "Trung tÃ¢m giÃºp Ä‘á»¡"]} />
+        <FooterColumn title="PhÃ¡p lÃ½" links={["ChÃ­nh sÃ¡ch báº£o máº­t", "Äiá»u khoáº£n dá»‹ch vá»¥"]} />
       </div>
     </footer>
   );
@@ -557,7 +558,7 @@ function Logo({ size, ariaLabel }) {
           />
         </svg>
       </div>
-      <span className="logo-text">Chợ Tới Cửa</span>
+      <span className="logo-text">Chá»£ Tá»›i Cá»­a</span>
     </a>
   );
 }
@@ -635,3 +636,4 @@ function SendIcon() {
     </svg>
   );
 }
+
