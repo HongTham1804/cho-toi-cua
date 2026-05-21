@@ -2,9 +2,9 @@ import './index.css'
 import bgImg from '../../assets/phone.png'
 import '@fortawesome/fontawesome-free/css/all.min.css'
 
-function Register() {
+function RegisterStore() {
   return (
-    <div className="container">
+    <div className="registerContainer">
 
       {/* LEFT */}
       <div className="left-panel">
@@ -17,7 +17,7 @@ function Register() {
         />
 
           <div className="info-card">
-            <div className="logo">
+            <div className="registerLogo">
               <i className="fa-solid fa-leaf"></i>
               
             </div>
@@ -30,7 +30,7 @@ function Register() {
             </p>
 
             <div className="feature">
-              <span><i class="fa-regular fa-circle-check"></i></span>
+              <span><i className="fa-regular fa-circle-check"></i></span>
               <div>
                 <h4>Tiếp cận khách hàng mới</h4>
                 <p>Hàng ngàn khách hàng tiềm năng mỗi ngày.</p>
@@ -46,7 +46,7 @@ function Register() {
             </div>
 
             <div className="feature">
-              <span><i class="fa-solid fa-headphones"></i></span>
+              <span><i className="fa-solid fa-headphones"></i></span>
               <div>
                 <h4>Hỗ trợ 24/7</h4>
                 <p>Đội ngũ chuyên gia luôn sẵn sàng giúp đỡ.</p>
@@ -69,7 +69,7 @@ function Register() {
 
           <div className="card">
             <div className="card-title">
-              <i class="fa-solid fa-store"></i>
+              <i className="fa-solid fa-store"></i>
               Thông tin cửa hàng
             </div>
 
@@ -104,7 +104,7 @@ function Register() {
 
           <div className="card">
             <div className="card-title">
-              <i class="fa-regular fa-user"></i>
+              <i className="fa-regular fa-user"></i>
               Thông tin liên hệ
             </div>
 
@@ -190,4 +190,4 @@ function Register() {
   )
 }
 
-export default Register
+export default RegisterStore
