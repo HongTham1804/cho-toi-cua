@@ -27,7 +27,7 @@ export default function App() {
 
     async function loadTracking() {
       try {
-        const orderId = getOrderIdFromUrl() ?? "CTC-982374";
+        const orderId = getOrderIdFromUrl() ?? "ORD-982374";
         const data = await fetchOrderTracking(orderId);
         if (!active) return;
         setOrder(data);
@@ -85,8 +85,8 @@ function Header({ order, loading, error, onBack }) {
 
         <div className="header-status-group">
           <div className="status-badge">
-            <span className="status-dot"></span>
-            <span>{error ? "Lỗi tải dữ liệu" : order?.status ?? "Đang tải"}</span>
+            <BellIcon />
+            <span>{error ? "Lỗi tải dữ liệu" : "Đơn hàng đang được giao đến bạn!"}</span>
           </div>
           <div className="order-id-chip">
             <span>Đơn hàng #</span>
@@ -95,6 +95,17 @@ function Header({ order, loading, error, onBack }) {
         </div>
       </div>
     </header>
+  );
+}
+
+function BellIcon() {
+  return (
+    <svg className="status-bell" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+      <path d="M18 8a6 6 0 0 0-12 0c0 7-3 8-3 8h18s-3-1-3-8" />
+      <path d="M13.7 21a2 2 0 0 1-3.4 0" />
+      <path d="M4 4 2.5 2.5" />
+      <path d="M20 4 21.5 2.5" />
+    </svg>
   );
 }
 
@@ -110,7 +121,7 @@ function EtaBanner({ eta, loading }) {
 function MapPanel({ etaMinutes }) {
   return (
     <div className="map-wrapper" role="img" aria-label="Bản đồ lộ trình giao hàng">
-      <svg className="mock-map" viewBox="0 0 500 380" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMid slice" aria-hidden="true">
+      <svg className="mock-map" viewBox="55 0 430 380" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMid slice" aria-hidden="true">
         <rect width="500" height="380" fill="#e8ecef" />
         <line x1="0" y1="70" x2="500" y2="70" stroke="#fff" strokeWidth="8" />
         <line x1="0" y1="140" x2="500" y2="140" stroke="#fff" strokeWidth="8" />
@@ -129,9 +140,9 @@ function MapPanel({ etaMinutes }) {
 
         <polyline points="130,120 130,210 300,210 300,300 380,300" fill="none" stroke="#1a7a4a" strokeWidth="3" strokeDasharray="8 5" strokeLinecap="round" opacity=".9" />
 
-        <g transform="translate(100,110)" className="map-pin">
-          <rect x="-36" y="-22" width="72" height="24" rx="12" fill="#1a7a4a" />
-          <text x="0" y="-5" textAnchor="middle" fill="#fff" fontSize="9" fontFamily="Inter,sans-serif" fontWeight="600">Siêu thị Tới Cửa</text>
+        <g transform="translate(150,110)" className="map-pin">
+          <rect x="-58" y="-24" width="108" height="28" rx="14" fill="#1a7a4a" />
+          <text x="-4" y="-6" textAnchor="middle" fill="#fff" fontSize="12" fontFamily="Inter,sans-serif" fontWeight="700">Siêu thị Tới Cửa</text>
           <polygon points="0,4 -6,-4 6,-4" fill="#1a7a4a" transform="translate(0,14)" />
         </g>
 
@@ -141,12 +152,19 @@ function MapPanel({ etaMinutes }) {
           <text x="0" y="5" textAnchor="middle" fill="#fff" fontSize="13">🛵</text>
         </g>
 
-        <g transform="translate(380,300)" className="map-pin">
-          <rect x="-44" y="-22" width="88" height="24" rx="12" fill="#fff" stroke="#1a7a4a" strokeWidth="1.5" />
-          <text x="0" y="-5" textAnchor="middle" fill="#1a7a4a" fontSize="9" fontFamily="Inter,sans-serif" fontWeight="600">Nhà của bạn</text>
+        <g transform="translate(360,300)" className="map-pin">
+          <rect x="-44" y="-24" width="118" height="28" rx="14" fill="#fff" stroke="#1a7a4a" strokeWidth="2" />
+          <text x="15" y="-6" textAnchor="middle" fill="#1a7a4a" fontSize="12" fontFamily="Inter,sans-serif" fontWeight="700">Nhà của bạn</text>
           <polygon points="0,4 -6,-4 6,-4" fill="#1a7a4a" transform="translate(0,14)" />
         </g>
       </svg>
+
+      <div className="map-label map-label-store">
+        <span>Chợ Tới Cửa</span>
+      </div>
+      <div className="map-label map-label-home">
+        <span>Nhà của bạn</span>
+      </div>
 
       <div className="map-distance-badge">
         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" aria-hidden="true">
