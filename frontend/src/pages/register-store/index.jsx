@@ -1,5 +1,5 @@
 import './index.css'
-import bgImg from '../../assets/phone.png'
+import bgImg from '../../assets/phone.jpg'
 import '@fortawesome/fontawesome-free/css/all.min.css'
 
 function RegisterStore() {

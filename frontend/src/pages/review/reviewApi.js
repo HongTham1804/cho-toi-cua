@@ -1,5 +1,5 @@
-import dauTayImage from "./assets/dau-tay.jpg";
-import supLoImage from "./assets/sup-lo.jpg";
+import dauTayImage from "../../assets/dautay.jpg";
+import supLoImage from "../../assets/suplo.jpg";
 
 const MOCK_REVIEW_ORDER = {
   orderId: "CTC-2024-8892",

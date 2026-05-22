@@ -2,9 +2,9 @@ import { useState } from "react";
 import "./index.css";
 import '@fortawesome/fontawesome-free/css/all.min.css';
 import imgEggs from "../../assets/eggs.jpg";
-import imgVeggies from "../../assets/Rau cải xanh.png";
-import imgBeef from "../../assets/Thịt bò.png";
-import imgQR from "../../assets/QR.png";
+import imgVeggies from "../../assets/Rau cải xanh.jpg";
+import imgBeef from "../../assets/Thịt bò.jpg";
+import imgQR from "../../assets/QR.jpg";
 
 /* ─── Mock data ──────────────────────────────────────────────────── */
 const NEW_ORDERS_TEMPLATE = [

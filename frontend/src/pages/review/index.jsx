@@ -159,7 +159,7 @@ export default function App() {
   }
 
   return (
-    <>
+    <div className="review-page">
       <Header />
       <Breadcrumb />
 
@@ -202,7 +202,7 @@ export default function App() {
 
       <Footer />
       <Toast toast={toast} />
-    </>
+    </div>
   );
 }
 
@@ -487,7 +487,7 @@ function Footer() {
         <div className="footer-brand">
           <Logo size={24} ariaLabel="Chợ Tới Cửa" />
           <p className="footer-tagline">
-            © 2024 Chợ Tới Cửa. Tươi ngon từ nông trại
+            © 2026 Chợ Tới Cửa. Tươi ngon từ nông trại
             <br />
             đến tận cửa nhà.
           </p>
