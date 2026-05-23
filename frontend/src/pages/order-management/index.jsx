@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import "./index.css";
 import '@fortawesome/fontawesome-free/css/all.min.css';
 import imgEggs from "../../assets/eggs.jpg";
@@ -49,10 +50,10 @@ const SHIPPER_ORDERS = [
 ];
 
 const NAV_ITEMS = [
-  { id: "orders", label: "Đơn hàng", icon: "fa-solid fa-clipboard-list" },
-  { id: "categories", label: "Danh mục", icon: "fa-solid fa-tags" },
-  { id: "store", label: "Cửa hàng", icon: "fa-solid fa-store" },
-  { id: "stats", label: "Thống kê", icon: "fa-solid fa-chart-bar" },
+  { id: "orders", label: "Đơn hàng", icon: "fa-solid fa-clipboard-list", path: "/order-management" },
+  { id: "categories", label: "Danh mục", icon: "fa-solid fa-tags", path: "/inventory" },
+  { id: "store", label: "Cửa hàng", icon: "fa-solid fa-store", path: null },
+  { id: "stats", label: "Thống kê", icon: "fa-solid fa-chart-bar", path: null },
 ];
 
 function formatCurrency(value) {
@@ -61,6 +62,7 @@ function formatCurrency(value) {
 
 /* ─── Main page ──────────────────────────────────────────────────── */
 export default function OrderManagement() {
+  const navigate = useNavigate();
   const IMG_MAP = { eggs: imgEggs, veggies: imgVeggies, beef: imgBeef };
 
   const [activeTab, setActiveTab] = useState("new");
@@ -115,7 +117,10 @@ export default function OrderManagement() {
             <button
               key={item.id}
               className={`om-nav-item ${activeNav === item.id ? "active" : ""}`}
-              onClick={() => setActiveNav(item.id)}
+              onClick={() => {
+                setActiveNav(item.id);
+                if (item.path) navigate(item.path);
+              }}
             >
               <i className={`om-nav-icon ${item.icon}`} />
               {item.label}

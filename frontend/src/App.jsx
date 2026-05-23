@@ -1,4 +1,4 @@
-﻿import { Navigate, Route, Routes } from 'react-router-dom'
+import { Navigate, Route, Routes } from 'react-router-dom'
 import './App.css'
 import RegisterStore from './pages/register-store'
 import Login from './pages/login'
@@ -7,6 +7,8 @@ import OrderHistory from './pages/order-history'
 import Review from './pages/review'
 import Tracking from './pages/tracking'
 import OrderManagement from './pages/order-management'
+import Inventory from './pages/inventory'
+import ProductDetail from './pages/product-detail'
 
 function App() {
   return (
@@ -19,6 +21,8 @@ function App() {
       <Route path="/review" element={<Review />} />
       <Route path="/tracking" element={<Tracking />} />
       <Route path="/order-management" element={<OrderManagement />} />
+      <Route path="/inventory" element={<Inventory />} />
+      <Route path="/product/:id" element={<ProductDetail />} />
     </Routes>
   )
 }
