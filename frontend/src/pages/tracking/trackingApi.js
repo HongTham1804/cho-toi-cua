@@ -1,5 +1,5 @@
 const MOCK_ORDER_TRACKING = {
-  orderId: "CTC-982374",
+  orderId: "ORD-982374",
   eta: "14:30",
   status: "Đang giao hàng",
   customer: {

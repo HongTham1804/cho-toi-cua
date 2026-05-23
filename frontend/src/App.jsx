@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 import { Navigate, Route, Routes } from 'react-router-dom'
 import './App.css'
 import RegisterStore from './pages/register-store'
@@ -25,6 +26,17 @@ function App() {
       <Route path="/product/:id" element={<ProductDetail />} />
     </Routes>
   )
+=======
+﻿import React from 'react';
+import PartnerLogin from './pages/PartnerLogin/PartnerLogin'; // Đảm bảo đúng đường dẫn đến file component của bạn
+
+function App() {
+  return (
+    <div className="App">
+      <PartnerLogin />
+    </div>
+  );
+>>>>>>> 0215432e6007e1eb9e7008acdb46e310ea7f0a87
 }
 
-export default App
+export default App;

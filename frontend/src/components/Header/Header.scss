@@ -1,0 +1,88 @@
+$bg-color: #F9F9FF;
+$border-color: #BBCABF;
+$text-main: #151C27;
+$text-secondary: #3C4A42;
+
+.top-header {
+  height: 64px;
+  background: $bg-color;
+  border-bottom: 1px solid $border-color;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0 32px;
+
+  .search-bar {
+    display: flex;
+    align-items: center;
+    background: #F0F3FF;
+    border: 1px solid $border-color;
+    border-radius: 12px;
+    padding: 8px 16px;
+    width: 448px;
+    transition: all 0.3s ease;
+
+    /* Đổi viền đậm hơn khi click vào ô tìm kiếm */
+    &:focus-within {
+      border-color: #006C49; 
+      box-shadow: 0 0 0 2px rgba(0, 108, 73, 0.1);
+    }
+
+    .search-icon {
+      color: #6C7A71;
+      font-size: 18px;
+    }
+
+    input {
+      border: none;
+      background: transparent;
+      outline: none;
+      width: 100%;
+      margin-left: 12px;
+      font-size: 14px;
+      color: $text-main;
+
+      &::placeholder {
+        color: #6B7280;
+      }
+    }
+  }
+
+  .user-profile {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+
+    .icon {
+      font-size: 20px;
+      color: $text-secondary;
+      cursor: pointer;
+      transition: color 0.2s;
+
+      &:hover {
+        color: #006C49;
+      }
+    }
+
+    .divider {
+      width: 1px;
+      height: 32px;
+      background: $border-color;
+      margin: 0 4px;
+    }
+    
+    .admin-avatar {
+      width: 32px;
+      height: 32px;
+      border-radius: 12px;
+      border: 1px solid $border-color;
+      object-fit: cover;
+    }
+    
+    .admin-name {
+      font-weight: 600;
+      font-size: 16px;
+      color: $text-main;
+    }
+  }
+}

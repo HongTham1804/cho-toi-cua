@@ -1,0 +1,375 @@
+// ==========================================
+// BIẾN MÀU SẮC & FONT CHỮ (VARIABLES)
+// ==========================================
+$font-title: 'Plus Jakarta Sans', sans-serif;
+$font-body: 'Be Vietnam Pro', sans-serif;
+
+$color-bg: #F8F9FF;
+$color-white: #FFFFFF;
+$color-primary: #006C49; // Xanh lá thương hiệu
+$color-text-dark: #0B1C30;
+$color-text-muted: #3C4A42;
+$color-placeholder: #6B7280;
+$color-border: #BBCABF;
+$color-shadow: rgba(0, 0, 0, 0.05);
+
+// ==========================================
+// KHUNG GIAO DIỆN CHÍNH (LAYOUT)
+// ==========================================
+.partner-login-page {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  position: relative;
+  width: 100%;
+  min-height: 100vh; // Đảm bảo luôn phủ kín chiều cao màn hình
+  background: $color-bg;
+
+  .main-content {
+    display: flex;
+    flex-direction: row;
+    justify-content: center;
+    align-items: center;
+    padding: 60px 32px; // Điều chỉnh padding cho cân đối trên các màn hình
+    width: 100%;
+    min-height: 100vh;
+    box-sizing: border-box;
+  }
+
+  // Khung trắng chứa Form và Ảnh
+  .login-card {
+    box-sizing: border-box;
+    display: flex;
+    flex-direction: row;
+    align-items: stretch; // Kéo giãn 2 bên bằng nhau
+    padding: 0px;
+    width: 1000px;
+    max-width: 100%;
+    height: 487px;
+    background: $color-white;
+    border: 1px solid $color-border;
+    box-shadow: 0px 1px 2px $color-shadow;
+    border-radius: 8px;
+    overflow: hidden; // Quan trọng: Cắt phần góc nhọn của ảnh bên trong
+
+    @media (max-width: 768px) {
+      flex-direction: column;
+      height: auto;
+    }
+  }
+
+  // ==========================================
+  // CỘT TRÁI: ẢNH BÌA & THƯƠNG HIỆU
+  // ==========================================
+  .branding-side {
+    position: relative;
+    width: 499px;
+    // Bạn đổi URL dưới đây thành đường dẫn ảnh thực tế của bạn
+    background-image: url('https://images.unsplash.com/photo-1595855759920-86582396756a?q=80&w=1000&auto=format&fit=crop'); 
+    background-size: cover;
+    background-position: center;
+    flex: none;
+
+    @media (max-width: 768px) {
+      display: none; // Ẩn ảnh trên mobile theo chuẩn UX
+    }
+
+    // Lớp phủ Gradient xanh đen giúp chữ trắng nổi bật
+    .overlay-blur {
+      position: absolute;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background: linear-gradient(180deg, rgba(0, 108, 73, 0.1) 0%, rgba(2, 45, 30, 0.85) 100%);
+      backdrop-filter: blur(1px);
+    }
+
+    .branding-container {
+      position: absolute;
+      top: 0; left: 0; right: 0; bottom: 0;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      align-items: flex-start;
+      padding: 32px;
+      box-sizing: border-box;
+      z-index: 1;
+
+      .brand-logo h1 {
+        margin: 0;
+        font-family: $font-title;
+        font-weight: 700;
+        font-size: 32px;
+        color: $color-white;
+      }
+
+      .brand-intro {
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+
+        h2 {
+          margin: 0;
+          font-family: $font-title;
+          font-weight: 600;
+          font-size: 24px;
+          line-height: 32px;
+          color: $color-white;
+        }
+
+        p {
+          margin: 0;
+          font-family: $font-body;
+          font-weight: 400;
+          font-size: 16px;
+          line-height: 24px;
+          color: rgba(255, 255, 255, 0.9);
+        }
+      }
+    }
+  }
+
+  // ==========================================
+  // CỘT PHẢI: FORM ĐĂNG NHẬP
+  // ==========================================
+  .form-side {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: flex-start;
+    padding: 32px;
+    width: 499px; // Tổng độ rộng phần form
+    box-sizing: border-box;
+    flex: 1;
+
+    @media (max-width: 768px) {
+      width: 100%;
+    }
+
+    .form-header {
+      width: 100%;
+      margin-bottom: 24px;
+
+      h1 {
+        margin: 0 0 4px 0;
+        font-family: $font-title;
+        font-weight: 700;
+        font-size: 32px;
+        color: $color-text-dark;
+      }
+
+      p {
+        margin: 0;
+        font-family: $font-body;
+        font-weight: 400;
+        font-size: 14px;
+        color: $color-text-muted;
+      }
+    }
+
+    .login-form {
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+      width: 100%;
+    }
+
+    .form-group {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      width: 100%;
+
+      label {
+        font-family: $font-body;
+        font-weight: 600;
+        font-size: 12px;
+        color: $color-text-dark;
+      }
+
+      .input-container {
+        position: relative;
+        display: flex;
+        align-items: center;
+        width: 100%;
+        height: 42px;
+
+        .input-icon {
+          position: absolute;
+          left: 12px;
+          display: flex;
+          align-items: center;
+          color: #6C7A71;
+          pointer-events: none;
+        }
+
+        input {
+          box-sizing: border-box;
+          width: 100%;
+          height: 100%;
+          padding: 10px 40px 10px 36px;
+          background: $color-white;
+          border: 1px solid $color-border;
+          border-radius: 4px;
+          font-family: $font-body;
+          font-size: 14px;
+          color: $color-text-dark;
+          outline: none;
+          transition: border-color 0.2s ease;
+
+          &::placeholder {
+            color: $color-placeholder;
+          }
+
+          &:focus {
+            border-color: $color-primary;
+          }
+        }
+
+        .toggle-password {
+          position: absolute;
+          right: 12px;
+          background: none;
+          border: none;
+          padding: 0;
+          cursor: pointer;
+          display: flex;
+          align-items: center;
+          color: #6C7A71;
+
+          &:hover {
+            color: $color-primary;
+          }
+        }
+      }
+    }
+
+    // ==========================================
+    // KHU VỰC QUÊN MẬT KHẨU & GHI NHỚ
+    // ==========================================
+    .remember-forgot-container {
+      display: flex;
+      flex-direction: row;
+      justify-content: space-between;
+      align-items: center;
+      padding: 4px 0px 8px;
+      width: 100%;
+
+      .remember-me {
+        display: flex;
+        flex-direction: row;
+        align-items: center;
+        gap: 8px;
+        cursor: pointer;
+
+        // Custom Checkbox đẹp mắt
+        input[type="checkbox"] {
+          appearance: none; 
+          -webkit-appearance: none;
+          box-sizing: border-box;
+          width: 16px;
+          height: 16px;
+          border: 1.5px solid $color-border;
+          border-radius: 3px;
+          cursor: pointer;
+          position: relative;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          transition: all 0.2s ease;
+
+          &:checked {
+            background-color: $color-primary;
+            border-color: $color-primary;
+
+            // Dấu tick chữ V màu trắng
+            &::after {
+              content: "";
+              position: absolute;
+              width: 3.5px;
+              height: 8px;
+              border: solid $color-white;
+              border-width: 0 2px 2px 0;
+              transform: rotate(45deg);
+              margin-bottom: 2px;
+            }
+          }
+        }
+
+        span {
+          font-family: $font-body;
+          font-weight: 500;
+          font-size: 13px;
+          color: $color-text-muted;
+        }
+      }
+
+      .forgot-password-link {
+        font-family: $font-body;
+        font-weight: 600;
+        font-size: 12px;
+        color: $color-primary;
+        text-decoration: none;
+
+        &:hover {
+          text-decoration: underline;
+        }
+      }
+    }
+
+    // ==========================================
+    // NÚT BẤM (BUTTON) & FOOTER
+    // ==========================================
+    .submit-btn {
+      display: flex;
+      flex-direction: row;
+      justify-content: center;
+      align-items: center;
+      padding: 12px 24px;
+      width: 100%;
+      height: 44px;
+      background: $color-primary;
+      border: none;
+      border-radius: 4px;
+      font-family: $font-body;
+      font-weight: 600;
+      font-size: 14px;
+      color: $color-white;
+      cursor: pointer;
+      transition: background 0.2s ease;
+
+      &:hover {
+        background: darken($color-primary, 5%);
+      }
+    }
+
+    .form-footer {
+      box-sizing: border-box;
+      display: flex;
+      flex-direction: column;
+      align-items: flex-start;
+      padding: 24px 0px 0px;
+      margin-top: 24px;
+      width: 100%;
+      border-top: 1px solid $color-border;
+
+      p {
+        margin: 0;
+        width: 100%;
+        font-family: $font-body;
+        font-weight: 400;
+        font-size: 14px;
+        text-align: center;
+        color: $color-text-muted;
+      }
+
+      .register-link {
+        font-weight: 600;
+        color: $color-primary;
+        text-decoration: none;
+
+        &:hover {
+          text-decoration: underline;
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,16 @@
+/* Khung bọc toàn bộ trang web */
+.app-container {
+  display: flex;         /* Xếp thanh Sidebar và Main Content nằm hàng ngang với nhau */
+  width: 100vw;
+  min-height: 100vh;
+  background-color: #F9F9FF;
+  overflow-x: hidden;
+}
+
+/* Khung nội dung bên phải */
+.main-content {
+  flex: 1;               /* Tự động kéo giãn chiếm trọn không gian còn lại */
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
