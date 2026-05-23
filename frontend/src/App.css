@@ -1,19 +1,16 @@
-/* src/App.css */
-.admin-app {
-  display: flex; /* Dàn hàng ngang */
+/* Khung bọc toàn bộ trang web */
+.app-container {
+  display: flex;         /* Xếp thanh Sidebar và Main Content nằm hàng ngang với nhau */
+  width: 100vw;
   min-height: 100vh;
   background-color: #F9F9FF;
+  overflow-x: hidden;
 }
 
-/* Sidebar bên trái */
-.sidebar-wrapper {
-  width: 260px; /* Độ rộng sidebar */
-  flex-shrink: 0; /* Không cho sidebar bị co lại */
-}
-
-/* Nội dung bên phải */
-.content-wrapper {
-  flex: 1; /* Chiếm hết không gian còn lại */
+/* Khung nội dung bên phải */
+.main-content {
+  flex: 1;               /* Tự động kéo giãn chiếm trọn không gian còn lại */
   display: flex;
   flex-direction: column;
+  min-width: 0;
 }

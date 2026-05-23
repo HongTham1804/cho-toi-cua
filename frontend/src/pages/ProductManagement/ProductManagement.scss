@@ -1,0 +1,352 @@
+/* =========================================
+   1. KHAI BÁO BIẾN MÀU SẮC
+   ========================================= */
+$white: #FFFFFF;
+$bg-main: #F9F9FF;
+$bg-table-header: #F0F3FF;
+$border-color: #BBCABF;
+$text-main: #151C27;
+$text-secondary: #3C4A42;
+$text-muted: #6B7280;
+$primary-green: #006C49;
+
+/* =========================================
+   2. GIAO DIỆN TRANG CHÍNH (QUẢN LÝ SẢN PHẨM)
+   ========================================= */
+.product-management-page {
+  padding: 32px;
+  max-width: 1200px;
+  margin: 0 auto;
+  animation: fadeIn 0.3s ease-in-out;
+
+  /* --- HEADER TRANG --- */
+  .page-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 24px;
+
+    .title-group {
+      h2 {
+        font-size: 32px;
+        font-weight: 700;
+        color: $text-main;
+        margin: 0 0 4px 0;
+        letter-spacing: -0.64px;
+      }
+      p {
+        font-size: 16px;
+        color: $text-secondary;
+        margin: 0;
+      }
+    }
+
+    .btn-add {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      background: $primary-green;
+      color: $white;
+      border: none;
+      border-radius: 8px;
+      padding: 12px 24px;
+      font-size: 16px;
+      font-weight: 600;
+      cursor: pointer;
+      box-shadow: 0px 4px 6px -1px rgba(0, 0, 0, 0.1);
+      transition: background 0.2s;
+
+      &:hover {
+        background: darken($primary-green, 5%);
+      }
+      .icon {
+        font-size: 18px;
+      }
+    }
+  }
+
+  /* --- BẢNG DỮ LIỆU --- */
+  .table-card {
+    background: $white;
+    border: 1px solid $border-color;
+    border-radius: 8px;
+    box-shadow: 0px 1px 2px rgba(0, 0, 0, 0.05);
+    overflow: hidden;
+
+    .table-responsive {
+      overflow-x: auto;
+    }
+
+    .custom-table {
+      width: 100%;
+      border-collapse: collapse;
+      text-align: left;
+
+      th, td {
+        padding: 16px 24px;
+        border-bottom: 1px solid $border-color;
+        vertical-align: middle;
+      }
+
+      th {
+        background: $bg-table-header;
+        color: $text-secondary;
+        font-weight: 700;
+        font-size: 16px;
+        white-space: nowrap;
+      }
+
+      tbody tr {
+        transition: background-color 0.2s;
+
+        &:hover {
+          background-color: #F8FAFC;
+          
+          /* Hiển thị nút bấm khi hover vào hàng */
+          .action-buttons {
+            opacity: 1;
+          }
+        }
+      }
+
+      .text-right {
+        text-align: right;
+      }
+
+      /* Định dạng từng cột */
+      .col-id {
+        color: $text-main;
+        font-weight: 500;
+      }
+
+      .col-image {
+        img {
+          width: 48px;
+          height: 48px;
+          object-fit: cover;
+          border-radius: 6px;
+          border: 1px solid $border-color;
+        }
+      }
+
+      .col-name {
+        color: $text-main;
+        font-weight: 500;
+        max-width: 200px;
+      }
+
+      .col-price {
+        color: $text-main;
+        font-weight: 600;
+      }
+
+      /* Nhãn (Badge) Danh mục */
+      .badge-category {
+        display: inline-flex;
+        align-items: center;
+        padding: 4px 12px;
+        border-radius: 12px;
+        font-size: 13px;
+        font-weight: 600;
+
+        &.theme-green {
+          background: rgba(16, 185, 129, 0.2);
+          color: #00422B;
+        }
+        &.theme-blue {
+          background: rgba(33, 112, 228, 0.2);
+          color: #0D47A1;
+        }
+        &.theme-orange {
+          background: rgba(245, 158, 11, 0.2);
+          color: #92400E;
+        }
+        &.theme-red {
+          background: rgba(252, 124, 120, 0.2);
+          color: #711419;
+        }
+      }
+
+      /* Trạng thái (Còn hàng / Hết hàng) */
+      .status-indicator {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+
+        .dot {
+          width: 8px;
+          height: 8px;
+          border-radius: 50%;
+          &.active { background: $primary-green; }
+          &.inactive { background: #6C7A71; }
+        }
+
+        .text {
+          font-weight: 600;
+          font-size: 14px;
+          &.text-active { color: $primary-green; }
+          &.text-inactive { color: #6C7A71; }
+        }
+      }
+
+      /* Nút hành động (Sửa/Xóa) */
+      .action-buttons {
+        display: flex;
+        justify-content: flex-end;
+        gap: 8px;
+        opacity: 0; /* Ẩn mặc định, hiện khi hover */
+        transition: opacity 0.2s;
+
+        .btn-icon {
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          width: 32px;
+          height: 32px;
+          border-radius: 6px;
+          border: none;
+          cursor: pointer;
+          color: $white;
+          transition: transform 0.1s, opacity 0.2s;
+
+          &:hover {
+            transform: scale(1.05);
+          }
+
+          &.edit { background: #0058BE; }
+          &.delete { background: #BA1A1A; }
+        }
+      }
+    }
+  }
+}
+
+/* =========================================
+   3. GIAO DIỆN POPUP MODAL (THÊM/SỬA SẢN PHẨM)
+   ========================================= */
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background: rgba(0, 0, 0, 0.5); /* Nền tối mờ */
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+  animation: fadeIn 0.2s ease-in-out;
+}
+
+.modal-container {
+  background: $white;
+  width: 450px;
+  border-radius: 12px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
+  overflow: hidden;
+  animation: slideDown 0.3s ease-out;
+
+  .modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 20px 24px;
+    border-bottom: 1px solid $border-color;
+
+    h3 {
+      margin: 0;
+      font-size: 18px;
+      color: $text-main;
+      font-weight: 700;
+    }
+
+    .btn-close {
+      background: none;
+      border: none;
+      font-size: 22px;
+      color: $text-muted;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: color 0.2s;
+      &:hover { color: #d9534f; }
+    }
+  }
+
+  .modal-body {
+    padding: 24px;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+
+    .form-group {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+
+      label {
+        font-size: 14px;
+        font-weight: 600;
+        color: $text-secondary;
+      }
+
+      input, select {
+        padding: 10px 14px;
+        border: 1px solid $border-color;
+        border-radius: 6px;
+        font-size: 14px;
+        color: $text-main;
+        outline: none;
+        transition: border-color 0.2s;
+        
+        &:focus { border-color: $primary-green; }
+      }
+    }
+  }
+
+  .modal-footer {
+    padding: 16px 24px;
+    border-top: 1px solid $border-color;
+    display: flex;
+    justify-content: flex-end;
+    gap: 12px;
+    background-color: #fcfcfc;
+
+    button {
+      padding: 10px 16px;
+      border-radius: 6px;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      border: none;
+      transition: all 0.2s;
+    }
+
+    .btn-cancel {
+      background: transparent;
+      color: $text-secondary;
+      border: 1px solid #ccc;
+      &:hover { background: #f3f4f6; }
+    }
+
+    .btn-submit {
+      background: $primary-green;
+      color: $white;
+      &:hover { background: darken(#006C49, 5%); }
+    }
+  }
+}
+
+/* =========================================
+   4. CÁC HIỆU ỨNG CHUYỂN ĐỘNG (ANIMATIONS)
+   ========================================= */
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes slideDown {
+  from { opacity: 0; transform: translateY(-30px); }
+  to { opacity: 1; transform: translateY(0); }
+}
