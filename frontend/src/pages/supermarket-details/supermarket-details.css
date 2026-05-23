@@ -1,0 +1,738 @@
+/* ===========================
+   ROOT VARIABLES
+=========================== */
+:root {
+  --green-primary: #006C49;
+  --orange-offer: #FEA619;
+  --bg-light-blue: #D3E4FE;
+  --bg-main: #F8F9FF;
+  --text-dark: #3C4A42;
+  --text-black: #000000;
+  --red-sale: #E74C3C;
+}
+/* ===========================
+   MỞ KHÓA CUỘN TRANG 
+=========================== */
+html, body, #root {
+  height: auto !important;
+  min-height: 100vh;
+  overflow-y: auto !important; 
+  overflow-x: hidden;
+}
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: 'Be Vietnam Pro', sans-serif;
+}
+
+/* ===========================
+   WRAPPER
+=========================== */
+.supermarket-wrapper {
+  background-color: var(--bg-main);
+  min-height: 100vh;
+}
+
+/* ===========================
+   HEADER (GIỮ NGUYÊN)
+=========================== */
+.header-core {
+  background-color: #ffffff;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+  padding: 8px 0;
+  position: sticky;
+  top: 0;
+  z-index: 100;
+}
+
+.header-container {
+  max-width: 1380px;
+  margin: 0 auto;
+  padding: 0 20px;
+  display: grid;
+  grid-template-columns: auto auto 1fr auto;
+  align-items: center;
+  gap: 16px;
+}
+
+.hamburger-menu {
+  background: none;
+  border: none;
+  font-size: 20px;
+  cursor: pointer;
+  color: var(--green-primary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  transition: background-color 0.2s;
+}
+
+.hamburger-menu:hover {
+  background-color: rgba(0, 108, 73, 0.1);
+}
+
+.header-logo {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  white-space: nowrap;
+}
+
+.logo-icon {
+  width: 32px;
+  height: 32px;
+  object-fit: contain;
+}
+
+.logo-text {
+  font-size: 22px;
+  font-weight: 700;
+  color: var(--green-primary);
+}
+
+.search-bar-wrapper {
+  width: 100%;
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.search-input {
+  width: 100%;
+  padding: 10px 45px 10px 45px;
+  border: 1px solid #e0e0e0;
+  border-radius: 24px;
+  font-size: 14px;
+  outline: none;
+  transition: border-color 0.2s;
+  font-family: 'Be Vietnam Pro', sans-serif;
+}
+
+.search-input:focus {
+  border-color: var(--green-primary);
+}
+
+.search-input::placeholder {
+  color: #999;
+}
+
+.search-icon {
+  position: absolute;
+  right: 16px;
+  color: var(--green-primary);
+  pointer-events: none;
+  font-size: 16px;
+}
+
+.header-icons {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  white-space: nowrap;
+}
+
+.icon-item {
+  cursor: pointer;
+  font-size: 18px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  color: var(--green-primary);
+  transition: transform 0.2s;
+}
+
+.icon-item:hover {
+  transform: scale(1.1);
+  background-color: rgba(0, 108, 73, 0.1);
+}
+
+/* ===========================
+   MAIN CONTAINER
+=========================== */
+.supermarket-main-container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+/* ===========================
+   SHOP HEADER (BANNER + INFO)
+=========================== */
+.shop-header-section {
+  position: relative;
+  border-radius: 12px;
+  overflow: hidden;
+}
+
+.supermarket-banner-large {
+  width: 100%;
+  height: 260px;
+}
+
+.supermarket-banner-large img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.shop-info-card {
+  background-color: #ffffff;
+  border-radius: 12px;
+  padding: 16px 20px;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+}
+
+.shop-logo-box {
+  width: 72px;
+  height: 72px;
+  border-radius: 12px;
+  overflow: hidden;
+  border: 1px solid #eee;
+  flex-shrink: 0;
+}
+
+.shop-logo-box img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+
+.shop-detail-text h1 {
+  font-size: 1.2rem;
+  font-weight: 700;
+  margin-bottom: 6px;
+}
+
+.shop-meta {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  color: #555;
+  margin-bottom: 6px;
+}
+
+.status-badge {
+  background-color: #e6f4ee;
+  color: var(--green-primary);
+  padding: 2px 8px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.shop-address {
+  font-size: 13px;
+  color: #777;
+}
+
+/* ===========================
+   SECTION CHUNG
+=========================== */
+.section-container {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.section-container h2 {
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: var(--text-black);
+}
+
+.section-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.btn-view-all {
+  background: none;
+  border: 1px solid var(--green-primary);
+  color: var(--green-primary);
+  padding: 6px 14px;
+  border-radius: 20px;
+  font-size: 13px;
+  cursor: pointer;
+  font-family: 'Be Vietnam Pro', sans-serif;
+  transition: all 0.2s;
+}
+
+.btn-view-all:hover {
+  background-color: var(--green-primary);
+  color: white;
+}
+
+/* ===========================
+   COUPON
+=========================== */
+.coupon-scroll-wrapper {
+  display: flex;
+  gap: 12px;
+  overflow-x: auto;
+  padding-bottom: 4px;
+}
+
+.coupon-card-custom {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  background-color: #ffffff;
+  border-radius: 10px;
+  padding: 14px 16px;
+  min-width: 230px;
+  flex:1;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.06);
+  flex-shrink: 0;
+  border-left: 4px solid var(--green-primary);
+}
+
+.coupon-card-custom.freeship {
+  border-left-color: #3498db;
+}
+
+.coupon-left {
+  font-size: 24px;
+  font-weight: 700;
+  color: var(--red-sale);
+  width: 75px; /* Cố định độ rộng để biểu tượng và số chiếm khoảng trống như nhau */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.coupon-card-custom.freeship .coupon-left {
+  font-size: 17px; /* Chữ Free ship phải nhỏ hơn số -10% thì mới vừa hộp */
+  color: #E74C3C; /* Màu đỏ */
+  line-height: 1.2; 
+  white-space: normal;
+}
+
+.coupon-right {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.cp-title {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-dark);
+}
+
+.cp-sub {
+  font-size: 12px;
+  color: #888;
+}
+
+.btn-save-cp {
+  background-color: var(--green-primary);
+  color: white;
+  border: none;
+  padding: 4px 12px;
+  border-radius: 20px;
+  font-size: 12px;
+  cursor: pointer;
+  font-family: 'Be Vietnam Pro', sans-serif;
+  width: fit-content;
+  margin-top: 2px;
+}
+
+
+
+
+/* ===========================
+   PRODUCT GRID
+=========================== */
+.product-grid-custom {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 16px;
+}
+
+.product-card-v2 {
+  background-color: #ffffff;
+  border-radius: 10px;
+  overflow: hidden;
+  border: 1px solid #f0f0f0;
+  transition: box-shadow 0.2s;
+  display: flex;
+  flex-direction: column;
+}
+
+.product-card-v2:hover {
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.p-img {
+  background-color: var(--bg-light-blue);
+  height: 120px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 48px;
+}
+
+.p-info {
+  padding: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  flex-grow: 1;
+}
+
+.p-info h3 {
+  font-size: 13px;
+  color: var(--text-dark);
+  line-height: 1.4;
+  flex-grow: 1;
+}
+
+.p-price {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--green-primary);
+}
+
+.btn-add-cart {
+  background-color: var(--green-primary);
+  color: white;
+  border: none;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  font-size: 20px;
+  cursor: pointer;
+  align-self: flex-end;
+  transition: background-color 0.2s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.btn-add-cart:hover {
+  background-color: #005239;
+}
+
+/* ===========================
+   RESPONSIVE
+=========================== */
+@media (max-width: 768px) {
+  .header-container {
+    grid-template-columns: auto 1fr auto;
+  }
+
+  .logo-text {
+    display: none;
+  }
+
+  .product-grid-custom,
+  .category-circle-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+/* ===========================
+   LAYOUT 2 CỘT (DANH MỤC - SẢN PHẨM)
+=========================== */
+.supermarket-content-layout {
+  display: grid;
+  grid-template-columns: 240px 1fr; /* Chia 2 cột: Danh mục 240px, Sản phẩm chiếm phần còn lại */
+  gap: 32px;
+  margin-top: 10px;
+}
+
+/* --- CỘT TRÁI: DANH MỤC DỌC --- */
+.sidebar-categories h2 {
+  font-size: 1.2rem;
+  margin-bottom: 16px;
+  color: var(--text-dark);
+}
+
+.category-vertical-list {
+  list-style: none;
+  padding: 0;
+}
+
+.category-vertical-list li {
+  padding: 12px 16px;
+  margin-bottom: 6px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 14px;
+  color: var(--text-dark);
+  transition: background 0.2s;
+}
+
+.category-vertical-list li:hover {
+  background-color: rgba(0, 108, 73, 0.05);
+}
+
+.category-vertical-list li.active {
+  background-color: var(--green-primary);
+  color: white;
+  font-weight: 600;
+}
+
+/* --- CỘT PHẢI: KHU VỰC SẢN PHẨM --- */
+.main-products-area {
+  display: flex;
+  flex-direction: column;
+  gap: 40px;
+}
+
+/* 1. Flash Sale Section */
+.flash-sale-section {
+  background-color: #fff4f5; /* Nền hồng nhạt */
+  padding: 20px;
+  border-radius: 12px;
+  border: 1px solid #ffe3e6;
+}
+
+.flash-sale-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+}
+
+.flash-sale-header h2 {
+  color: #d32f2f;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-size: 1.2rem;
+  font-weight: 700;
+}
+
+.countdown {
+  background: #d32f2f;
+  color: white;
+  padding: 4px 10px;
+  border-radius: 4px;
+  font-size: 13px;
+  font-weight: bold;
+}
+
+.view-all-link {
+  color: #777;
+  text-decoration: none;
+  font-size: 13px;
+}
+
+.flash-sale-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 16px;
+}
+
+.flash-product-card {
+  background: white;
+  border: 1px solid #ffcdd2;
+  border-radius: 8px;
+  padding: 12px;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+}
+
+.discount-badge {
+  position: absolute;
+  top: 12px;
+  left: 12px;
+  background: #d32f2f;
+  color: white;
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-size: 12px;
+  font-weight: bold;
+}
+
+.p-img-flash {
+  height: 120px; /* Thu từ 180px xuống 120px cho bằng với thẻ sản phẩm thường */
+  background: var(--bg-light-blue); /* Đổi màu nền cho đồng bộ */
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 48px; /* Cho icon thịt nhỏ lại xíu */
+  margin-bottom: 12px;
+}
+
+.p-info-flash h3 {
+  font-size: 14px;
+  margin-bottom: 8px;
+  line-height: 1.4;
+  color: var(--text-dark);
+}
+
+.price-box {
+  display: flex;
+  flex-direction: column;
+  margin-bottom: 16px;
+}
+
+.price-box .p-price { color: #d32f2f; font-weight: bold; font-size: 16px; }
+.price-box .p-original { color: #999; text-decoration: line-through; font-size: 13px; }
+
+/* Thanh tiến trình bán */
+.progress-bar-container {
+  background: #ffebee;
+  border-radius: 12px;
+  height: 22px;
+  position: relative;
+  overflow: hidden;
+  margin-top: auto;
+}
+
+.progress-bar {
+  background: #ff7675;
+  height: 100%;
+  border-radius: 12px;
+}
+
+.progress-text {
+  position: absolute;
+  top: 0; left: 0; width: 100%; height: 100%;
+  display: flex; align-items: center; justify-content: center;
+  color: #d32f2f; font-size: 11px; font-weight: bold;
+}
+
+/* 2. Tất cả sản phẩm */
+.all-products-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+}
+
+.all-products-header h2 {
+  font-size: 1.2rem;
+  color: var(--text-black);
+}
+
+.sort-dropdown {
+  font-size: 13px;
+  color: #555;
+}
+
+.sort-dropdown select {
+  padding: 6px 12px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  margin-left: 8px;
+  font-family: inherit;
+  color: #333;
+}
+
+.load-more-container {
+  text-align: center;
+  margin-top: 20px;
+}
+
+.btn-load-more {
+  background: white;
+  border: 1px solid var(--green-primary);
+  color: var(--green-primary);
+  padding: 10px 24px;
+  border-radius: 20px;
+  cursor: pointer;
+  font-weight: 600;
+  transition: 0.2s;
+}
+
+.btn-load-more:hover {
+  background: var(--green-primary);
+  color: white;
+}
+
+/* ===========================
+   FOOTER CHỢ TỚI CỬA
+=========================== */
+.footer-core {
+  background-color: #E5F0FF; /* Màu xanh lơ nhạt chuẩn theo ảnh thiết kế */
+  padding: 40px 0 20px 0;
+  margin-top: 60px; /* Cách phần sản phẩm ở trên một khoảng rộng rãi */
+}
+
+.footer-container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 20px;
+}
+
+.footer-top {
+  display: grid;
+  grid-template-columns: 2fr 1fr 1fr; /* Chia 3 cột: Cột chữ to chiếm 2 phần, 2 cột link mỗi cột 1 phần */
+  gap: 20px;
+  margin-bottom: 30px;
+}
+
+.footer-brand h2 {
+  color: var(--green-primary);
+  font-size: 1.5rem;
+  margin-bottom: 8px;
+  font-weight: 700;
+}
+
+.footer-brand p {
+  color: #444;
+  font-size: 0.9rem;
+}
+
+.footer-links ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.footer-links li {
+  margin-bottom: 14px; /* Cách đều các dòng chữ */
+}
+
+.footer-links a {
+  text-decoration: none;
+  color: #333;
+  font-size: 0.9rem;
+  font-weight: 600;
+  transition: color 0.2s;
+}
+
+.footer-links a:hover {
+  color: var(--green-primary); /* Đổi sang màu xanh khi di chuột vào */
+}
+
+.footer-divider {
+  height: 1px;
+  background-color: #c9d8f2; /* Màu đường kẻ ngang nhạt mờ */
+  margin: 20px 0;
+}
+
+.footer-bottom {
+  text-align: center;
+}
+
+.footer-bottom p {
+  color: #555;
+  font-size: 0.85rem;
+  margin: 0;
+}
