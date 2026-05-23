@@ -1,26 +1,23 @@
-﻿import { Navigate, Route, Routes } from 'react-router-dom'
-import './App.css'
-import RegisterStore from './pages/register-store'
-import Login from './pages/login'
-import Notifications from './pages/notifications'
-import OrderHistory from './pages/order-history'
-import Review from './pages/review'
-import Tracking from './pages/tracking'
-import OrderManagement from './pages/order-management'
+﻿import React from 'react';
+import Sidebar from './components/Sidebar/Sidebar'; // Đảm bảo đường dẫn đúng
+import Header from './components/Header/Header';
+import UserDetail from './pages/UserDetail/UserDetail';
+import './App.css';
 
 function App() {
   return (
-    <Routes>
-      <Route path="/" element={<Navigate to="/login" replace />} />
-      <Route path="/register-store" element={<RegisterStore />} />
-      <Route path="/login" element={<Login />} />
-      <Route path="/notifications" element={<Notifications />} />
-      <Route path="/order-history" element={<OrderHistory />} />
-      <Route path="/review" element={<Review />} />
-      <Route path="/tracking" element={<Tracking />} />
-      <Route path="/order-management" element={<OrderManagement />} />
-    </Routes>
-  )
+    <div className="admin-app">
+      <Sidebar /> {/* Sidebar luôn ở bên trái */}
+      
+      <div className="content-wrapper">
+        <Header /> {/* Header nằm trên cùng bên phải */}
+        
+        <main>
+          <UserDetail /> {/* Nội dung trang ở dưới */}
+        </main>
+      </div>
+    </div>
+  );
 }
 
-export default App
+export default App;
