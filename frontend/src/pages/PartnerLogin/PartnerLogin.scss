@@ -1,0 +1,229 @@
+.partner-login-page {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
+  background: linear-gradient(0deg, #F8F9FF, #F8F9FF), #FFFFFF;
+  font-family: 'Be Vietnam Pro', sans-serif; /* Đảm bảo bạn đã cài font này hoặc đổi sang font dự án */
+
+  .login-card {
+    display: flex;
+    width: 1000px;
+    height: 487px;
+    background: #FFFFFF;
+    border: 1px solid #BBCABF;
+    box-shadow: 0px 1px 2px rgba(0, 0, 0, 0.05);
+    border-radius: 8px;
+    overflow: hidden; /* Để ảnh góc bo tròn không bị tràn */
+  }
+
+  /* --- CỘT TRÁI --- */
+  .login-left {
+    flex: 1;
+    position: relative;
+    background-image: url('https://images.unsplash.com/photo-1542838132-92c53300491e?q=80&w=1000&auto=format&fit=crop'); /* Đổi URL này thành ảnh rổ rau quả thật của bạn */
+    background-size: cover;
+    background-position: center;
+    padding: 32px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+
+    .overlay {
+      position: absolute;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background: rgba(0, 108, 73, 0.2);
+      backdrop-filter: blur(1px);
+    }
+
+    .branding-content {
+      position: relative;
+      z-index: 1;
+      height: 100%;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+
+      .logo {
+        color: #FFFFFF;
+        font-size: 32px;
+        font-weight: 700;
+        margin: 0;
+      }
+
+      .slogan {
+        h2 {
+          color: #FFFFFF;
+          font-size: 24px;
+          font-weight: 600;
+          margin: 0 0 8px 0;
+        }
+        p {
+          color: rgba(255, 255, 255, 0.9);
+          font-size: 16px;
+          line-height: 24px;
+          margin: 0;
+        }
+      }
+    }
+  }
+
+  /* --- CỘT PHẢI --- */
+  .login-right {
+    flex: 1;
+    padding: 32px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+
+    .form-header {
+      margin-bottom: 24px;
+      h1 {
+        font-size: 32px;
+        font-weight: 700;
+        color: #0B1C30;
+        margin: 0 0 4px 0;
+      }
+      p {
+        font-size: 14px;
+        color: #3C4A42;
+        margin: 0;
+      }
+    }
+
+    .login-form {
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+
+      .input-group {
+        display: flex;
+        flex-direction: column;
+        gap: 4px;
+
+        label {
+          font-size: 12px;
+          font-weight: 500;
+          color: #0B1C30;
+        }
+
+        .input-wrapper {
+          display: flex;
+          align-items: center;
+          height: 42px;
+          border: 1px solid #BBCABF;
+          background: #FFFFFF;
+          border-radius: 4px;
+          padding: 0 12px;
+          transition: border-color 0.2s;
+
+          &:focus-within {
+            border-color: #006C49;
+          }
+
+          .input-icon {
+            color: #6C7A71;
+            font-size: 16px;
+            margin-right: 8px;
+          }
+
+          input {
+            flex: 1;
+            border: none;
+            outline: none;
+            background: transparent;
+            font-size: 14px;
+            color: #0B1C30;
+            
+            &::placeholder {
+              color: #6B7280;
+            }
+          }
+
+          .btn-eye {
+            background: none;
+            border: none;
+            cursor: pointer;
+            color: #6C7A71;
+            display: flex;
+            align-items: center;
+            padding: 0;
+            margin-left: 8px;
+
+            &:hover { color: #006C49; }
+          }
+        }
+      }
+
+      .form-actions {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-top: 4px;
+
+        .remember-me {
+          display: flex;
+          align-items: center;
+          gap: 6px;
+          font-size: 14px;
+          color: #3C4A42;
+          cursor: pointer;
+
+          input[type="checkbox"] {
+            cursor: pointer;
+            width: 16px;
+            height: 16px;
+            accent-color: #006C49;
+          }
+        }
+
+        .forgot-password {
+          font-size: 12px;
+          font-weight: 500;
+          color: #006C49;
+          text-decoration: none;
+          
+          &:hover { text-decoration: underline; }
+        }
+      }
+
+      .btn-submit {
+        height: 44px;
+        background: #006C49;
+        color: #FFFFFF;
+        border: none;
+        border-radius: 4px;
+        font-size: 14px;
+        font-weight: 600;
+        cursor: pointer;
+        margin-top: 8px;
+        transition: background-color 0.2s;
+
+        &:hover {
+          background: #005236;
+        }
+      }
+    }
+
+    .form-footer {
+      margin-top: 24px;
+      padding-top: 24px;
+      border-top: 1px solid #BBCABF;
+      text-align: center;
+
+      p {
+        font-size: 14px;
+        color: #3C4A42;
+        margin: 0;
+
+        a {
+          color: #006C49;
+          font-weight: 600;
+          text-decoration: none;
+
+          &:hover { text-decoration: underline; }
+        }
+      }
+    }
+  }
+}
