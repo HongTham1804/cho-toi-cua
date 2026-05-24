@@ -42,105 +42,10 @@ body {
 }
 
 /* ===========================
-   HEADER
-=========================== */
-.header-core {
-  background-color: #ffffff;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
-  padding: 8px 0;
-  position: sticky;
-  top: 0;
-  z-index: 100;
-}
-
-.header-container {
-  max-width: 1400px;
-  margin: 0 auto;
-  padding: 0 16px;
-  display: flex;
-  align-items: center;
-  gap: 16px;
-  min-height: 60px;
-}
-
-.hamburger-menu {
-  background: none;
-  border: none;
-  font-size: 20px;
-  cursor: pointer;
-  color: var(--text-dark);
-  display: none;
-}
-
-.header-logo {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  min-width: 120px;
-}
-
-.logo-icon {
-  width: 36px;
-  height: 36px;
-  object-fit: contain;
-}
-
-.logo-text {
-  font-weight: 600;
-  font-size: 14px;
-  color: var(--green-primary);
-}
-
-.search-bar-wrapper {
-  flex: 1;
-  position: relative;
-  max-width: 500px;
-}
-
-.search-input {
-  width: 100%;
-  padding: 8px 12px 8px 12px;
-  border: 1px solid var(--border-light);
-  border-radius: 6px;
-  font-size: 13px;
-  background-color: #f5f5f5;
-}
-
-.search-input::placeholder {
-  color: #999;
-}
-
-.search-icon {
-  position: absolute;
-  right: 12px;
-  top: 50%;
-  transform: translateY(-50%);
-  color: #999;
-  font-size: 14px;
-}
-
-.header-icons {
-  display: flex;
-  gap: 16px;
-  margin-left: auto;
-}
-
-.icon-item {
-  cursor: pointer;
-  color: var(--text-dark);
-  font-size: 18px;
-  transition: color 0.3s;
-}
-
-.icon-item:hover {
-  color: var(--green-primary);
-}
-
-/* ===========================
    MAIN CONTAINER
 =========================== */
 .shopping-cart-main-container {
-  max-width: 1400px;
+  max-width: 1100px;
   margin: 0 auto;
   padding: 24px 16px;
 }
@@ -154,6 +59,34 @@ body {
   font-weight: 600;
   color: var(--text-black);
 }
+
+/* ===========================
+   NÚT QUAY LẠI (TIẾP TỤC MUA SẮM)
+=========================== */
+.back-to-shop {
+  margin-bottom: 12px; /* Khoảng cách từ nút đến chữ Giỏ hàng & Thanh toán */
+}
+
+.back-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--green-primary); /* Màu xanh chủ đạo của trang */
+  text-decoration: none;
+  font-weight: 600;
+  font-size: 14px;
+  transition: all 0.2s ease;
+}
+
+.back-link:hover {
+  color: #005440; /* Màu đậm hơn khi di chuột vào */
+  transform: translateX(-4px); /* Hiệu ứng giật lùi về bên trái 1 chút cho sinh động */
+}
+
+.back-link i {
+  font-size: 14px;
+}
+
 
 /* ===========================
    SHOPPING CART LAYOUT
@@ -283,20 +216,34 @@ body {
   font-size: 14px;
   color: var(--text-dark);
   transition: background-color 0.2s;
+  
 }
 
 .qty-btn:hover {
   background-color: #e8e8e8;
 }
 
+.qty-input::-webkit-outer-spin-button,
+.qty-input::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+.qty-input[type=number] {
+  -moz-appearance: textfield; /* Dành riêng cho trình duyệt Firefox */
+}
+
 .qty-input {
   width: 40px;
   height: 28px;
   border: none;
-  background: none;
+  background: transparent;
   text-align: center;
-  font-size: 13px;
-  font-weight: 500;
+  font-size: 15px;
+  font-weight: 600;
+  color: #333333 !important; /* Lệnh !important để ép buộc chữ phải hiện màu đen đậm */
+  padding: 0 !important;     /* Ép lề về 0 để số không bị đẩy văng ra ngoài */
+  margin: 0;
 }
 
 .delete-btn {
@@ -388,7 +335,7 @@ body {
 }
 
 .summary-card h3 {
-  font-size: 14px;
+  font-size: 20px;
   font-weight: 600;
   color: var(--text-black);
   margin-bottom: 12px;
@@ -484,7 +431,8 @@ body {
 /* Support Icons */
 .support-icons {
   display: flex;
-  justify-content: space-around;
+  justify-content: center;
+  gap: 80px;
   margin-top: 16px;
   padding-top: 12px;
   border-top: 1px solid var(--border-light);
@@ -540,6 +488,10 @@ body {
   text-align: center;
   transition: all 0.3s;
   cursor: pointer;
+
+  display: flex; 
+  flex-direction: column;
+  height: 100%;
 }
 
 .recommended-card:hover {
@@ -587,6 +539,7 @@ body {
   font-weight: 600;
   cursor: pointer;
   transition: all 0.2s;
+  margin-top: auto;
 }
 
 .btn-add-rec:hover {
@@ -594,73 +547,6 @@ body {
   color: #ffffff;
 }
 
-/* ===========================
-   FOOTER
-=========================== */
-.footer-core {
-  background-color: #ffffff;
-  border-top: 1px solid var(--border-light);
-  margin-top: 40px;
-}
-
-.footer-container {
-  max-width: 1400px;
-  margin: 0 auto;
-  padding: 32px 16px;
-}
-
-.footer-top {
-  display: grid;
-  grid-template-columns: 2fr 1fr 1fr;
-  gap: 32px;
-  margin-bottom: 24px;
-}
-
-.footer-brand h2 {
-  font-size: 16px;
-  font-weight: 600;
-  color: var(--green-primary);
-  margin-bottom: 8px;
-}
-
-.footer-brand p {
-  font-size: 13px;
-  color: #666;
-}
-
-.footer-links ul {
-  list-style: none;
-}
-
-.footer-links li {
-  margin-bottom: 8px;
-}
-
-.footer-links a {
-  font-size: 13px;
-  color: #666;
-  text-decoration: none;
-  transition: color 0.2s;
-}
-
-.footer-links a:hover {
-  color: var(--green-primary);
-}
-
-.footer-divider {
-  height: 1px;
-  background-color: var(--border-light);
-  margin: 24px 0;
-}
-
-.footer-bottom {
-  text-align: center;
-}
-
-.footer-bottom p {
-  font-size: 12px;
-  color: #999;
-}
 
 /* ===========================
    RESPONSIVE DESIGN
@@ -676,10 +562,6 @@ body {
 
   .summary-card {
     position: static;
-  }
-
-  .footer-top {
-    grid-template-columns: 1fr;
   }
 
   .cart-item-row {
@@ -700,17 +582,6 @@ body {
 }
 
 @media (max-width: 480px) {
-  .search-bar-wrapper {
-    display: none;
-  }
-
-  .header-icons {
-    gap: 8px;
-  }
-
-  .icon-item {
-    font-size: 16px;
-  }
 
   .recommended-grid {
     grid-template-columns: 1fr;
@@ -719,4 +590,267 @@ body {
   .page-title-section h1 {
     font-size: 18px;
   }
+}
+
+/* ===========================
+   NÚT KÍCH HOẠT POPUP KHUYẾN MÃI
+=========================== */
+.promo-trigger-core {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px 16px;
+  background-color: #f9f9f9;
+  border: 1px dashed var(--green-primary);
+  border-radius: 8px;
+  margin-bottom: 16px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.promo-trigger-core:hover {
+  background-color: #f0fdf6;
+}
+
+.promo-trigger-left {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  color: var(--text-dark);
+  font-size: 13px;
+  font-weight: 500;
+}
+
+.promo-trigger-left .fa-tag {
+  color: var(--orange-offer);
+  font-size: 16px;
+}
+
+.promo-trigger-core .fa-chevron-right {
+  color: #999;
+  font-size: 12px;
+}
+
+/* ===========================
+   CỬA SỔ POPUP KHUYẾN MÃI (MODAL)
+=========================== */
+.promo-modal-core {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 90%;
+  max-width: 450px;
+  background-color: #ffffff;
+  border-radius: 12px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
+  display: flex;
+  flex-direction: column;
+  animation: fadeInModal 0.3s ease;
+}
+
+@keyframes fadeInModal {
+  from { opacity: 0; transform: translate(-50%, -45%); }
+  to { opacity: 1; transform: translate(-50%, -50%); }
+}
+
+.promo-header-core {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 16px 20px;
+  border-bottom: 1px solid var(--border-light);
+}
+
+.promo-header-core h3 {
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--text-black);
+}
+
+.close-promo-btn {
+  background: none;
+  border: none;
+  font-size: 20px;
+  color: #999;
+  cursor: pointer;
+  transition: color 0.2s;
+}
+
+.close-promo-btn:hover {
+  color: var(--red-sale);
+}
+
+.promo-body-core {
+  padding: 20px;
+}
+
+/* Ô nhập mã thủ công */
+.promo-input-group-core {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 20px;
+}
+
+.promo-input-group-core input {
+  flex: 1;
+  padding: 10px 14px;
+  border: 1px solid var(--border-light);
+  border-radius: 6px;
+  font-family: inherit;
+  font-size: 13px;
+  outline: none;
+}
+
+.promo-input-group-core input:focus {
+  border-color: var(--green-primary);
+}
+
+.btn-apply-core {
+  padding: 0 20px;
+  background-color: var(--text-dark);
+  color: white;
+  border: none;
+  border-radius: 6px;
+  font-weight: 600;
+  font-size: 13px;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.btn-apply-core:hover {
+  background-color: #2c3630;
+}
+
+/* Danh sách Thẻ Voucher */
+.promo-list-core {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  max-height: 350px;
+  overflow-y: auto;
+  padding-right: 5px;
+}
+
+/* Làm đẹp thanh cuộn */
+.promo-list-core::-webkit-scrollbar {
+  width: 6px;
+}
+.promo-list-core::-webkit-scrollbar-thumb {
+  background-color: #ddd;
+  border-radius: 10px;
+}
+
+.promo-card-core {
+  display: flex;
+  border: 1px solid var(--border-light);
+  border-radius: 8px;
+  overflow: hidden;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.02);
+  transition: all 0.2s;
+}
+
+.promo-card-core.active {
+  cursor: pointer;
+}
+
+.promo-card-core.active:hover {
+  border-color: var(--green-primary);
+}
+
+/* Trái: Phần cắt răng cưa chứa số tiền giảm */
+.promo-card-left {
+  width: 100px;
+  background-color: var(--green-primary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-right: 2px dashed #ffffff; /* Hiệu ứng xé vé */
+  position: relative;
+}
+
+.promo-card-core.freeship .promo-card-left {
+  background-color: #2b82d4; /* Màu xanh dương cho freeship */
+}
+
+.discount-amount {
+  color: white;
+  font-weight: 700;
+  font-size: 16px;
+  text-align: center;
+  padding: 10px;
+}
+
+/* Phải: Thông tin mã */
+.promo-card-right {
+  flex: 1;
+  padding: 12px 16px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background-color: #ffffff;
+}
+
+.promo-info h4 {
+  font-size: 13px;
+  color: var(--text-black);
+  margin-bottom: 4px;
+}
+
+.promo-info p {
+  font-size: 11px;
+  color: #777;
+  margin-bottom: 0;
+}
+
+.promo-radio {
+  width: 18px;
+  height: 18px;
+  accent-color: var(--green-primary);
+  cursor: pointer;
+}
+
+/* Trạng thái Không Đủ Điều Kiện */
+.promo-card-core.disabled {
+  filter: grayscale(100%);
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.promo-card-core.disabled .promo-card-left {
+  background-color: #999;
+}
+
+.error-msg {
+  display: inline-block;
+  color: var(--red-sale);
+  font-size: 11px;
+  font-weight: 500;
+  margin-top: 6px;
+  background-color: #ffeeee;
+  padding: 2px 8px;
+  border-radius: 4px;
+}
+
+/* Footer Popup */
+.promo-footer-core {
+  padding: 16px 20px;
+  border-top: 1px solid var(--border-light);
+}
+
+.btn-confirm-promo {
+  width: 100%;
+  padding: 12px;
+  background-color: var(--green-primary);
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.btn-confirm-promo:hover {
+  background-color: #005440;
 }

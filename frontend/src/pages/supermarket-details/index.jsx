@@ -7,7 +7,6 @@ import logoWinmart from '../../assets/logos/Winmart.jpg';
 import tom_the from '../../assets/tôm thẻ.webp';
 import tao_gala from '../../assets/táo gala.webp';
 export default function SupermarketDetails() {
-  const [sidebarOpen, setSidebarOpen] = useState(false);
 
   const [activeCategory, setActiveCategory] = useState(0);
 
@@ -39,27 +38,8 @@ export default function SupermarketDetails() {
 
   return (
     <div className="supermarket-wrapper">
-      {/* --- HEADER (Giữ nguyên) --- */}
-      <header className="header-core">
-        <div className="header-container">
-          <button className="hamburger-menu" onClick={() => setSidebarOpen(!sidebarOpen)}>
-            <i className="fa-solid fa-bars"></i>
-          </button>
-          <div className="header-logo">
-            <img src={logoMain} alt="logo" className="logo-icon" />
-            <span className="logo-text">Chợ Tới Cửa</span>
-          </div>
-          <div className="search-bar-wrapper">
-            <input type="text" placeholder="Tìm kiếm sản phẩm tại WinMart..." className="search-input" />
-            <i className="fa-solid fa-magnifying-glass search-icon"></i>
-          </div>
-          <div className="header-icons">
-             <div className="icon-item"><i className="fa-solid fa-location-dot"></i></div>
-             <div className="icon-item"><i className="fa-solid fa-cart-shopping"></i></div>
-             <div className="icon-item"><i className="fa-solid fa-bell"></i></div>
-          </div>
-        </div>
-      </header>
+
+      {/* --------------------------------- */}
 
       {/* --- CẤU TRÚC BODY MỚI TRẢI DÀI --- */}
       <div className="supermarket-main-container">
@@ -216,47 +196,6 @@ export default function SupermarketDetails() {
       </div>
     {/* ... (Các code sản phẩm ở trên) ... */}
         
-
-      {/* =========================================
-          THÊM FOOTER VÀO ĐÂY
-      ========================================= */}
-      <footer className="footer-core">
-        <div className="footer-container">
-          
-          <div className="footer-top">
-            {/* Cột 1: Logo và Slogan */}
-            <div className="footer-brand">
-              <h2>Chợ Tới Cửa</h2>
-              <p>Tươi ngon từ nông trại đến tận cửa nhà.</p>
-            </div>
-            
-            {/* Cột 2: Cụm link 1 */}
-            <div className="footer-links">
-              <ul>
-                <li><a href="#">Liên hệ</a></li>
-                <li><a href="#">Chính sách bảo mật</a></li>
-              </ul>
-            </div>
-            
-            {/* Cột 3: Cụm link 2 */}
-            <div className="footer-links">
-              <ul>
-                <li><a href="#">Điều khoản sử dụng</a></li>
-                <li><a href="#">Tải ứng dụng</a></li>
-              </ul>
-            </div>
-          </div>
-
-          {/* Đường kẻ ngang */}
-          <div className="footer-divider"></div>
-
-          {/* Dòng bản quyền dưới cùng */}
-          <div className="footer-bottom">
-            <p>© 2026 Chợ Tới Cửa. Tươi ngon từ nông trại đến tận cửa nhà.</p>
-          </div>
-          
-        </div>
-      </footer>
     </div>
   );
 }

@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import './PartnerLogin.scss';
+import './ProductManagement.scss';
 
 // Import Icons nếu bạn dùng thư viện như Lucide-React / React-Icons. 
 // Nếu không, bạn có thể thay thế bằng các thẻ <img /> chứa mã SVG tương ứng.

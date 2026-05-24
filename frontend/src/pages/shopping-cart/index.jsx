@@ -1,12 +1,12 @@
 import React, { useState } from 'react';
 import './shopping-cart.css';
 import '@fortawesome/fontawesome-free/css/all.min.css';
-import logoMain from '../../assets/logo-main.png';
+import { Link } from 'react-router-dom';
 
 export default function ShoppingCart() {
-  const [sidebarOpen, setSidebarOpen] = useState(false);
-  
+  const [isPromoOpen, setIsPromoOpen] = useState(false);
   const [cartItems, setCartItems] = useState([
+
     {
       id: 1,
       name: 'Cô Chua Cherry Hủi Cà Đỏ Lạt',
@@ -27,13 +27,13 @@ export default function ShoppingCart() {
 
   const recommendedProducts = [
     {
-      id: 1,
+      id: 3,
       name: 'Nành lá, Ngh í lá bạt',
       price: 15000,
       image: '🌿'
     },
     {
-      id: 2,
+      id: 4,
       name: 'Chanh không hạt Vĩnh Long',
       price: 22000,
       image: '🍋'
@@ -64,37 +64,24 @@ export default function ShoppingCart() {
   };
 
   // Calculate totals
+  const totalItems = cartItems.reduce((sum, item) => sum + item.quantity, 0);
   const subtotal = cartItems.reduce((sum, item) => sum + item.price * item.quantity, 0);
   const shippingFee = 15000;
   const total = subtotal + shippingFee;
 
   return (
     <div className="shopping-cart-wrapper">
-      {/* --- HEADER --- */}
-      <header className="header-core">
-        <div className="header-container">
-          <button className="hamburger-menu" onClick={() => setSidebarOpen(!sidebarOpen)}>
-            <i className="fa-solid fa-bars"></i>
-          </button>
-          <div className="header-logo">
-            <img src={logoMain} alt="logo" className="logo-icon" />
-            <span className="logo-text">Chợ Tới Cửa</span>
-          </div>
-          <div className="search-bar-wrapper">
-            <input type="text" placeholder="Tìm kiếm sản phẩm tại WinMart..." className="search-input" />
-            <i className="fa-solid fa-magnifying-glass search-icon"></i>
-          </div>
-          <div className="header-icons">
-            <div className="icon-item"><i className="fa-solid fa-location-dot"></i></div>
-            <div className="icon-item"><i className="fa-solid fa-cart-shopping"></i></div>
-            <div className="icon-item"><i className="fa-solid fa-bell"></i></div>
-          </div>
-        </div>
-      </header>
 
       {/* --- MAIN CONTENT --- */}
       <div className="shopping-cart-main-container">
         <div className="page-title-section">
+          {/* NÚT QUAY LẠI MUA SẮM (MỚI THÊM) */}
+          <div className="back-to-shop">
+            <Link to="/supermarket-details" className="back-link">
+                <i className="fa-solid fa-arrow-left"></i> Tiếp tục mua sắm
+            </Link>
+          </div>
+
           <h1>Giỏ hàng & Thanh toán</h1>
         </div>
 
@@ -191,7 +178,7 @@ export default function ShoppingCart() {
 
               <div className="summary-rows">
                 <div className="summary-row">
-                  <span>Tạm tính (3 sản phẩm)</span>
+                  <span>Tạm tính ({totalItems} sản phẩm)</span>
                   <span className="amount">{subtotal.toLocaleString('vi-VN')}₫</span>
                 </div>
                 <div className="summary-row">
@@ -207,13 +194,94 @@ export default function ShoppingCart() {
                 <span className="total-amount">{total.toLocaleString('vi-VN')}₫</span>
               </div>
 
-              {/* Promo Code Section */}
-              <div className="promo-section">
-                <label>
+              {/* Nút bấm mở Popup Khuyến Mãi */}
+              <div className="promo-trigger-core" onClick={() => setIsPromoOpen(true)}>
+                <div className="promo-trigger-left">
                   <i className="fa-solid fa-tag"></i>
-                  Thêm mã khuyến mãi
-                </label>
+                  <span>Thêm mã khuyến mãi</span>
+                </div>
+                <i className="fa-solid fa-chevron-right"></i>
               </div>
+
+              {/* Popup Modal Khuyến Mãi */}
+              {isPromoOpen && (
+                <div className="modal-overlay-core" onClick={() => setIsPromoOpen(false)}>
+                  <div className="promo-modal-core" onClick={(e) => e.stopPropagation()}>
+                    
+                    {/* Header Popup */}
+                    <div className="promo-header-core">
+                      <h3>Chọn mã khuyến mãi</h3>
+                      <button className="close-promo-btn" onClick={() => setIsPromoOpen(false)}>
+                        <i className="fa-solid fa-xmark"></i>
+                      </button>
+                    </div>
+
+                    {/* Body Popup */}
+                    <div className="promo-body-core">
+                      {/* Ô nhập mã thủ công */}
+                      <div className="promo-input-group-core">
+                        <input type="text" placeholder="Nhập mã khuyến mãi..." />
+                        <button className="btn-apply-core">Áp dụng</button>
+                      </div>
+
+                      {/* Danh sách Voucher cuộn */}
+                      <div className="promo-list-core">
+                        
+                        {/* Thẻ Voucher 1: Đủ điều kiện (Màu sáng, có nút chọn) */}
+                        <label className="promo-card-core active">
+                          <div className="promo-card-left">
+                            <span className="discount-amount">GIẢM 20K</span>
+                          </div>
+                          <div className="promo-card-right">
+                            <div className="promo-info">
+                              <h4>Giảm 20k cho đơn từ 500k</h4>
+                              <p>HSD: 30/05/2026</p>
+                            </div>
+                            <input type="radio" name="selectedPromo" className="promo-radio" />
+                          </div>
+                        </label>
+
+                        {/* Thẻ Voucher 2: Đủ điều kiện */}
+                        <label className="promo-card-core active freeship">
+                          <div className="promo-card-left">
+                            <span className="discount-amount">FREESHIP</span>
+                          </div>
+                          <div className="promo-card-right">
+                            <div className="promo-info">
+                              <h4>Miễn phí vận chuyển</h4>
+                              <p>HSD: 15/06/2026</p>
+                            </div>
+                            <input type="radio" name="selectedPromo" className="promo-radio" />
+                          </div>
+                        </label>
+
+                        {/* Thẻ Voucher 3: KHÔNG đủ điều kiện (Làm mờ, báo lỗi đỏ) */}
+                        <div className="promo-card-core disabled">
+                          <div className="promo-card-left">
+                            <span className="discount-amount">GIẢM 50K</span>
+                          </div>
+                          <div className="promo-card-right">
+                            <div className="promo-info">
+                              <h4>Giảm 50k cho đơn từ 1 Triệu</h4>
+                              <p>HSD: 30/05/2026</p>
+                              <span className="error-msg">Mua thêm 450.000đ để sử dụng</span>
+                            </div>
+                          </div>
+                        </div>
+
+                      </div>
+                    </div>
+
+                    {/* Footer Popup */}
+                    <div className="promo-footer-core">
+                      <button className="btn-confirm-promo" onClick={() => setIsPromoOpen(false)}>
+                        Xác nhận
+                      </button>
+                    </div>
+
+                  </div>
+                </div>
+              )}
 
               {/* Checkout Button */}
               <button className="btn-checkout">
@@ -223,9 +291,6 @@ export default function ShoppingCart() {
 
               {/* Support Icons */}
               <div className="support-icons">
-                <div className="support-icon">
-                  <i className="fa-solid fa-location-dot"></i>
-                </div>
                 <div className="support-icon">
                   <i className="fa-solid fa-phone"></i>
                 </div>
@@ -262,37 +327,6 @@ export default function ShoppingCart() {
         )}
       </div>
 
-      {/* --- FOOTER --- */}
-      <footer className="footer-core">
-        <div className="footer-container">
-          <div className="footer-top">
-            <div className="footer-brand">
-              <h2>Chợ Tới Cửa</h2>
-              <p>Tươi ngon từ nông trại đến tận cửa nhà.</p>
-            </div>
-
-            <div className="footer-links">
-              <ul>
-                <li><a href="#">Liên hệ</a></li>
-                <li><a href="#">Chính sách bảo mật</a></li>
-              </ul>
-            </div>
-
-            <div className="footer-links">
-              <ul>
-                <li><a href="#">Điều khoản sử dụng</a></li>
-                <li><a href="#">Tải ứng dụng</a></li>
-              </ul>
-            </div>
-          </div>
-
-          <div className="footer-divider"></div>
-
-          <div className="footer-bottom">
-            <p>© 2024 Chợ Tới Cửa. Tươi ngon từ nông trại đến tận cửa nhà.</p>
-          </div>
-        </div>
-      </footer>
     </div>
   );
 }

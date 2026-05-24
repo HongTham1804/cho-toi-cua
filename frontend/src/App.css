@@ -1,16 +1,282 @@
-/* Khung bọc toàn bộ trang web */
-.app-container {
-  display: flex;         /* Xếp thanh Sidebar và Main Content nằm hàng ngang với nhau */
-  width: 100vw;
-  min-height: 100vh;
-  background-color: #F9F9FF;
-  overflow-x: hidden;
+:root {
+  --green-primary: #006C49;
+  --border-light: #E0E0E0;
+  --text-dark: #3C4A42;
+  --bg-main: #F8F9FF;
 }
 
-/* Khung nội dung bên phải */
-.main-content {
-  flex: 1;               /* Tự động kéo giãn chiếm trọn không gian còn lại */
+.customer-layout {
+  display: flex;
+  flex-direction: column;  /* ← Xếp dọc: Header → Content → Footer */
+  min-height: 100vh;
+  width: 100%;
+}
+
+.customer-layout .main-content {
+  flex: 1;  /* Content chiếm hết khoảng trống giữa Header và Footer */
+}
+
+/* ===========================
+   HEADER
+=========================== */
+.header-core {
+  background-color: #ffffff;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+  padding: 14px 0;
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  font-family: 'Be Vietnam Pro', sans-serif;
+}
+
+.header-container {
+  max-width: 1280px;
+  margin: 0 auto;
+  padding: 0 32px;
+  display: grid;
+  grid-template-columns: auto auto minmax(0, 1fr) auto;  /* minmax(0,1fr) thay vì 1fr */
+  align-items: center;
+  gap: 32px;
+}
+.menu-trigger {
+  font-size: 20px;
+  cursor: pointer;
+  color: var(--green-primary);
+}
+
+.modal-overlay-core {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.4);
+  z-index: 1000;
+}
+
+.sidebar-modal-core {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 280px;
+  height: 100%;
+  background: white;
+  padding: 40px 20px;
+  box-shadow: 2px 0 10px rgba(0, 0, 0, 0.1);
+  animation: slideIn 0.3s ease;
+}
+
+@keyframes slideIn {
+  from { transform: translateX(-100%); }
+  to { transform: translateX(0); }
+}
+
+.user-profile-core {
+  margin-bottom: 30px;
+  text-align: center;
+}
+
+.menu-links-core a {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  padding: 15px 0;
+  text-decoration: none;
+  color: var(--text-dark);
+  font-weight: 500;
+  border-bottom: 1px solid #f0f0f0;
+}
+
+.logout-btn {
+  color: #ff4d4f !important;
+  margin-top: 20px;
+}
+
+.header-logo {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.logo-icon {
+  width: 34px;
+  height: 34px;
+  object-fit: contain;
+}
+
+.logo-text {
+  font-size: 20px     !important  /* To hơn */;
+  font-weight: 700;
+  color: var(--green-primary);
+  font-family: 'Be Vietnam Pro', sans-serif;
+}
+
+/* ===========================
+   THANH TÌM KIẾM
+=========================== */
+.search-bar-wrapper {
+  width: 100%;
+  position: relative;
+  display: flex;
+  align-items: center;
+  min-width: 0;          /* Quan trọng: cho phép co đúng trong grid */
+  /* Xóa max-width: 830px và margin: 0 auto */
+}
+
+.search-input {
+  width: 100%;
+  /* Tăng padding trái/phải để tách text ra xa khỏi icon */
+  padding: 12px 48px 12px 20px;
+  border: 1px solid var(--border-light);
+  border-radius: 30px; /* Bo tròn hoàn toàn hai đầu */
+  font-size: 14px;
+  outline: none;
+  transition: all 0.2s;
+  font-family: 'Be Vietnam Pro', sans-serif;
+  box-sizing: border-box;
+  background-color: #f8f9fa;
+  flex:1;
+}
+
+.search-input:focus {
+  border-color: var(--green-primary);
+  box-shadow: 0 0 0 3px rgba(0, 108, 73, 0.1);
+  background-color: #ffffff;
+}
+
+.search-input::placeholder {
+  color: #a0a0a0;
+}
+
+.search-icon {
+  position: absolute;
+  right: 20px; /* Tách icon ra xa viền để không bị dính vào text */
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--green-primary); /* Đổi icon tìm kiếm sang màu xanh */
+  font-size: 16px;
+  pointer-events: none;
+}
+
+/* ===========================
+   ICON BÊN PHẢI HEADER
+=========================== */
+.header-icons {
+  display: flex;
+  align-items: center;
+  gap: 12px !important;             /* Tách icon ra xa nhau hơn */
+  flex-shrink: 0;
+  margin-left: 0;
+}
+
+.icon-item {
+  cursor: pointer;
+  color: var(--green-primary); /* Đổi toàn bộ icon sang màu xanh */
+  font-size: 20px; 
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background-color: rgba(0, 108, 73, 0.05); /* Thêm viền nền mờ cho đẹp */
+  transition: all 0.3s ease;
+}
+
+.icon-item:hover {
+  transform: scale(1.1);
+  background-color: rgba(0, 108, 73, 0.15);
+}
+/* ===========================
+   FOOTER (STYLE 4 CỘT - BẢN ĐỘC QUYỀN CHỐNG XUNG ĐỘT)
+=========================== */
+.site-footer-core {
+  width: 100%;
+  padding: 40px 0;
+  background-color: #eaf3ff; 
+  border-top: 1px solid #cbd8e8; 
+  font-family: 'Be Vietnam Pro', sans-serif;
+  margin-top: auto;
+  text-align: left !important; /* Ép canh trái toàn bộ, không cho class .App can thiệp */
+}
+
+.footer-inner-core {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 40px;
+  display: grid;
+  grid-template-columns: 2fr 1fr 1fr 1fr; /* Trực tiếp chia 4 cột cực mạnh */
+  column-gap: 50px;
+  align-items: start;
+}
+
+/* --- Định dạng Cột 1 --- */
+.footer-brand-core {
   display: flex;
   flex-direction: column;
-  min-width: 0;
+  align-items: flex-start;
+}
+
+.footer-logo-core {
+  text-decoration: none;
+  display: inline-block;
+  margin-bottom: 12px;
+}
+
+.logo-text-core {
+  color: var(--green-primary, #006C49);
+  font-size: 22px;
+  font-weight: 800;
+}
+
+.footer-tagline-core {
+  margin: 0;
+  color: #334155;
+  font-size: 13px;
+  line-height: 1.6;
+}
+
+/* --- Định dạng 3 Cột Link --- */
+.footer-col-core {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start; /* Ép mọi thứ trong cột dạt sang trái */
+}
+
+.footer-col-title-core {
+  margin: 0 0 16px 0;
+  color: #111827;
+  font-size: 14px;
+  font-weight: 800;
+}
+
+.footer-links-core {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.footer-links-core a {
+  color: #334155;
+  font-size: 13px;
+  text-decoration: none;
+  transition: color 0.2s;
+}
+
+.footer-links-core a:hover {
+  color: var(--green-primary, #006C49);
+  text-decoration: underline;
+}
+
+/* --- Chế độ điện thoại --- */
+@media (max-width: 768px) {
+  .footer-inner-core {
+    grid-template-columns: 1fr; 
+    row-gap: 30px;
+  }
 }
