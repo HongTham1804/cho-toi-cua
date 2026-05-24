@@ -1,79 +1,55 @@
-<<<<<<< HEAD
-import React, { useState } from 'react';
-import { Navigate, Route, Routes, Outlet } from 'react-router-dom'; // <-- Cần import thêm Outlet
-import './App.css';
+import React, { useState } from "react";
+import { Navigate, Outlet, Route, Routes } from "react-router-dom";
+import "./App.css";
 
-// --- IMPORT CÁC THÀNH PHẦN DÙNG CHUNG ---
-import Header from "./components/Header/Header"; // Header cũ của Admin
-import CustomerHeader from "./components/CustomerHeader/CustomerHeader"; // Header mới của Khách
-import Footer from "./components/Footer/Footer"; 
+import Header from "./components/Header/Header";
+import CustomerHeader from "./components/CustomerHeader/CustomerHeader";
+import Footer from "./components/Footer/Footer";
 
-// --- IMPORT CÁC TRANG ---
-import RegisterStore from './pages/register-store';
-import Login from './pages/login';
-import Notifications from './pages/notifications';
-import OrderHistory from './pages/order-history';
-import Review from './pages/review';
-import Tracking from './pages/tracking';
-import OrderManagement from './pages/order-management';
-import ProductManagement from './pages/ProductManagement/ProductManagement'; 
-import LoggedInHomepage from './pages/logged-in-homepage';
-import SupermarketDetails from './pages/supermarket-details'; 
-import PartnerLogin from './pages/PartnerLogin/PartnerLogin'; 
-import ShoppingCart from './pages/shopping-cart'; 
-import SelectRole from './pages/select-role';
-import UserDetail from './pages/UserDetail/UserDetail'; 
-=======
-
-import { Navigate, Route, Routes } from 'react-router-dom'
-import './App.css'
-import RegisterStore from './pages/register-store'
-import Login from './pages/login'
-import Notifications from './pages/notifications'
-import OrderHistory from './pages/order-history'
-import Review from './pages/review'
-import Tracking from './pages/tracking'
-import OrderManagement from './pages/order-management'
-import Inventory from './pages/inventory'
-import ProductDetail from './pages/product-detail'
->>>>>>> 69b1798a1903334ddf46ad744db534c023eed82b
+import RegisterStore from "./pages/register-store";
+import Login from "./pages/login";
+import Notifications from "./pages/notifications";
+import OrderHistory from "./pages/order-history";
+import Review from "./pages/review";
+import Tracking from "./pages/tracking";
+import OrderManagement from "./pages/order-management";
+import Inventory from "./pages/inventory";
+import ProductDetail from "./pages/product-detail";
+import ProductManagement from "./pages/ProductManagement/ProductManagement";
+import LoggedInHomepage from "./pages/logged-in-homepage";
+import SupermarketDetails from "./pages/supermarket-details";
+import PartnerLogin from "./pages/PartnerLogin/PartnerLogin";
+import ShoppingCart from "./pages/shopping-cart";
+import SelectRole from "./pages/select-role";
+import UserDetail from "./pages/UserDetail/UserDetail";
 
 function App() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
 
-  // ==========================================
-  // 1. TẠO KHUNG (LAYOUT) CHO KHÁCH HÀNG
-  // ==========================================
   const CustomerLayout = () => (
     <div className="customer-layout">
       <CustomerHeader onMenuClick={() => setIsMenuOpen(true)} />
       <div className="main-content">
-        <Outlet /> {/* <-- Các trang của khách sẽ tự động nhét vào đây */}
+        <Outlet />
       </div>
       <Footer />
     </div>
   );
 
-  // ==========================================
-  // 2. TẠO KHUNG (LAYOUT) CHO ADMIN / ĐỐI TÁC
-  // ==========================================
   const AdminLayout = () => (
     <div className="admin-container">
-      <Header /> {/* Gọi Header cũ */}
+      <Header />
       <div className="main-content">
-        <Outlet /> {/* <-- Các trang của Admin sẽ tự động nhét vào đây */}
+        <Outlet />
       </div>
     </div>
   );
 
   return (
-<<<<<<< HEAD
     <div className="App">
-      
-      {/* Cửa sổ trượt Sidebar của khách hàng */}
       {isMenuOpen && (
         <div className="modal-overlay-core" onClick={() => setIsMenuOpen(false)}>
-          <div className="sidebar-modal-core" onClick={(e) => e.stopPropagation()}>
+          <div className="sidebar-modal-core" onClick={(event) => event.stopPropagation()}>
             <div className="user-profile-core">
               <i className="fa-solid fa-user-circle"></i>
               <h3>Chào, Khách hàng</h3>
@@ -90,9 +66,7 @@ function App() {
 
       <Routes>
         <Route path="/" element={<Navigate to="/login" replace />} />
-        
-        {/* ========================================== */}
-        {/* NHÓM TRANG KHÁCH HÀNG (Có Header xanh + Footer) */}
+
         <Route element={<CustomerLayout />}>
           <Route path="/shopping-cart" element={<ShoppingCart />} />
           <Route path="/supermarket-details" element={<SupermarketDetails />} />
@@ -102,40 +76,22 @@ function App() {
           <Route path="/notifications" element={<Notifications />} />
         </Route>
 
-        {/* ========================================== */}
-        {/* NHÓM TRANG ADMIN (Có Header cũ, Không có Footer) */}
         <Route element={<AdminLayout />}>
-          <Route path="/product-management" element={<ProductManagement />} />
           <Route path="/order-management" element={<OrderManagement />} />
         </Route>
 
-        {/* ========================================== */}
-        {/* CÁC TRANG ĐỘC LẬP (Không Header, Không Footer) */}
         <Route path="/login" element={<Login />} />
         <Route path="/partner-login" element={<PartnerLogin />} />
         <Route path="/register-store" element={<RegisterStore />} />
         <Route path="/select-role" element={<SelectRole />} />
         <Route path="/tracking" element={<Tracking />} />
         <Route path="/UserDetail" element={<UserDetail />} />
+        <Route path="/product-management" element={<ProductManagement />} />
+        <Route path="/inventory" element={<Inventory />} />
+        <Route path="/product/:id" element={<ProductDetail />} />
       </Routes>
     </div>
   );
-=======
-    <Routes>
-      <Route path="/" element={<Navigate to="/login" replace />} />
-      <Route path="/register-store" element={<RegisterStore />} />
-      <Route path="/login" element={<Login />} />
-      <Route path="/notifications" element={<Notifications />} />
-      <Route path="/order-history" element={<OrderHistory />} />
-      <Route path="/review" element={<Review />} />
-      <Route path="/tracking" element={<Tracking />} />
-      <Route path="/order-management" element={<OrderManagement />} />
-      <Route path="/inventory" element={<Inventory />} />
-      <Route path="/product/:id" element={<ProductDetail />} />
-    </Routes>
-  )
-
->>>>>>> 69b1798a1903334ddf46ad744db534c023eed82b
 }
 
-export default App
+export default App;

@@ -1,5 +1,7 @@
 import './tracking.css';
 import { useEffect, useMemo, useState } from "react";
+import CustomerHeader from "../../components/CustomerHeader/CustomerHeader";
+import Footer from "../../components/Footer/Footer";
 import { fetchOrderTracking, getOrderIdFromUrl } from "./trackingApi.js";
 
 function calcEtaMinutes(etaTime) {
@@ -47,14 +49,9 @@ export default function App() {
 
   const etaMinutes = useMemo(() => calcEtaMinutes(order?.eta), [order?.eta]);
 
-  function handleBack() {
-    if (window.history.length > 1) window.history.back();
-    else window.location.href = "/";
-  }
-
   return (
     <div className="tracking-page">
-      <Header order={order} loading={loading} error={error} onBack={handleBack} />
+      <CustomerHeader />
 
       <main className="tracking-body" role="main">
         <section className="col-left" aria-label="Bản đồ và lộ trình">
@@ -68,44 +65,9 @@ export default function App() {
           <TimelinePanel steps={order?.steps ?? []} loading={loading} error={error} />
         </aside>
       </main>
+
+      <Footer />
     </div>
-  );
-}
-
-function Header({ order, loading, error, onBack }) {
-  return (
-    <header className="tracking-header" role="banner">
-      <div className="header-inner">
-        <button className="btn-back" type="button" aria-label="Quay lại" onClick={onBack}>
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-            <polyline points="15 18 9 12 15 6" />
-          </svg>
-          <span>Theo dõi đơn hàng</span>
-        </button>
-
-        <div className="header-status-group">
-          <div className="status-badge">
-            <BellIcon />
-            <span>{error ? "Lỗi tải dữ liệu" : "Đơn hàng đang được giao đến bạn!"}</span>
-          </div>
-          <div className="order-id-chip">
-            <span>Đơn hàng #</span>
-            <span>{loading ? "..." : order?.orderId ?? "-"}</span>
-          </div>
-        </div>
-      </div>
-    </header>
-  );
-}
-
-function BellIcon() {
-  return (
-    <svg className="status-bell" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-      <path d="M18 8a6 6 0 0 0-12 0c0 7-3 8-3 8h18s-3-1-3-8" />
-      <path d="M13.7 21a2 2 0 0 1-3.4 0" />
-      <path d="M4 4 2.5 2.5" />
-      <path d="M20 4 21.5 2.5" />
-    </svg>
   );
 }
 

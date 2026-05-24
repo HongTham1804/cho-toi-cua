@@ -1,5 +1,7 @@
 import './review.css';
 import { useEffect, useRef, useState } from "react";
+import CustomerHeader from "../../components/CustomerHeader/CustomerHeader";
+import Footer from "../../components/Footer/Footer";
 import { fetchReviewOrder, getOrderIdFromUrl, postReviews } from "./reviewApi.js";
 
 const STAR_HINTS = ["", "Rất tệ", "Tệ", "Bình thường", "Tốt", "Xuất sắc!"];
@@ -160,7 +162,7 @@ export default function App() {
 
   return (
     <div className="review-page">
-      <Header />
+      <CustomerHeader />
       <Breadcrumb />
 
       <main className="review-main container" role="main">
@@ -203,47 +205,6 @@ export default function App() {
       <Footer />
       <Toast toast={toast} />
     </div>
-  );
-}
-
-function Header() {
-  return (
-    <header className="site-header" role="banner">
-      <div className="header-inner container">
-        <Logo size={28} ariaLabel="Chợ Tới Cửa - trang chủ" />
-
-        <nav className="site-nav" aria-label="Điều hướng chính">
-          <a href="#" className="nav-link">Sản phẩm</a>
-          <a href="#" className="nav-link">Khuyến mãi</a>
-          <a href="#" className="nav-link">Cửa hàng</a>
-        </nav>
-
-        <div className="header-tools">
-          <div className="search-wrap" role="search">
-            <SearchIcon className="search-icon" />
-            <input
-              className="search-input"
-              type="search"
-              placeholder="Tìm kiếm sản phẩm..."
-              aria-label="Tìm kiếm sản phẩm"
-            />
-          </div>
-
-          <button className="icon-btn" aria-label="Thông báo" type="button">
-            <BellIcon />
-          </button>
-
-          <button className="icon-btn" aria-label="Giỏ hàng" type="button">
-            <CartIcon />
-            <span className="badge" aria-label="2 sản phẩm trong giỏ">2</span>
-          </button>
-
-          <button className="icon-btn" aria-label="Tài khoản" type="button">
-            <UserIcon />
-          </button>
-        </div>
-      </div>
-    </header>
   );
 }
 
@@ -480,49 +441,19 @@ function LoadingReview() {
   );
 }
 
-function Footer() {
-  return (
-    <footer className="site-footer" role="contentinfo">
-      <div className="footer-inner container">
-        <div className="footer-brand">
-          <Logo size={24} ariaLabel="Chợ Tới Cửa" />
-          <p className="footer-tagline">
-            © 2026 Chợ Tới Cửa. Tươi ngon từ nông trại
-            <br />
-            đến tận cửa nhà.
-          </p>
-        </div>
-
-        <FooterColumn title="Khám phá" links={["Về chúng tôi", "Tuyển dụng"]} />
-        <FooterColumn title="Hỗ trợ" links={["Liên hệ hỗ trợ", "Trung tâm giúp đỡ"]} />
-        <FooterColumn title="Pháp lý" links={["Chính sách bảo mật", "Điều khoản dịch vụ"]} />
-      </div>
-    </footer>
-  );
-}
-
-function FooterColumn({ title, links }) {
-  return (
-    <div className="footer-col">
-      <h4 className="footer-col-title">{title}</h4>
-      <ul className="footer-links">
-        {links.map((link) => (
-          <li key={link}><a href="#">{link}</a></li>
-        ))}
-      </ul>
-    </div>
-  );
-}
-
 function Toast({ toast }) {
   const [visible, setVisible] = useState(false);
 
   useEffect(() => {
     if (!toast) return undefined;
 
-    setVisible(true);
-    const timer = window.setTimeout(() => setVisible(false), 3500);
-    return () => window.clearTimeout(timer);
+    const showTimer = window.setTimeout(() => setVisible(true), 0);
+    const hideTimer = window.setTimeout(() => setVisible(false), 3500);
+
+    return () => {
+      window.clearTimeout(showTimer);
+      window.clearTimeout(hideTimer);
+    };
   }, [toast]);
 
   return (
@@ -534,79 +465,6 @@ function Toast({ toast }) {
     >
       {toast?.message}
     </div>
-  );
-}
-
-function Logo({ size, ariaLabel }) {
-  return (
-    <a href="/" className="logo" aria-label={ariaLabel}>
-      <div className="logo-mark">
-        <svg width={size} height={size} viewBox="0 0 28 28" fill="none" aria-hidden="true">
-          <rect width="28" height="28" rx="8" fill="#1a7a4a" />
-          <path
-            d="M8 14 C8 10 11 7 14 7 C17 7 20 10 20 14 C20 18 17 21 14 21 C11 21 8 18 8 14Z"
-            fill="none"
-            stroke="#fff"
-            strokeWidth="1.8"
-          />
-          <path
-            d="M11 14 L13 16 L17 12"
-            stroke="#fff"
-            strokeWidth="1.8"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-          />
-        </svg>
-      </div>
-      <span className="logo-text">Chợ Tới Cửa</span>
-    </a>
-  );
-}
-
-function SearchIcon({ className }) {
-  return (
-    <svg
-      className={className}
-      width="16"
-      height="16"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2"
-      strokeLinecap="round"
-      aria-hidden="true"
-    >
-      <circle cx="11" cy="11" r="8" />
-      <line x1="21" y1="21" x2="16.65" y2="16.65" />
-    </svg>
-  );
-}
-
-function BellIcon() {
-  return (
-    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-      <path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9" />
-      <path d="M13.73 21a2 2 0 01-3.46 0" />
-    </svg>
-  );
-}
-
-function CartIcon() {
-  return (
-    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-      <circle cx="9" cy="21" r="1" />
-      <circle cx="20" cy="21" r="1" />
-      <path d="M1 1h4l2.68 13.39a2 2 0 001.99 1.61h9.72a2 2 0 001.98-1.68l1.62-8.32H6" />
-    </svg>
-  );
-}
-
-function UserIcon() {
-  return (
-    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-      <path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2" />
-      <circle cx="12" cy="7" r="4" />
-    </svg>
   );
 }
 
