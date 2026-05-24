@@ -34,19 +34,29 @@ const NEW_ORDERS_TEMPLATE = [
 
 const SHIPPER_ORDERS = [
   {
-    id: "ORD-9820",
-    customer: "Nguyễn Văn A",
-    itemCount: 3,
+    id: "FF-88392A",
+    customer: "Trần Thị B",
+    address: "123 Nguyễn Văn Linh, Q.7",
+    items: "5 Món (Thịt tươi, Rau co)",
     trackingCode: "GHN-7789231",
-    status: "calling_shipper",
+    urgency: "urgent",
+    urgencyLabel: "Giao gấp trong 30p",
   },
   {
-    id: "ORD-9818",
-    customer: "Trần Thị B",
-    itemCount: 2,
+    id: "FF-44910B",
+    customer: "Lê Văn C",
+    address: "45 Lê Lợi, Q.1",
+    items: "12 Món (Đồ khô, Gia vị)",
     trackingCode: "GHN-7789198",
-    status: "calling_shipper",
+    urgency: "standard",
+    urgencyLabel: "Giao tiêu chuẩn",
   },
+];
+
+const HISTORY_ORDERS = [
+  { id: "FF-99210B", time: "10:45 AM", shipper: "Tuấn Anh" },
+  { id: "FF-77112C", time: "09:30 AM", shipper: "Minh Khang" },
+  { id: "FF-55331A", time: "08:15 AM", shipper: "Hoàng Hải" },
 ];
 
 const NAV_ITEMS = [
@@ -70,6 +80,7 @@ export default function OrderManagement() {
   const [isOpen, setIsOpen] = useState(true);
   const [orders, setOrders] = useState(NEW_ORDERS_TEMPLATE);
   const [toast, setToast] = useState("");
+  const [searchQuery, setSearchQuery] = useState("");
 
   function showToast(msg) {
     setToast(msg);
@@ -129,8 +140,30 @@ export default function OrderManagement() {
         </nav>
       </aside>
 
-      {/* Main content */}
-      <main className="om-main">
+      {/* Right panel */}
+      <div className="om-right">
+        {/* Header */}
+        <header className="om-header">
+          <h1 className="om-header-title">Quản lý Đơn hàng</h1>
+          <div className="om-search-wrap">
+            <i className="fa-solid fa-magnifying-glass om-search-icon" />
+            <input
+              type="search"
+              className="om-search"
+              placeholder="Tìm kiếm đơn hàng..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+            />
+          </div>
+          <div className="om-header-icons">
+            <button className="om-icon-btn"><i className="fa-regular fa-bell" /></button>
+            <button className="om-icon-btn"><i className="fa-regular fa-circle-question" /></button>
+            <button className="om-icon-btn"><i className="fa-solid fa-gear" /></button>
+          </div>
+        </header>
+
+        {/* Main content */}
+        <main className="om-main">
         <div className="om-main-header">
           <h1 className="om-title">Quản lý Đơn hàng</h1>
           <p className="om-subtitle">Xử lý và bàn giao đơn hàng nhanh chóng.</p>
@@ -153,6 +186,14 @@ export default function OrderManagement() {
             onClick={() => setActiveTab("shipper")}
           >
             Bàn giao cho Shipper ({SHIPPER_ORDERS.length})
+          </button>
+          <button
+            className={`om-tab ${activeTab === "history" ? "active" : ""}`}
+            role="tab"
+            aria-selected={activeTab === "history"}
+            onClick={() => setActiveTab("history")}
+          >
+            Lịch sử
           </button>
         </div>
 
@@ -188,16 +229,92 @@ export default function OrderManagement() {
           </>
         )}
 
-        {/* Tab: Bàn giao Shipper */}
+        {/* Tab: Bàn giao cho Shipper */}
         {activeTab === "shipper" && (
-          <section className="om-ready-section">
-            <h2 className="om-section-title">Đơn hàng sẵn sàng giao</h2>
-            {SHIPPER_ORDERS.map((order) => (
-              <ShipperCard key={order.id} order={order} onToast={showToast} />
-            ))}
+          <section className="om-handover-section">
+            <div className="om-handover-body">
+              {/* Left: priority orders */}
+              <div className="om-priority-col">
+                <div className="om-priority-head">
+                  <h3 className="om-priority-title">Đơn hàng ưu tiên</h3>
+                  <button className="om-view-all" onClick={() => showToast("Xem tất cả đơn hàng...")}>
+                    Xem tất cả <i className="fa-solid fa-arrow-right" />
+                  </button>
+                </div>
+                <div className="om-priority-list">
+                  {SHIPPER_ORDERS.map((order) => (
+                    <ShipperCard key={order.id} order={order} onToast={showToast} />
+                  ))}
+                </div>
+              </div>
+
+              {/* Right: stats + recent */}
+              <div className="om-stats-col">
+                <div className="om-stat-cards">
+                  <div className="om-stat-card om-stat-card--teal">
+                    <i className="fa-solid fa-truck" />
+                    <span className="om-stat-num">24</span>
+                    <span className="om-stat-label">Đã giao h.nay</span>
+                  </div>
+                  <div className="om-stat-card om-stat-card--orange">
+                    <i className="fa-regular fa-clock" />
+                    <span className="om-stat-num">12</span>
+                    <span className="om-stat-label">Chờ bàn giao</span>
+                  </div>
+                </div>
+
+                <div className="om-recent-box">
+                  <h3 className="om-recent-title">Vừa bàn giao</h3>
+                  <ul className="om-recent-list">
+                    {HISTORY_ORDERS.map((h) => (
+                      <li key={h.id} className="om-recent-item">
+                        <i className="fa-solid fa-circle-check om-recent-icon" />
+                        <div className="om-recent-info">
+                          <span className="om-recent-id">#{h.id}</span>
+                          <span className="om-recent-shipper">Shipper: {h.shipper}</span>
+                        </div>
+                        <span className="om-recent-time">{h.time}</span>
+                      </li>
+                    ))}
+                  </ul>
+                  <button className="om-history-btn" onClick={() => setActiveTab("history")}>
+                    Xem toàn bộ lịch sử
+                  </button>
+                </div>
+              </div>
+            </div>
           </section>
         )}
-      </main>
+
+        {/* Tab: Lịch sử */}
+        {activeTab === "history" && (
+          <section className="om-handover-section">
+            <div className="om-history-table-wrap">
+              <table className="om-history-table">
+                <thead>
+                  <tr>
+                    <th>Mã đơn</th>
+                    <th>Thời gian</th>
+                    <th>Shipper</th>
+                    <th>Trạng thái</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {HISTORY_ORDERS.map((h) => (
+                    <tr key={h.id}>
+                      <td className="om-ht-id">#{h.id}</td>
+                      <td className="om-ht-time">{h.time}</td>
+                      <td className="om-ht-shipper">{h.shipper}</td>
+                      <td><span className="om-badge ready"><i className="fa-solid fa-check" /> Đã giao</span></td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </section>
+        )}
+        </main>
+      </div>
 
       {toast && (
         <div className="om-toast show" role="alert">
@@ -288,44 +405,45 @@ function ReadyOrderCard({ order }) {
   );
 }
 
-/* ─── Shipper tab card ───────────────────────────────────────────── */
+/* ─── Shipper priority card ──────────────────────────────────────── */
 function ShipperCard({ order, onToast }) {
   const [confirmed, setConfirmed] = useState(false);
 
   function handleConfirm() {
     setConfirmed(true);
-    onToast(`Đã xác nhận bàn giao đơn #${order.id} cho Shipper!`);
+    onToast(`Đã xác nhận bàn giao đơn #${order.id}!`);
   }
 
   return (
-    <div className="om-shipper-card">
-      <div className="om-shipper-left">
-        <div className="om-shipper-top">
-          <span className="om-badge ready">Sẵn sàng</span>
+    <div className={`om-priority-card ${order.urgency === "urgent" ? "urgent" : ""}`}>
+      <div className="om-priority-card-left">
+        <div className="om-priority-badges">
+          <span className={`om-urgency-badge ${order.urgency}`}>{order.urgencyLabel}</span>
           <span className="om-order-hash">#{order.id}</span>
         </div>
-        <p className="om-calling">
-          <i className="fa-solid fa-rotate fa-spin" /> Đang gọi Shipper...
+        <p className="om-pc-customer">
+          <i className="fa-solid fa-user" /> Khách hàng: <strong>{order.customer}</strong>
         </p>
-        <p className="om-shipper-meta">
-          Khách hàng: {order.customer} • {order.itemCount} món
+        <p className="om-pc-address">
+          <i className="fa-solid fa-location-dot" /> {order.address}
         </p>
-        <p className="om-tracking">
-          Mã Vận Đơn: <strong>{order.trackingCode}</strong>
+        <p className="om-pc-items">
+          <i className="fa-solid fa-basket-shopping" /> {order.items}
         </p>
       </div>
-      <div className="om-shipper-right">
-        <img src={imgQR} alt="QR code" className="om-qr-img" />
+      <div className="om-priority-card-right">
+        <div className="om-qr-wrap">
+          <img src={imgQR} alt="QR" className="om-pc-qr" />
+        </div>
         <button
-          className={`om-confirm-btn ${confirmed ? "confirmed" : ""}`}
+          className={`om-pc-confirm ${confirmed ? "confirmed" : ""}`}
           onClick={handleConfirm}
           disabled={confirmed}
         >
-          {confirmed ? (
-            <><i className="fa-solid fa-check" /> Đã xác nhận bàn giao</>
-          ) : (
-            "Xác nhận bàn giao hàng cho Shipper"
-          )}
+          {confirmed
+            ? <><i className="fa-solid fa-check" /> Đã xác nhận</>
+            : <><i className="fa-solid fa-circle-check" /> Xác nhận</>
+          }
         </button>
       </div>
     </div>
