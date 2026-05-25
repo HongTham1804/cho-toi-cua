@@ -1,34 +1,11 @@
-<<<<<<< HEAD
-import React, { useState } from 'react';
-import { Navigate, Route, Routes, Outlet } from 'react-router-dom'; // <-- Cần import thêm Outlet
-import './App.css';
-=======
 import React, { useState } from "react";
-import { Navigate, Outlet, Route, Routes } from "react-router-dom";
+import { Navigate, Outlet, Route, Routes, Link, useNavigate } from "react-router-dom";
 import "./App.css";
->>>>>>> 1ec0a5e04ee8513619ee066735fbe440a6cb6de0
 
 import Header from "./components/Header/Header";
 import CustomerHeader from "./components/CustomerHeader/CustomerHeader";
 import Footer from "./components/Footer/Footer";
 
-<<<<<<< HEAD
-// --- IMPORT CÁC TRANG ---
-import RegisterStore from './pages/register-store';
-import Login from './pages/login';
-import Notifications from './pages/notifications';
-import OrderHistory from './pages/order-history';
-import Review from './pages/review';
-import Tracking from './pages/tracking';
-import OrderManagement from './pages/order-management';
-import ProductManagement from './pages/ProductManagement/ProductManagement'; 
-import LoggedInHomepage from './pages/logged-in-homepage';
-import SupermarketDetails from './pages/supermarket-details'; 
-import PartnerLogin from './pages/PartnerLogin/PartnerLogin'; 
-import ShoppingCart from './pages/shopping-cart'; 
-import SelectRole from './pages/select-role';
-import UserDetail from './pages/UserDetail/UserDetail'; 
-=======
 import RegisterStore from "./pages/register-store";
 import Login from "./pages/login";
 import Notifications from "./pages/notifications";
@@ -45,11 +22,20 @@ import PartnerLogin from "./pages/PartnerLogin/PartnerLogin";
 import ShoppingCart from "./pages/shopping-cart";
 import SelectRole from "./pages/select-role";
 import UserDetail from "./pages/UserDetail/UserDetail";
->>>>>>> 1ec0a5e04ee8513619ee066735fbe440a6cb6de0
 
 function App() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
-
+  const navigate = useNavigate();
+  const handleLogout = (e) => {
+    e.preventDefault(); // Ngăn trình duyệt load lại trang
+    
+    const isConfirmed = window.confirm("Bạn có chắc chắn muốn đăng xuất không?");
+    
+    if (isConfirmed) {
+      setIsMenuOpen(false); // Đóng sidebar lại
+      navigate('/login'); //'/select-role'
+    }
+  };
   const CustomerLayout = () => (
     <div className="customer-layout">
       <CustomerHeader onMenuClick={() => setIsMenuOpen(true)} />
@@ -79,10 +65,16 @@ function App() {
               <h3>Chào, Khách hàng</h3>
             </div>
             <nav className="menu-links-core">
-              <a href="#"><i className="fa-solid fa-house"></i> Cửa hàng</a>
-              <a href="#"><i className="fa-solid fa-receipt"></i> Đơn hàng của bạn</a>
+              <Link to="/logged-in-homepage" onClick={() => setIsMenuOpen(false)}>
+                <i className="fa-solid fa-house"></i> Cửa hàng
+              </Link>
+              <Link to="/order-history" onClick={() => setIsMenuOpen(false)}>
+                <i className="fa-solid fa-receipt"></i> Đơn hàng của bạn
+              </Link>
               <a href="#"><i className="fa-solid fa-gear"></i> Cài đặt tài khoản</a>
-              <a href="#" className="logout-btn"><i className="fa-solid fa-right-from-bracket"></i> Đăng xuất</a>
+              <a href="#" className="logout-btn" onClick={handleLogout}>
+                <i className="fa-solid fa-right-from-bracket"></i> Đăng xuất
+              </a>
             </nav>
           </div>
         </div>

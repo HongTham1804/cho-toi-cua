@@ -221,6 +221,144 @@
   transform: scale(1.1);
   background-color: rgba(0, 108, 73, 0.15);
 }
+
+/* ===========================
+   ADDRESS POPUP (Bản Độc Quyền)
+=========================== */
+.address-overlay-core {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background-color: rgba(0, 0, 0, 0.5); /* Nền đen mờ */
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 9999; /* Luôn nổi lên trên cùng */
+  animation: fadeIn 0.2s ease-out;
+}
+
+.address-box-core {
+  background-color: #fff;
+  width: 90%;
+  max-width: 500px;
+  border-radius: 16px;
+  padding: 30px;
+  position: relative;
+  box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+  animation: slideDown 0.3s ease-out;
+}
+
+.address-close-btn-core {
+  position: absolute;
+  top: 20px;
+  left: 20px; /* Đặt nút X ở bên trái giống ảnh mẫu */
+  background: none;
+  border: none;
+  font-size: 20px;
+  color: #333;
+  cursor: pointer;
+  transition: color 0.2s;
+}
+
+.address-close-btn-core:hover {
+  color: var(--green-primary);
+}
+
+.address-title-core {
+  text-align: center;
+  font-size: 20px;
+  font-weight: 700;
+  color: #111;
+  margin-bottom: 25px;
+  margin-top: 10px;
+}
+
+/* Thanh tìm kiếm bên trong modal */
+.address-search-core {
+  position: relative;
+  margin-bottom: 25px;
+}
+
+.address-search-core input {
+  width: 100%;
+  padding: 14px 40px 14px 15px;
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  font-size: 15px;
+  outline: none;
+  font-family: inherit;
+}
+
+.address-search-core input:focus {
+  border-color: var(--green-primary);
+  box-shadow: 0 0 0 2px rgba(0, 108, 73, 0.1);
+}
+
+.search-icon-core {
+  position: absolute;
+  right: 15px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: #777;
+}
+
+/* Danh sách địa chỉ */
+.address-list-core {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+  max-height: 300px;
+  overflow-y: auto;
+}
+
+.address-item-core {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  padding: 10px;
+  cursor: pointer;
+  border-radius: 8px;
+  transition: background 0.2s;
+}
+
+.address-item-core:hover {
+  background-color: #f7f9fa;
+}
+
+.address-item-core i {
+  font-size: 18px;
+  color: #666;
+}
+
+.target-icon-core {
+  color: var(--green-primary) !important;
+}
+
+.address-info-core h4 {
+  margin: 0 0 4px 0;
+  font-size: 15px;
+  color: #222;
+}
+
+.address-info-core p {
+  margin: 0;
+  font-size: 13px;
+  color: #777;
+}
+
+/* Hiệu ứng xuất hiện mượt mà */
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes slideDown {
+  from { opacity: 0; transform: translateY(-20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
 /* ===========================
    FOOTER (STYLE 4 CỘT - BẢN ĐỘC QUYỀN CHỐNG XUNG ĐỘT)
 =========================== */
