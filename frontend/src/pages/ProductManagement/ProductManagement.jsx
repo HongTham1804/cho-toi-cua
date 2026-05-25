@@ -1,13 +1,9 @@
-<<<<<<< HEAD
-import React, { useState } from 'react';
-=======
 import React, { useState, useMemo } from 'react';
 import { 
   LayoutDashboard, Package, Users, Briefcase, Truck, 
   CircleDollarSign, Settings, LogOut, Search, Bell, 
   ChevronDown, Plus, Edit, Trash2, X 
 } from 'lucide-react';
->>>>>>> 69b1798a1903334ddf46ad744db534c023eed82b
 import './ProductManagement.scss';
 
 const ProductManagement = () => {

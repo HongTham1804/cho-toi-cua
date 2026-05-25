@@ -80,16 +80,48 @@
   display: flex;
   align-items: center;
   gap: 15px;
-  padding: 15px 0;
+  padding: 15px; /* Tăng padding đều các cạnh để tạo không gian cho hiệu ứng nền */
+  margin-bottom: 4px;
   text-decoration: none;
   color: var(--text-dark);
   font-weight: 500;
   border-bottom: 1px solid #f0f0f0;
+  border-radius: 8px; /* Bo góc để hiệu ứng hover trông mềm mại hơn */
+  transition: all 0.3s ease; /* Thêm transition để mọi chuyển động đều mượt mà */
+}
+
+.menu-links-core a:hover {
+  border-bottom-color: transparent; 
+}
+
+/* 2. Hiệu ứng Hover (Khi rê chuột vào) */
+.menu-links-core a:hover {
+  background-color: #f0f8f5; /* Thêm màu nền xanh lá cực nhạt */
+  color: var(--green-primary); /* Đổi màu chữ và icon sang xanh đậm */
+  transform: translateX(8px); /* Cho chữ trượt nhẹ sang phải 8px */
+}
+
+/* 3. Hiệu ứng Active (Khi nhấn chuột xuống) */
+.menu-links-core a:active {
+  transform: scale(0.98) translateX(8px); /* Hơi thu nhỏ lại tạo cảm giác lún xuống */
+  background-color: #e2f1eb; /* Nền đậm lên một chút xíu */
 }
 
 .logout-btn {
   color: #ff4d4f !important;
   margin-top: 20px;
+  border-bottom: none !important;
+}
+
+.menu-links-core a.logout-btn:hover {
+  background-color: #fff1f0; /* Nền đỏ siêu nhạt */
+  color: #ff4d4f;
+  transform: translateX(8px);
+}
+
+.menu-links-core a.logout-btn:active {
+  background-color: #ffccc7;
+  transform: scale(0.98) translateX(8px);
 }
 
 .header-logo {

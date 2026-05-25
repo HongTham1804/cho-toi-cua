@@ -1,4 +1,3 @@
-<<<<<<< HEAD
 import React, { useState } from 'react';
 import { Navigate, Route, Routes, Outlet } from 'react-router-dom'; // <-- Cần import thêm Outlet
 import './App.css';
@@ -23,20 +22,6 @@ import PartnerLogin from './pages/PartnerLogin/PartnerLogin';
 import ShoppingCart from './pages/shopping-cart'; 
 import SelectRole from './pages/select-role';
 import UserDetail from './pages/UserDetail/UserDetail'; 
-=======
-
-import { Navigate, Route, Routes } from 'react-router-dom'
-import './App.css'
-import RegisterStore from './pages/register-store'
-import Login from './pages/login'
-import Notifications from './pages/notifications'
-import OrderHistory from './pages/order-history'
-import Review from './pages/review'
-import Tracking from './pages/tracking'
-import OrderManagement from './pages/order-management'
-import Inventory from './pages/inventory'
-import ProductDetail from './pages/product-detail'
->>>>>>> 69b1798a1903334ddf46ad744db534c023eed82b
 
 function App() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -67,7 +52,6 @@ function App() {
   );
 
   return (
-<<<<<<< HEAD
     <div className="App">
       
       {/* Cửa sổ trượt Sidebar của khách hàng */}
@@ -120,22 +104,6 @@ function App() {
       </Routes>
     </div>
   );
-=======
-    <Routes>
-      <Route path="/" element={<Navigate to="/login" replace />} />
-      <Route path="/register-store" element={<RegisterStore />} />
-      <Route path="/login" element={<Login />} />
-      <Route path="/notifications" element={<Notifications />} />
-      <Route path="/order-history" element={<OrderHistory />} />
-      <Route path="/review" element={<Review />} />
-      <Route path="/tracking" element={<Tracking />} />
-      <Route path="/order-management" element={<OrderManagement />} />
-      <Route path="/inventory" element={<Inventory />} />
-      <Route path="/product/:id" element={<ProductDetail />} />
-    </Routes>
-  )
-
->>>>>>> 69b1798a1903334ddf46ad744db534c023eed82b
 }
 
 export default App
