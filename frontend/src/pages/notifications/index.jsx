@@ -1,4 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
+import CustomerHeader from "../../components/CustomerHeader/CustomerHeader";
+import Footer from "../../components/Footer/Footer";
 import "./notifications.css";
 import {
   fetchNotifications,
@@ -88,7 +90,7 @@ function App() {
 
   return (
     <div className="page notification-page">
-      <Header unreadCount={unreadCount} />
+      <CustomerHeader />
 
       <main className="main" role="main">
         <div className="notification-header">
@@ -148,45 +150,6 @@ function App() {
         </div>
       )}
     </div>
-  );
-}
-
-function Header({ unreadCount }) {
-  return (
-    <header className="header" role="banner">
-      <div className="header-inner">
-        <a href="/" className="logo" aria-label="Chợ Tới Cửa - trang chủ">
-          <span>Chợ Tới Cửa</span>
-        </a>
-
-        <div className="search-box" role="search">
-          <SearchIcon />
-          <input
-            id="search-input"
-            type="search"
-            placeholder="Tìm kiếm sản phẩm..."
-            aria-label="Tìm kiếm sản phẩm"
-          />
-        </div>
-
-        <div className="header-icons">
-          <button className="icon-btn active" type="button" aria-label="Thông báo">
-            <BellIcon />
-            <span className="icon-badge" data-count={unreadCount}>
-              {unreadCount}
-            </span>
-          </button>
-
-          <button className="icon-btn" type="button" aria-label="Giỏ hàng">
-            <CartIcon />
-          </button>
-
-          <button className="icon-btn" type="button" aria-label="Tài khoản">
-            <UserIcon />
-          </button>
-        </div>
-      </div>
-    </header>
   );
 }
 
@@ -260,43 +223,6 @@ function NotificationTypeIcon({ type }) {
   return <InfoIcon />;
 }
 
-function SearchIcon() {
-  return (
-    <svg className="search-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" aria-hidden="true">
-      <circle cx="11" cy="11" r="7" />
-      <path d="m20 20-3.8-3.8" />
-    </svg>
-  );
-}
-
-function BellIcon() {
-  return (
-    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-      <path d="M18 8a6 6 0 0 0-12 0c0 7-3 8-3 8h18s-3-1-3-8" />
-      <path d="M13.7 21a2 2 0 0 1-3.4 0" />
-    </svg>
-  );
-}
-
-function CartIcon() {
-  return (
-    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-      <circle cx="9" cy="21" r="1" />
-      <circle cx="20" cy="21" r="1" />
-      <path d="M1 1h4l2.7 13.4a2 2 0 0 0 2 1.6h9.7a2 2 0 0 0 2-1.7L23 6H6" />
-    </svg>
-  );
-}
-
-function UserIcon() {
-  return (
-    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-      <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
-      <circle cx="12" cy="7" r="4" />
-    </svg>
-  );
-}
-
 function TruckIcon() {
   return (
     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
@@ -341,30 +267,6 @@ function InfoIcon() {
       <path d="M12 11v5" />
       <path d="M12 8h.01" />
     </svg>
-  );
-}
-
-function Footer() {
-  return (
-    <footer className="footer" role="contentinfo">
-      <div className="footer-inner">
-        <div className="footer-brand">
-          <a href="/" className="logo">
-            <span>Chợ Tới Cửa</span>
-          </a>
-          <p className="footer-tagline">
-            © 2026 Chợ Tới Cửa. Tươi ngon từ nông trại đến tận cửa nhà.
-          </p>
-        </div>
-
-        <div className="footer-links-group">
-          <a href="#">Chính sách bảo mật</a>
-          <a href="#">Điều khoản sử dụng</a>
-          <a href="#">Liên hệ: 1900 1234</a>
-          <a href="#">Về chúng tôi</a>
-        </div>
-      </div>
-    </footer>
   );
 }
 

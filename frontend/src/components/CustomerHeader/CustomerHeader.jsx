@@ -1,4 +1,4 @@
-import React from 'react';
+import '@fortawesome/fontawesome-free/css/all.min.css';
 import logoMain from '../../assets/logo-main.png'; // Chỉnh lại đường dẫn ảnh cho đúng nhé
 
 export default function CustomerHeader({ onMenuClick }) {
