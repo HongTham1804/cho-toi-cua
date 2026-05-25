@@ -83,87 +83,6 @@ a  { text-decoration: none; color: inherit; }
 ol, ul { list-style: none; }
 button { cursor: pointer; font-family: inherit; }
 
-/* ── HEADER ───────────────────────────────────────────────────── */
-.tracking-header {
-  position: sticky;
-  top: 0;
-  z-index: 100;
-  background: var(--clr-surface);
-  border-bottom: 1px solid var(--clr-border);
-  box-shadow: var(--shadow-sm);
-  padding: var(--sp-3) var(--sp-6);
-}
-
-.header-inner {
-  max-width: 1200px;
-  margin: 0 auto;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: var(--sp-4);
-}
-
-/* Back button */
-.btn-back {
-  display: inline-flex;
-  align-items: center;
-  gap: var(--sp-2);
-  background: none;
-  border: none;
-  font-size: var(--fs-lg);
-  font-weight: var(--fw-semi);
-  color: var(--clr-text-main);
-  transition: color var(--t-fast);
-  padding: var(--sp-1) 0;
-}
-.btn-back:hover { color: var(--clr-primary); }
-.btn-back svg   { flex-shrink: 0; }
-
-/* Status group (badge + order ID) */
-.header-status-group {
-  display: flex;
-  align-items: center;
-  gap: var(--sp-3);
-  flex-wrap: wrap;
-  justify-content: flex-end;
-}
-
-.status-badge {
-  display: inline-flex;
-  align-items: center;
-  gap: var(--sp-2);
-  background: var(--clr-primary);
-  color: #fff;
-  font-size: var(--fs-sm);
-  font-weight: var(--fw-medium);
-  padding: var(--sp-2) var(--sp-4);
-  border-radius: var(--radius-full);
-  white-space: nowrap;
-}
-
-.status-dot {
-  width: 8px;
-  height: 8px;
-  border-radius: 50%;
-  background: var(--clr-accent);
-  flex-shrink: 0;
-  animation: pulse-dot 1.8s ease-in-out infinite;
-}
-
-.order-id-chip {
-  display: inline-flex;
-  align-items: center;
-  gap: var(--sp-1);
-  background: var(--clr-primary-light);
-  color: var(--clr-primary-dark);
-  font-size: var(--fs-sm);
-  font-weight: var(--fw-semi);
-  padding: var(--sp-2) var(--sp-4);
-  border-radius: var(--radius-full);
-  border: 1px solid rgba(26,122,74,.2);
-  white-space: nowrap;
-}
-
 /* ── BODY LAYOUT ──────────────────────────────────────────────── */
 .tracking-body {
   flex: 1;
@@ -571,67 +490,23 @@ button { cursor: pointer; font-family: inherit; }
   .col-right {
     position: static;
   }
-  .tracking-header { padding: var(--sp-3) var(--sp-4); }
 }
 
 @media (max-width: 600px) {
-  .header-inner { flex-wrap: wrap; }
-  .header-status-group { width: 100%; justify-content: flex-start; }
-  .btn-back span { font-size: var(--fs-md); }
   .eta-time { font-size: 2rem; }
 }
 
 #root { min-height: 100dvh; display: flex; flex-direction: column; }
 .tracking-page { min-height: 100dvh; display: flex; flex-direction: column; }
 
+.customer-layout .tracking-page > .header-core,
+.customer-layout .tracking-page > .site-footer-core {
+  display: none;
+}
+
 /* Screenshot polish */
 .tracking-page {
   background: #eef4ff;
-}
-
-.tracking-header {
-  background: transparent;
-  border-bottom: 0;
-  box-shadow: none;
-  padding: 30px 30px 16px;
-}
-
-.tracking-header .header-inner {
-  max-width: 1180px;
-  background: transparent;
-}
-
-.tracking-header .btn-back {
-  gap: 14px;
-  font-size: 21px;
-  color: #0f172a;
-}
-
-.tracking-header .btn-back svg {
-  width: 34px;
-  height: 34px;
-  padding: 7px;
-  border-radius: 999px;
-  background: #e0ebfb;
-  stroke-width: 2.2;
-}
-
-.tracking-header .status-badge {
-  position: fixed;
-  top: 28px;
-  left: 50%;
-  transform: translateX(-50%);
-  z-index: 120;
-  background: #142943;
-  box-shadow: 0 12px 26px rgba(15, 23, 42, .18);
-  padding: 10px 24px;
-}
-
-.tracking-header .order-id-chip {
-  background: #22c987;
-  border: 0;
-  color: #07553b;
-  padding: 9px 17px;
 }
 
 .tracking-body {
@@ -728,11 +603,6 @@ button { cursor: pointer; font-family: inherit; }
 }
 
 @media (max-width: 900px) {
-  .tracking-header .status-badge {
-    position: static;
-    transform: none;
-  }
-
   .tracking-body {
     grid-template-columns: 1fr;
     padding-inline: 18px;
@@ -754,7 +624,7 @@ button { cursor: pointer; font-family: inherit; }
   isolation: isolate;
   min-height: 100vh;
   background: #f4f4f4;
-  overflow: hidden;
+  overflow: visible;
 }
 
 .tracking-page::before {
@@ -773,85 +643,6 @@ button { cursor: pointer; font-family: inherit; }
   color: #cfcfcf;
   font-size: 18px;
   font-weight: 700;
-}
-
-.tracking-page .tracking-header {
-  position: relative;
-  top: auto;
-  padding: 24px 38px 12px;
-}
-
-.tracking-page .tracking-header .header-inner {
-  max-width: 936px;
-  min-height: 44px;
-}
-
-.tracking-page .tracking-header .btn-back {
-  gap: 18px;
-  font-size: 21px;
-  font-weight: 700;
-}
-
-.tracking-page .tracking-header .btn-back svg {
-  width: 32px;
-  height: 32px;
-  padding: 7px;
-  background: #e2edff;
-  color: #0f2540;
-}
-
-.tracking-page .tracking-header .status-badge {
-  top: 65px;
-  min-width: 250px;
-  justify-content: center;
-  border-radius: 5px;
-  background: #152b46;
-  color: #fff;
-  font-size: 12px;
-  font-weight: 700;
-  padding: 9px 18px;
-}
-
-.tracking-page .tracking-header .status-dot {
-  width: auto;
-  height: auto;
-  background: transparent;
-  animation: none;
-}
-
-.tracking-page .tracking-header .status-dot::before {
-  content: "🔔";
-  font-size: 14px;
-  line-height: 1;
-}
-
-.tracking-page .tracking-header .status-badge span:last-child {
-  font-size: 0;
-}
-
-.tracking-page .tracking-header .status-badge span:last-child::after {
-  content: "Đơn hàng đang được giao đến bạn!";
-  font-size: 12px;
-}
-
-.tracking-page .tracking-header .order-id-chip {
-  min-width: 142px;
-  justify-content: center;
-  border-radius: 999px;
-  background: #21c887;
-  color: #076344;
-  font-size: 12px;
-  font-weight: 700;
-  padding: 8px 12px;
-}
-
-.tracking-page .tracking-header .order-id-chip span:first-child {
-  font-size: 0;
-}
-
-.tracking-page .tracking-header .order-id-chip span:first-child::after {
-  content: "Đơn hàng #";
-  font-size: 12px;
 }
 
 .tracking-page .tracking-body {
@@ -1023,7 +814,6 @@ button { cursor: pointer; font-family: inherit; }
     right: 0;
   }
 
-  .tracking-page .tracking-header,
   .tracking-page .tracking-body {
     padding-inline: 18px;
   }
@@ -1045,87 +835,6 @@ button { cursor: pointer; font-family: inherit; }
 
 .tracking-kicker {
   display: none;
-}
-
-.tracking-page .tracking-header {
-  padding: 28px 38px 18px;
-}
-
-.tracking-page .tracking-header .header-inner {
-  display: grid;
-  grid-template-columns: auto minmax(0, 1fr);
-  align-items: center;
-  gap: 24px;
-  max-width: none;
-  width: 100%;
-}
-
-.tracking-page .tracking-header .status-badge {
-  position: relative !important;
-  inset: auto !important;
-  transform: none !important;
-  gap: 9px;
-  min-width: 0;
-  width: 370px;
-  max-width: 370px;
-  height: 48px;
-  justify-content: center;
-  border-radius: 8px;
-  background: #172a44;
-  color: #f8fafc;
-  font-size: 15px;
-  line-height: 1;
-  padding: 0 20px;
-  box-shadow: 0 7px 14px rgba(15, 23, 42, .22);
-}
-
-.tracking-page .tracking-header .status-badge::before {
-  content: none !important;
-  display: none !important;
-}
-
-.tracking-page .tracking-header .status-badge span:last-child {
-  font-size: 15px;
-  font-weight: 800;
-}
-
-.tracking-page .tracking-header .status-badge span:last-child::after {
-  content: none;
-}
-
-.tracking-page .status-bell {
-  width: 25px;
-  height: 25px;
-  color: #39d98a;
-  flex: 0 0 auto;
-}
-
-.tracking-page .tracking-header .status-dot {
-  display: none;
-}
-
-.tracking-page .header-status-group {
-  flex: 1;
-  display: flex;
-  align-items: center;
-  justify-content: flex-end;
-  align-items: center;
-  gap: 28px;
-  min-width: 0;
-  width: 100%;
-}
-
-.tracking-page .header-status-group .status-badge {
-  position: fixed !important;
-  left: 50% !important;
-  top: 28px !important;
-  transform: translateX(-50%) !important;
-}
-
-.tracking-page .header-status-group .order-id-chip {
-  justify-self: end;
-  position: relative;
-  z-index: 1;
 }
 
 .tracking-page .map-wrapper {

@@ -179,7 +179,7 @@ function RegisterStore() {
           </p>
 
           <footer>
-            © 2024 Chợ Tới Cửa. Nền tảng kết nối nông sản sạch.
+            © 2026 Chợ Tới Cửa. Nền tảng kết nối nông sản sạch.
           </footer>
 
         </div>

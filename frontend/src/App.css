@@ -1,16 +1,452 @@
-/* Khung bọc toàn bộ trang web */
-.app-container {
-  display: flex;         /* Xếp thanh Sidebar và Main Content nằm hàng ngang với nhau */
-  width: 100vw;
-  min-height: 100vh;
-  background-color: #F9F9FF;
-  overflow-x: hidden;
+:root {
+  --green-primary: #006C49;
+  --border-light: #E0E0E0;
+  --text-dark: #3C4A42;
+  --bg-main: #F8F9FF;
 }
 
-/* Khung nội dung bên phải */
-.main-content {
-  flex: 1;               /* Tự động kéo giãn chiếm trọn không gian còn lại */
+.customer-layout {
+  display: flex;
+  flex-direction: column;  /* ← Xếp dọc: Header → Content → Footer */
+  min-height: 100vh;
+  width: 100%;
+}
+
+.customer-layout .main-content {
+  flex: 1;  /* Content chiếm hết khoảng trống giữa Header và Footer */
+}
+
+/* ===========================
+   HEADER
+=========================== */
+.header-core {
+  background-color: #ffffff;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+  padding: 14px 0;
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  font-family: 'Be Vietnam Pro', sans-serif;
+}
+
+.header-container {
+  max-width: 1280px;
+  margin: 0 auto;
+  padding: 0 32px;
+  display: grid;
+  grid-template-columns: auto auto minmax(0, 1fr) auto;  /* minmax(0,1fr) thay vì 1fr */
+  align-items: center;
+  gap: 32px;
+}
+.menu-trigger {
+  font-size: 20px;
+  cursor: pointer;
+  color: var(--green-primary);
+}
+
+.modal-overlay-core {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.4);
+  z-index: 1000;
+}
+
+.sidebar-modal-core {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 280px;
+  height: 100%;
+  background: white;
+  padding: 40px 20px;
+  box-shadow: 2px 0 10px rgba(0, 0, 0, 0.1);
+  animation: slideIn 0.3s ease;
+}
+
+@keyframes slideIn {
+  from { transform: translateX(-100%); }
+  to { transform: translateX(0); }
+}
+
+.user-profile-core {
+  margin-bottom: 30px;
+  text-align: center;
+}
+
+.menu-links-core a {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  padding: 15px; /* Tăng padding đều các cạnh để tạo không gian cho hiệu ứng nền */
+  margin-bottom: 4px;
+  text-decoration: none;
+  color: var(--text-dark);
+  font-weight: 500;
+  border-bottom: 1px solid #f0f0f0;
+  border-radius: 8px; /* Bo góc để hiệu ứng hover trông mềm mại hơn */
+  transition: all 0.3s ease; /* Thêm transition để mọi chuyển động đều mượt mà */
+}
+
+.menu-links-core a:hover {
+  border-bottom-color: transparent; 
+}
+
+/* 2. Hiệu ứng Hover (Khi rê chuột vào) */
+.menu-links-core a:hover {
+  background-color: #f0f8f5; /* Thêm màu nền xanh lá cực nhạt */
+  color: var(--green-primary); /* Đổi màu chữ và icon sang xanh đậm */
+  transform: translateX(8px); /* Cho chữ trượt nhẹ sang phải 8px */
+}
+
+/* 3. Hiệu ứng Active (Khi nhấn chuột xuống) */
+.menu-links-core a:active {
+  transform: scale(0.98) translateX(8px); /* Hơi thu nhỏ lại tạo cảm giác lún xuống */
+  background-color: #e2f1eb; /* Nền đậm lên một chút xíu */
+}
+
+.logout-btn {
+  color: #ff4d4f !important;
+  margin-top: 20px;
+  border-bottom: none !important;
+}
+
+.menu-links-core a.logout-btn:hover {
+  background-color: #fff1f0; /* Nền đỏ siêu nhạt */
+  color: #ff4d4f;
+  transform: translateX(8px);
+}
+
+.menu-links-core a.logout-btn:active {
+  background-color: #ffccc7;
+  transform: scale(0.98) translateX(8px);
+}
+
+.header-logo {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.logo-icon {
+  width: 34px;
+  height: 34px;
+  object-fit: contain;
+}
+
+.logo-text {
+  font-size: 20px     !important  /* To hơn */;
+  font-weight: 700;
+  color: var(--green-primary);
+  font-family: 'Be Vietnam Pro', sans-serif;
+}
+
+/* ===========================
+   THANH TÌM KIẾM
+=========================== */
+.search-bar-wrapper {
+  width: 100%;
+  position: relative;
+  display: flex;
+  align-items: center;
+  min-width: 0;          /* Quan trọng: cho phép co đúng trong grid */
+  /* Xóa max-width: 830px và margin: 0 auto */
+}
+
+.search-input {
+  width: 100%;
+  /* Tăng padding trái/phải để tách text ra xa khỏi icon */
+  padding: 12px 48px 12px 20px;
+  border: 1px solid var(--border-light);
+  border-radius: 30px; /* Bo tròn hoàn toàn hai đầu */
+  font-size: 14px;
+  outline: none;
+  transition: all 0.2s;
+  font-family: 'Be Vietnam Pro', sans-serif;
+  box-sizing: border-box;
+  background-color: #f8f9fa;
+  flex:1;
+}
+
+.search-input:focus {
+  border-color: var(--green-primary);
+  box-shadow: 0 0 0 3px rgba(0, 108, 73, 0.1);
+  background-color: #ffffff;
+}
+
+.search-input::placeholder {
+  color: #a0a0a0;
+}
+
+.search-icon {
+  position: absolute;
+  right: 20px; /* Tách icon ra xa viền để không bị dính vào text */
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--green-primary); /* Đổi icon tìm kiếm sang màu xanh */
+  font-size: 16px;
+  pointer-events: none;
+}
+
+/* ===========================
+   ICON BÊN PHẢI HEADER
+=========================== */
+.header-icons {
+  display: flex;
+  align-items: center;
+  gap: 12px !important;             /* Tách icon ra xa nhau hơn */
+  flex-shrink: 0;
+  margin-left: 0;
+}
+
+.icon-item {
+  cursor: pointer;
+  color: var(--green-primary); /* Đổi toàn bộ icon sang màu xanh */
+  font-size: 20px; 
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background-color: rgba(0, 108, 73, 0.05); /* Thêm viền nền mờ cho đẹp */
+  transition: all 0.3s ease;
+}
+
+.icon-item:hover {
+  transform: scale(1.1);
+  background-color: rgba(0, 108, 73, 0.15);
+}
+
+/* ===========================
+   ADDRESS POPUP (Bản Độc Quyền)
+=========================== */
+.address-overlay-core {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background-color: rgba(0, 0, 0, 0.5); /* Nền đen mờ */
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 9999; /* Luôn nổi lên trên cùng */
+  animation: fadeIn 0.2s ease-out;
+}
+
+.address-box-core {
+  background-color: #fff;
+  width: 90%;
+  max-width: 500px;
+  border-radius: 16px;
+  padding: 30px;
+  position: relative;
+  box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+  animation: slideDown 0.3s ease-out;
+}
+
+.address-close-btn-core {
+  position: absolute;
+  top: 20px;
+  left: 20px; /* Đặt nút X ở bên trái giống ảnh mẫu */
+  background: none;
+  border: none;
+  font-size: 20px;
+  color: #333;
+  cursor: pointer;
+  transition: color 0.2s;
+}
+
+.address-close-btn-core:hover {
+  color: var(--green-primary);
+}
+
+.address-title-core {
+  text-align: center;
+  font-size: 20px;
+  font-weight: 700;
+  color: #111;
+  margin-bottom: 25px;
+  margin-top: 10px;
+}
+
+/* Thanh tìm kiếm bên trong modal */
+.address-search-core {
+  position: relative;
+  margin-bottom: 25px;
+}
+
+.address-search-core input {
+  width: 100%;
+  padding: 14px 40px 14px 15px;
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  font-size: 15px;
+  outline: none;
+  font-family: inherit;
+}
+
+.address-search-core input:focus {
+  border-color: var(--green-primary);
+  box-shadow: 0 0 0 2px rgba(0, 108, 73, 0.1);
+}
+
+.search-icon-core {
+  position: absolute;
+  right: 15px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: #777;
+}
+
+/* Danh sách địa chỉ */
+.address-list-core {
   display: flex;
   flex-direction: column;
-  min-width: 0;
+  gap: 15px;
+  max-height: 300px;
+  overflow-y: auto;
+}
+
+.address-item-core {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  padding: 10px;
+  cursor: pointer;
+  border-radius: 8px;
+  transition: background 0.2s;
+}
+
+.address-item-core:hover {
+  background-color: #f7f9fa;
+}
+
+.address-item-core i {
+  font-size: 18px;
+  color: #666;
+}
+
+.target-icon-core {
+  color: var(--green-primary) !important;
+}
+
+.address-info-core h4 {
+  margin: 0 0 4px 0;
+  font-size: 15px;
+  color: #222;
+}
+
+.address-info-core p {
+  margin: 0;
+  font-size: 13px;
+  color: #777;
+}
+
+/* Hiệu ứng xuất hiện mượt mà */
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes slideDown {
+  from { opacity: 0; transform: translateY(-20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* ===========================
+   FOOTER (STYLE 4 CỘT - BẢN ĐỘC QUYỀN CHỐNG XUNG ĐỘT)
+=========================== */
+.site-footer-core {
+  width: 100%;
+  padding: 40px 0;
+  background-color: #eaf3ff; 
+  border-top: 1px solid #cbd8e8; 
+  font-family: 'Be Vietnam Pro', sans-serif;
+  margin-top: auto;
+  text-align: left !important; /* Ép canh trái toàn bộ, không cho class .App can thiệp */
+}
+
+.footer-inner-core {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 40px;
+  display: grid;
+  grid-template-columns: 2fr 1fr 1fr 1fr; /* Trực tiếp chia 4 cột cực mạnh */
+  column-gap: 50px;
+  align-items: start;
+}
+
+/* --- Định dạng Cột 1 --- */
+.footer-brand-core {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+}
+
+.footer-logo-core {
+  text-decoration: none;
+  display: inline-block;
+  margin-bottom: 12px;
+}
+
+.logo-text-core {
+  color: var(--green-primary, #006C49);
+  font-size: 22px;
+  font-weight: 800;
+}
+
+.footer-tagline-core {
+  margin: 0;
+  color: #334155;
+  font-size: 13px;
+  line-height: 1.6;
+}
+
+/* --- Định dạng 3 Cột Link --- */
+.footer-col-core {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start; /* Ép mọi thứ trong cột dạt sang trái */
+}
+
+.footer-col-title-core {
+  margin: 0 0 16px 0;
+  color: #111827;
+  font-size: 14px;
+  font-weight: 800;
+}
+
+.footer-links-core {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.footer-links-core a {
+  color: #334155;
+  font-size: 13px;
+  text-decoration: none;
+  transition: color 0.2s;
+}
+
+.footer-links-core a:hover {
+  color: var(--green-primary, #006C49);
+  text-decoration: underline;
+}
+
+/* --- Chế độ điện thoại --- */
+@media (max-width: 768px) {
+  .footer-inner-core {
+    grid-template-columns: 1fr; 
+    row-gap: 30px;
+  }
 }

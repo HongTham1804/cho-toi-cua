@@ -1,0 +1,154 @@
+/* ===========================
+   SELECT ROLE - REDESIGN STYLE
+=========================== */
+.select-role-page-core {
+  /* Dùng lại màu nền xanh nhạt của các trang trước */
+  background-color: #F8F9FF; 
+  min-height: 100vh;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 40px 20px;
+  font-family: 'Be Vietnam Pro', sans-serif;
+}
+
+/* --- LOGO --- */
+.role-logo-wrap-core {
+  margin-bottom: 20px;
+}
+
+.role-main-logo-core {
+  width: 100px; /* Logo to rõ ràng ở giữa */
+  height: auto;
+  object-fit: contain;
+}
+
+/* --- TIÊU ĐỀ --- */
+.role-intro-section-core {
+  text-align: center;
+  margin-bottom: 50px;
+}
+
+.role-huge-title-core {
+  color: #006C49; /* Xanh đậm đặc trưng */
+  font-size: 46px; /* Chữ siêu to giống hình mẫu */
+  font-weight: 800;
+  margin-bottom: 15px;
+  letter-spacing: -1px;
+}
+
+.role-subtitle-text-core {
+  color: #4b5563;
+  font-size: 17px;
+  line-height: 1.6;
+}
+
+/* --- CARDS CONTAINER (KHÔNG CÒN KHUNG TRẮNG BAO QUANH) --- */
+.role-cards-container-core {
+  display: grid;
+  grid-template-columns: repeat(2, 430px); /* Kích thước khung chuẩn */
+  gap: 35px;
+  max-width: 1000px;
+}
+
+.role-selection-card-core {
+  background-color: #ffffff;
+  border-radius: 16px;
+  overflow: hidden;
+  text-decoration: none;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.04); /* Đổ bóng cực nhẹ */
+  transition: all 0.3s ease;
+  border: 1px solid #edf2f7;
+  display: flex;
+  flex-direction: column;
+}
+
+.role-selection-card-core:hover {
+  transform: translateY(-8px);
+  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.08);
+}
+
+.role-card-banner-core {
+  width: 100%;
+  height: 220px;
+}
+
+.role-card-banner-core img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.role-card-info-core {
+  padding: 28px;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+.role-card-head-core {
+  font-size: 20px;
+  font-weight: 700;
+  margin-bottom: 12px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.role-card-paragraph-core {
+  color: #64748b;
+  font-size: 14px;
+  line-height: 1.6;
+  margin-bottom: 25px;
+  flex: 1;
+}
+
+.role-card-link-core {
+  font-size: 14px;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding-top: 18px;
+  border-top: 1px solid #f1f5f9;
+}
+
+/* --- MÀU SẮC --- */
+.customer-color-core {
+  color: #006C49;
+}
+
+.partner-color-core {
+  color: #8B5E3C; /* Màu nâu vàng/cam đất của đối tác */
+}
+
+/* --- FOOTER --- */
+.role-bottom-link-core {
+  margin-top: 50px;
+}
+
+.role-bottom-link-core a {
+  color: #94a3b8;
+  text-decoration: none;
+  font-size: 14px;
+  font-weight: 500;
+}
+
+.role-bottom-link-core a:hover {
+  text-decoration: underline;
+  color: #006C49;
+}
+
+/* --- MOBILE --- */
+@media (max-width: 900px) {
+  .role-cards-container-core {
+    grid-template-columns: 1fr;
+    width: 100%;
+    max-width: 450px;
+  }
+  .role-huge-title-core {
+    font-size: 32px;
+  }
+}
