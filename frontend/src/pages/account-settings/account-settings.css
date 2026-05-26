@@ -1,0 +1,142 @@
+/* ===========================
+   ACCOUNT SETTINGS (FLAT DESIGN)
+=========================== */
+.settings-page-core {
+  background-color: #ffffff; /* Đổi nền thành trắng tinh giống mẫu */
+  min-height: 100vh;
+  padding: 40px 20px;
+  font-family: 'Be Vietnam Pro', sans-serif;
+}
+
+.settings-container-core {
+  max-width: 900px; /* Chiều rộng chuẩn để nội dung không bị quá bè hoặc quá hẹp */
+  margin: 0 auto;
+  width: 100%; /* Bắt buộc phải có để bung rộng 100% */
+}
+
+/* Header & Back Button */
+.settings-header-core {
+  margin-bottom: 40px;
+}
+
+.back-btn-core {
+  text-decoration: none;
+  color: #333;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 15px;
+  font-size: 15px;
+}
+
+.settings-title-core {
+  font-size: 28px;
+  font-weight: 800;
+  color: #111;
+  margin: 0;
+}
+
+/* Layout */
+.settings-layout-core {
+  display: block;
+  width: 100%;
+}
+
+.settings-main-content-core {
+  display: flex;
+  flex-direction: column;
+  gap: 40px; /* Khoảng cách giữa các nhóm (Thông tin TK, Cá nhân...) */
+  width: 100%;
+}
+
+/* Bỏ giao diện dạng thẻ (Card) đi để giống mẫu */
+.settings-card-core {
+  background: transparent;
+  padding: 0;
+  border: none;
+  width: 100%;
+}
+
+.settings-card-core h3 {
+  margin-top: 0;
+  margin-bottom: 15px;
+  font-size: 18px;
+  font-weight: 700;
+  color: #000;
+}
+
+/* Các hàng chứa thông tin */
+.settings-row-core {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 20px 0;
+  border-top: 1px solid #e8e8e8; /* Kẻ vạch ngang phía trên */
+  width: 100%;
+}
+
+/* Kẻ thêm vạch ngang dưới cùng cho hàng cuối */
+.settings-row-core:last-child {
+  border-bottom: 1px solid #e8e8e8;
+}
+
+.info-group-core label {
+  display: block;
+  font-size: 14px;
+  color: #555;
+  margin-bottom: 4px;
+}
+
+.info-group-core p {
+  margin: 0;
+  font-size: 15px;
+  color: #777; /* Đổi màu chữ thông tin nhạt đi giống mẫu */
+}
+
+/* Sửa lỗi rớt chữ cho nút Thay đổi */
+.edit-link-core {
+  background: none;
+  border: none;
+  color: var(--green-primary, #006C49);
+  font-weight: 600;
+  cursor: pointer;
+  font-size: 15px;
+  white-space: nowrap; /* TÚYẾT CHIÊU: Cấm xuống dòng */
+}
+
+.edit-link-core:hover {
+  text-decoration: underline;
+}
+
+/* NÚT GẠT (SWITCH) */
+.switch-core {
+  position: relative;
+  display: inline-block;
+  width: 44px;
+  height: 24px;
+}
+
+.switch-core input { opacity: 0; width: 0; height: 0; }
+
+.slider-core {
+  position: absolute;
+  cursor: pointer;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background-color: #999;
+  transition: .4s;
+  border-radius: 34px;
+}
+
+.slider-core:before {
+  position: absolute;
+  content: "";
+  height: 18px; width: 18px;
+  left: 3px; bottom: 3px;
+  background-color: white;
+  transition: .4s;
+  border-radius: 50%;
+}
+
+input:checked + .slider-core { background-color: var(--green-primary, #006C49); }
+input:checked + .slider-core:before { transform: translateX(20px); }

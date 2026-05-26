@@ -22,6 +22,7 @@ import PartnerLogin from "./pages/PartnerLogin/PartnerLogin";
 import ShoppingCart from "./pages/shopping-cart";
 import SelectRole from "./pages/select-role";
 import UserDetail from "./pages/UserDetail/UserDetail";
+import AccountSettings from './pages/account-settings';
 
 function App() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -33,7 +34,7 @@ function App() {
     
     if (isConfirmed) {
       setIsMenuOpen(false); // Đóng sidebar lại
-      navigate('/login'); //'/select-role'
+      navigate('/select-role', { replace: true }); //Có giao diện tran chủ chưa đăng nhập thì đổi lại 
     }
   };
   const CustomerLayout = () => (
@@ -71,7 +72,9 @@ function App() {
               <Link to="/order-history" onClick={() => setIsMenuOpen(false)}>
                 <i className="fa-solid fa-receipt"></i> Đơn hàng của bạn
               </Link>
-              <a href="#"><i className="fa-solid fa-gear"></i> Cài đặt tài khoản</a>
+              <Link to="/account-settings" onClick={() => setIsMenuOpen(false)}>
+                <i className="fa-solid fa-gear"></i> Cài đặt tài khoản
+              </Link>
               <a href="#" className="logout-btn" onClick={handleLogout}>
                 <i className="fa-solid fa-right-from-bracket"></i> Đăng xuất
               </a>
@@ -90,6 +93,7 @@ function App() {
           <Route path="/order-history" element={<OrderHistory />} />
           <Route path="/review" element={<Review />} />
           <Route path="/notifications" element={<Notifications />} />
+          <Route path="/account-settings" element={<AccountSettings />} />
         </Route>
 
         <Route element={<AdminLayout />}>
