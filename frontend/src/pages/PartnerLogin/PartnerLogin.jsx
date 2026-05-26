@@ -1,8 +1,8 @@
 import React, { useState } from 'react';
+import { Link, useNavigate } from 'react-router-dom'; // 1. Import thêm Link và useNavigate
 import './PartnerLogin.scss';
 
-// Import Icons nếu bạn dùng thư viện như Lucide-React / React-Icons. 
-// Nếu không, bạn có thể thay thế bằng các thẻ <img /> chứa mã SVG tương ứng.
+// Import Icons
 import { Phone, Lock, Eye, EyeOff } from 'lucide-react'; 
 
 const PartnerLogin = () => {
@@ -11,10 +11,17 @@ const PartnerLogin = () => {
   const [password, setPassword] = useState('');
   const [rememberMe, setRememberMe] = useState(false);
 
+  const navigate = useNavigate(); // 2. Khởi tạo hàm chuyển trang
+
   const handleSubmit = (e) => {
     e.preventDefault();
-    // Xử lý logic đăng nhập ở đây
-    console.log({ phone, password, rememberMe });
+    
+    // Xử lý logic gọi API kiểm tra đăng nhập ở đây
+    console.log("Đang đăng nhập với:", { phone, password, rememberMe });
+    
+    // 3. Chuyển hướng vào trang quản lý sau khi đăng nhập thành công
+    // Bạn có thể đổi '/product-management' thành trang tổng quan (dashboard) của đối tác sau này
+    navigate('/product-management'); 
   };
 
   return (
@@ -97,9 +104,11 @@ const PartnerLogin = () => {
                   />
                   <span>Ghi nhớ đăng nhập</span>
                 </label>
-                <a href="#forgot-password" className="forgot-password-link">
+                
+                {/* 4. Đổi sang thẻ Link cho trang Quên mật khẩu */}
+                <Link to="/forgot-password" className="forgot-password-link">
                   Quên mật khẩu?
-                </a>
+                </Link>
               </div>
 
               {/* Submit Button */}
@@ -112,9 +121,10 @@ const PartnerLogin = () => {
             <div className="form-footer">
               <p>
                 Chưa có tài khoản đối tác?{' '}
-                <a href="#register" className="register-link">
+                {/* 5. Đổi sang thẻ Link trỏ về đúng trang đăng ký */}
+                <Link to="/register-store" className="register-link">
                   Đăng ký ngay
-                </a>
+                </Link>
               </p>
             </div>
           </div>

@@ -5,7 +5,7 @@ import "./App.css";
 import Header from "./components/Header/Header";
 import CustomerHeader from "./components/CustomerHeader/CustomerHeader";
 import Footer from "./components/Footer/Footer";
-
+import UserManagement from "./pages/UserManagement/UserManagement";
 import RegisterStore from "./pages/register-store";
 import Login from "./pages/login";
 import Notifications from "./pages/notifications";
@@ -109,6 +109,8 @@ function App() {
         <Route path="/product-management" element={<ProductManagement />} />
         <Route path="/inventory" element={<Inventory />} />
         <Route path="/product/:id" element={<ProductDetail />} />
+        <Route path="/user-management" element={<UserManagement />} /> 
+        <Route path="/product-management" element={<ProductManagement />} />
       </Routes>
     </div>
   );
