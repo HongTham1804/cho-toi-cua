@@ -1,0 +1,280 @@
+/* Thiết lập màu sắc toàn cục từ Figma */
+:root {
+  --green-primary: #006C49;
+  --orange-offer: #FEA619;
+  --bg-light-blue: #D3E4FE;
+  --bg-main: #F8F9FF;
+  --text-dark: #3C4A42;
+  --text-black: #000000;
+}
+
+.homepage-wrapper-core {
+  background-color: var(--bg-main);
+  min-height: 100vh;
+  font-family: 'Be Vietnam Pro', sans-serif;
+}
+
+/* --- Khu vực Layout chính --- */
+.layout-body-core {
+  display: grid;
+  grid-template-columns: 280px 1fr; /* Chia 2 cột: Sidebar 280px, Content chiếm phần còn lại */
+  gap: 24px;
+  max-width: 1280px;
+  margin: 0 auto;
+  padding: 20px;
+}
+
+/* --- Cột trái: Sidebar --- */
+.sidebar-custom {
+  background-color: #ffffff;
+  border-radius: 12px;
+  padding: 30px 20px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+  font-family: 'Be Vietnam Pro', sans-serif;
+}
+
+.user-profile-core {
+  text-align: center;
+  margin-bottom: 35px;
+  font-family: 'Be Vietnam Pro', sans-serif;
+}
+
+.avatar-box-custom {
+  background-color: #D3E4FE; /* Màu xanh nhạt từ Figma của bạn */
+  width: 60px;
+  height: 60px;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto 15px;
+  font-size: 24px;
+  color: var(--green-primary);
+}
+
+.brand-name-sidebar {
+  color: var(--green-primary); /* Đổi chữ Chợ Tới Cửa thành màu xanh */
+  font-size: 1.5rem;
+  font-weight: 700;
+  margin: 0 0 5px 0;
+}
+
+
+.nav-menu-custom {
+  list-style: none;
+  padding: 0;
+}
+
+.nav-item-core {
+  padding: 12px 16px;
+  margin-bottom: 8px;
+  border-radius: 8px;
+  cursor: pointer;
+  color: var(--text-dark);
+  font-weight: 500;
+  font-size: 0.95rem;
+  font-family: 'Be Vietnam Pro', sans-serif;
+
+  display: flex;
+  align-items: center;
+  gap: 12px; /* Khoảng cách giữa icon và chữ */
+  transition: all 0.2s ease; /* Hiệu ứng chuyển màu êm ái khi click */
+}
+
+.nav-item-core.active {
+  background-color: var(--green-primary);
+  color: #ffffff;
+}
+
+.nav-item-core.active i {
+  color: #ffffff !important; 
+}
+
+.nav-item-core i {
+  font-size: 1.1rem;
+  width: 20px; /* Cố định độ rộng để các chữ thẳng hàng */
+  text-align: center;
+  color: #555;
+}
+
+.nav-item-core:hover:not(.active) {
+  background-color: #eeeded;
+  color: rgb(0, 0, 0)
+}
+
+/* --- Cột phải: Main Content --- */
+.main-content-core {
+  display: flex;
+  flex-direction: column;
+  gap: 32px;
+}
+
+/* Banners */
+.banner-grid-core {
+  display: grid;
+  grid-template-columns: 2fr 1fr; /* Banner xanh lớn hơn banner cam */
+  gap: 20px;
+}
+
+.banner-card-custom {
+  border-radius: 12px;
+  padding: 24px;
+  color: var(--text-dark);
+  font-family: 'Be Vietnam Pro', sans-serif;
+}
+
+.banner-card-custom h1 {
+  font-family: 'Be Vietnam Pro', sans-serif;
+}
+
+.banner-card-custom h2 {
+  font-family: 'Be Vietnam Pro', sans-serif;
+}
+
+.banner-fresh { 
+  color: var(--text-black);
+}
+.banner-offer { 
+  background: linear-gradient(135deg, #FFB75E 0%, #ED8F03 100%); 
+  color: #fff; 
+  text-align: right;
+  font-family: 'Be Vietnam Pro', sans-serif;
+  position: relative; /* Rất quan trọng để nhốt icon in chìm bên trong */
+  overflow: hidden;   /* Cắt phần icon bị tràn ra ngoài viền thẻ */
+  box-shadow: 0 6px 15px rgba(254, 166, 25, 0.25); /* Tỏa hào quang cam */
+}
+
+.offer-content-core {
+  position: relative;
+  z-index: 2;
+}
+
+.watermark-icon-custom {
+  position: absolute;
+  left: -20px;
+  bottom: -30px;
+  font-size: 160px; /* Khổng lồ */
+  color: rgba(255, 255, 255, 0.15); /* Màu trắng trong suốt 15% */
+  transform: rotate(-15deg); /* Hơi nghiêng cho tự nhiên */
+  z-index: 1;
+}
+
+.discount-text-core {
+  font-size: 3rem; 
+  margin: 10px 0;
+  text-shadow: 2px 2px 0px rgba(0,0,0,0.1);
+  animation: pulse-animation-core 2s infinite; /* Lặp lại vô hạn */
+}
+
+@keyframes pulse-animation-core {
+  0% { transform: scale(1); }
+  50% { transform: scale(1.08); } /* Phóng to nhẹ lên 8% */
+  100% { transform: scale(1); }
+}
+
+.btn-buy-now {
+  background-color: var(--green-primary);
+  color: white;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 20px;
+  margin-top: 15px;
+  cursor: pointer;
+  font-family: 'Be Vietnam Pro', sans-serif;
+}
+
+/* Grid Sản phẩm/Siêu thị */
+.store-section-core h2 {
+  font-size: 1.2rem;
+  color: var(--text-black);
+  margin-bottom: 16px;
+  font-family: 'Be Vietnam Pro', sans-serif;
+}
+
+.store-grid-layout {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr); /* Tự động chia 4 cột bằng nhau */
+  gap: 16px;
+}
+
+.store-card-custom {
+  background-color: #ffffff;
+  border-radius: 16px; /* Bo góc tròn trịa hơn */
+  padding: 16px;
+  border: 1px solid #f0f0f0; /* Viền siêu nhạt */
+  transition: all 0.3s ease;
+  display: flex;
+  flex-direction: column;
+  align-items: center; /* Căn giữa hoàn toàn */
+  text-align: center;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.03);
+}
+
+.store-logo-img {
+  width: 70%; /* Ảnh nhỏ hơn một chút cho thoáng */
+  height: auto;
+  object-fit: contain;
+}
+.store-img-placeholder {
+  background-color: #ffffff; /* Đổi nền thành trắng */
+  width: 80px; /* Logo nhỏ gọn lại như ảnh 2 */
+  height: 80px;
+  margin-bottom: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid #eee; /* Viền bao quanh logo */
+  border-radius: 12px;
+  overflow: hidden;
+}
+
+.store-info-core h3 {
+  font-size: 1rem;
+  margin: 0 0 8px 0;
+  font-family: 'Be Vietnam Pro', sans-serif;
+}
+
+.time-delivery-core {
+  font-size: 0.8rem;
+  color: gray;
+  font-family: 'Be Vietnam Pro', sans-serif;
+}
+
+
+
+
+/* --- TRANG TRÍ CHO BANNER TƯƠI NGON --- */
+.banner-fresh {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: flex-start;
+}
+
+
+/* Tiêu đề chữ to ấn tượng */
+.fresh-title-core {
+  font-size: 2.6rem; /* Chữ siêu to làm điểm nhấn */
+  font-weight: 800;
+  line-height: 1.1; /* Ép 2 dòng sát nhau cho chắc chắn */
+  margin: 0 0 16px 0;
+  color: var(--text-dark);
+  letter-spacing: -1px;
+
+}
+
+.fresh-title-core .text-highlight {
+  color: var(--green-primary); /* Nhuộm xanh chữ Tươi Ngon */
+  font-size: 3.2rem;
+}
+
+/* Lời cam kết có đường kẻ dọc màu cam */
+.fresh-subtitle-core {
+  font-size: 1rem;
+  color: #444;
+  max-width: 75%;
+  border-left: 4px solid var(--orange-offer); /* Đường kẻ dọc nhấn nhá */
+  padding-left: 16px;
+  margin-bottom: 24px;
+  font-weight: 500;
+}
