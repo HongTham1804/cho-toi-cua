@@ -3,12 +3,14 @@ import logoMain from '../../assets/logo-main.png';
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 
-export default function CustomerHeader({ onMenuClick }) {
+export default function CustomerHeader({ onMenuClick, onLoginClick, onRegisterClick, variant = 'customer' }) {
     const [isAddressModalOpen, setIsAddressModalOpen] = useState(false);
+    const isGuest = variant === 'guest';
+
     return (
-    <header className="header-core">
+    <header className={`header-core ${isGuest ? 'guest-header-core' : ''}`}>
       <div className="header-container">
-        <i className="fa-solid fa-bars menu-trigger" onClick={onMenuClick}></i>
+        {!isGuest && <i className="fa-solid fa-bars menu-trigger" onClick={onMenuClick}></i>}
 
         <div className="header-logo">
           <img src={logoMain} alt="logo" className="logo-icon" />
@@ -24,19 +26,50 @@ export default function CustomerHeader({ onMenuClick }) {
           <i className="fa-solid fa-magnifying-glass search-icon"></i>
         </div>
 
-        <div className="header-icons">
-          <div className="icon-item" onClick={() => setIsAddressModalOpen(true)}>
-          <i className="fa-solid fa-location-dot"></i>
+        {isGuest ? (
+          <div className="guest-auth-actions-core">
+            {onLoginClick ? (
+              <button
+                type="button"
+                className="guest-auth-btn-core guest-auth-btn-core--outline"
+                onClick={onLoginClick}
+              >
+                Đăng nhập
+              </button>
+            ) : (
+              <Link to="/login" className="guest-auth-btn-core guest-auth-btn-core--outline">
+                Đăng nhập
+              </Link>
+            )}
+            {onRegisterClick ? (
+              <button
+                type="button"
+                className="guest-auth-btn-core guest-auth-btn-core--solid"
+                onClick={onRegisterClick}
+              >
+                Đăng ký
+              </button>
+            ) : (
+              <Link to="/select-role" className="guest-auth-btn-core guest-auth-btn-core--solid">
+                Đăng ký
+              </Link>
+            )}
           </div>
-          <Link to="/shopping-cart" className="icon-item">
-            <i className="fa-solid fa-cart-shopping"></i>
-          </Link>
-          <Link to="/notifications" className="icon-item">
-            <i className="fa-solid fa-bell"></i>
-          </Link>
-        </div>
+        ) : (
+          <div className="header-icons">
+            <div className="icon-item" onClick={() => setIsAddressModalOpen(true)}>
+            <i className="fa-solid fa-location-dot"></i>
+            </div>
+            <Link to="/shopping-cart" className="icon-item">
+              <i className="fa-solid fa-cart-shopping"></i>
+            </Link>
+            <Link to="/notifications" className="icon-item">
+              <i className="fa-solid fa-bell"></i>
+            </Link>
+          </div>
+        )}
       </div>
-      {isAddressModalOpen && (
+      {!isGuest && isAddressModalOpen && (
         <div className="address-overlay-core" onClick={() => setIsAddressModalOpen(false)}>
           {/* Dùng stopPropagation để khi click vào khung trắng không bị đóng modal */}
           <div className="address-box-core" onClick={(e) => e.stopPropagation()}>

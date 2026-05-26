@@ -214,7 +214,7 @@ function Breadcrumb() {
       <div className="container">
         <nav aria-label="Breadcrumb">
           <ol className="breadcrumb">
-            <li><a href="#">Đơn hàng của tôi</a></li>
+            <li><a href="#">Đơn hàng của bạn</a></li>
             <li aria-hidden="true">›</li>
             <li aria-current="page">Đánh giá sản phẩm</li>
           </ol>

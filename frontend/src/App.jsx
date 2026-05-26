@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { Navigate, Outlet, Route, Routes, Link, useNavigate } from "react-router-dom";
+import { Outlet, Route, Routes, Link, useNavigate } from "react-router-dom";
 import "./App.css";
 
 import Header from "./components/Header/Header";
@@ -7,15 +7,16 @@ import CustomerHeader from "./components/CustomerHeader/CustomerHeader";
 import Footer from "./components/Footer/Footer";
 import UserManagement from "./pages/UserManagement/UserManagement";
 import RegisterStore from "./pages/register-store";
-import Login from "./pages/login";
 import Notifications from "./pages/notifications";
 import OrderHistory from "./pages/order-history";
+import OrderDetail from "./pages/order-detail";
 import Review from "./pages/review";
 import Tracking from "./pages/tracking";
 import OrderManagement from "./pages/order-management";
 import Inventory from "./pages/inventory";
 import ProductDetail from "./pages/product-detail";
 import ProductManagement from "./pages/ProductManagement/ProductManagement";
+import GuestHomepage from "./pages/guest-homepage";
 import LoggedInHomepage from "./pages/logged-in-homepage";
 import SupermarketDetails from "./pages/supermarket-details";
 import PartnerLogin from "./pages/PartnerLogin/PartnerLogin";
@@ -84,13 +85,17 @@ function App() {
       )}
 
       <Routes>
-        <Route path="/" element={<Navigate to="/login" replace />} />
+        <Route path="/" element={<GuestHomepage />} />
+        <Route path="/guest-homepage" element={<GuestHomepage />} />
 
         <Route element={<CustomerLayout />}>
           <Route path="/shopping-cart" element={<ShoppingCart />} />
           <Route path="/supermarket-details" element={<SupermarketDetails />} />
           <Route path="/logged-in-homepage" element={<LoggedInHomepage />} />
           <Route path="/order-history" element={<OrderHistory />} />
+          <Route path="/order-history/:orderId" element={<OrderDetail />} />
+          <Route path="/order-detail" element={<OrderDetail />} />
+          <Route path="/order-detail/:orderId" element={<OrderDetail />} />
           <Route path="/review" element={<Review />} />
           <Route path="/notifications" element={<Notifications />} />
           <Route path="/account-settings" element={<AccountSettings />} />
@@ -100,7 +105,7 @@ function App() {
           <Route path="/order-management" element={<OrderManagement />} />
         </Route>
 
-        <Route path="/login" element={<Login />} />
+        <Route path="/login" element={<GuestHomepage initialAuth="login" />} />
         <Route path="/partner-login" element={<PartnerLogin />} />
         <Route path="/register-store" element={<RegisterStore />} />
         <Route path="/select-role" element={<SelectRole />} />
