@@ -324,12 +324,30 @@
 
 .guest-register-field input {
   min-width: 0;
+  width: 100%;
   height: 46px;
+  padding: 0;
   border: 0;
+  border-radius: 0;
   outline: 0;
+  box-shadow: none;
+  background: transparent;
   color: #0f172a;
   font: inherit;
   font-size: 14px;
+  box-sizing: border-box;
+}
+
+.guest-register-modal .guest-register-field input,
+.guest-register-modal .guest-register-field input:focus {
+  width: 100% !important;
+  height: 46px !important;
+  padding: 0 !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+  outline: 0 !important;
+  box-shadow: none !important;
+  background: transparent !important;
 }
 
 .guest-register-field input::placeholder {
