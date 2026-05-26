@@ -1,13 +1,17 @@
 import React, { useState, useMemo } from 'react';
+import { NavLink, useNavigate } from 'react-router-dom'; // Thêm thư viện điều hướng
 import { 
   LayoutDashboard, Package, Users, Briefcase, Truck, 
   CircleDollarSign, Settings, LogOut, Search, Bell, 
-  ChevronDown, Plus, Edit, Trash2, X 
+  ChevronDown, Plus, Edit, Trash2, X,
+  ClipboardList, Archive, Star // Import thêm icon cho các trang mới
 } from 'lucide-react';
 import './ProductManagement.scss';
 
 const ProductManagement = () => {
-  // 1. DỮ LIỆU MẪU (Đã thêm link ảnh thật)
+  const navigate = useNavigate(); // Hook dùng để chuyển trang cho nút Đăng xuất
+
+  // 1. DỮ LIỆU MẪU
   const [products, setProducts] = useState([
     { id: '#CTC-001', name: 'Cải Bó Xôi Organic', category: 'Rau củ', price: '45,000', status: 'Đang bán', image: 'https://images.unsplash.com/photo-1576045057995-568f588f82fb?w=150&q=80' },
     { id: '#CTC-002', name: 'Thịt Thăn Bò Úc', category: 'Thịt', price: '280,000', status: 'Đang bán', image: 'https://images.unsplash.com/photo-1603048297172-c92544798d5e?w=150&q=80' },
@@ -30,6 +34,13 @@ const ProductManagement = () => {
   });
 
   // ================= XỬ LÝ SỰ KIỆN =================
+
+  // Đăng xuất
+  const handleLogout = () => {
+    if (window.confirm("Bạn có chắc chắn muốn đăng xuất khỏi trang Quản trị không?")) {
+      navigate('/login');
+    }
+  };
 
   // Tìm kiếm và Lọc
   const filteredProducts = useMemo(() => {
@@ -68,14 +79,9 @@ const ProductManagement = () => {
   const handleSaveProduct = (e) => {
     e.preventDefault();
     if (editingId) {
-      // Đang sửa
       setProducts(products.map(p => p.id === editingId ? { ...formData, id: editingId } : p));
     } else {
-      // Thêm mới
-      const newProduct = {
-        ...formData,
-        id: `#CTC-00${products.length + 1}` // Giả lập tạo ID mới
-      };
+      const newProduct = { ...formData, id: `#CTC-00${products.length + 1}` };
       setProducts([newProduct, ...products]);
     }
     setIsModalOpen(false);
@@ -93,7 +99,7 @@ const ProductManagement = () => {
 
   return (
     <div className="new-admin-layout">
-      {/* SIDEBAR */}
+      {/* SIDEBAR ĐÃ ĐƯỢC TÍCH HỢP ĐIỀU HƯỚNG */}
       <aside className="sidebar">
         <div className="sidebar-brand">
           <h1>Chợ Tới Cửa</h1>
@@ -101,18 +107,44 @@ const ProductManagement = () => {
         </div>
         <nav className="sidebar-nav">
           <ul className="nav-list">
-            <li className="nav-item"><LayoutDashboard size={20} /><span>Bảng điều khiển</span></li>
-            <li className="nav-item active"><Package size={20} /><span>Quản lý sản phẩm</span></li>
-            <li className="nav-item"><Users size={20} /><span>Quản lý người dùng</span></li>
-            <li className="nav-item"><Briefcase size={20} /><span>Quản lý đối tác</span></li>
-            <li className="nav-item"><Truck size={20} /><span>Quản lý vận chuyển</span></li>
-            <li className="nav-item"><CircleDollarSign size={20} /><span>Cấu hình giá</span></li>
+            <NavLink to="/admin-dashboard" className={({ isActive }) => isActive ? "nav-item active" : "nav-item"}>
+              <LayoutDashboard size={20} /><span>Bảng điều khiển</span>
+            </NavLink>
+            <NavLink to="/order-management" className={({ isActive }) => isActive ? "nav-item active" : "nav-item"}>
+              <ClipboardList size={20} /><span>Quản lý đơn hàng</span>
+            </NavLink>
+            <NavLink to="/product-management" className={({ isActive }) => isActive ? "nav-item active" : "nav-item"}>
+              <Package size={20} /><span>Quản lý sản phẩm</span>
+            </NavLink>
+            <NavLink to="/inventory" className={({ isActive }) => isActive ? "nav-item active" : "nav-item"}>
+              <Archive size={20} /><span>Quản lý kho hàng</span>
+            </NavLink>
+            <NavLink to="/UserDetail" className={({ isActive }) => isActive ? "nav-item active" : "nav-item"}>
+              <Users size={20} /><span>Quản lý người dùng</span>
+            </NavLink>
+            <NavLink to="/partner-login" className={({ isActive }) => isActive ? "nav-item active" : "nav-item"}>
+              <Briefcase size={20} /><span>Quản lý đối tác</span>
+            </NavLink>
+            <NavLink to="/tracking" className={({ isActive }) => isActive ? "nav-item active" : "nav-item"}>
+              <Truck size={20} /><span>Quản lý vận chuyển</span>
+            </NavLink>
+            <NavLink to="/review" className={({ isActive }) => isActive ? "nav-item active" : "nav-item"}>
+              <Star size={20} /><span>Đánh giá & Nhận xét</span>
+            </NavLink>
+            <NavLink to="/pricing-config" className={({ isActive }) => isActive ? "nav-item active" : "nav-item"}>
+              <CircleDollarSign size={20} /><span>Cấu hình giá</span>
+            </NavLink>
           </ul>
         </nav>
         <div className="sidebar-footer">
           <ul className="nav-list">
-            <li className="nav-item"><Settings size={20} /><span>Cài đặt</span></li>
-            <li className="nav-item"><LogOut size={20} /><span>Đăng xuất</span></li>
+            <NavLink to="/settings" className={({ isActive }) => isActive ? "nav-item active" : "nav-item"}>
+              <Settings size={20} /><span>Cài đặt</span>
+            </NavLink>
+            {/* Đổi thẻ Đăng xuất thành dạng có thể click gọi hàm */}
+            <li className="nav-item" onClick={handleLogout} style={{ cursor: 'pointer' }}>
+              <LogOut size={20} /><span>Đăng xuất</span>
+            </li>
           </ul>
         </div>
       </aside>
@@ -146,7 +178,7 @@ const ProductManagement = () => {
             <div className="divider"></div>
             <div className="user-profile">
               <div className="user-info">
-                <span className="user-name">Admin User</span>
+                <span className="user-name">Admin</span>
                 <span className="user-role">Quản lý chợ</span>
               </div>
               <img src="https://i.pravatar.cc/150?img=11" alt="Avatar" className="avatar" />

@@ -1,46 +1,65 @@
 import React from 'react';
-import { MdOutlineSpaceDashboard, MdOutlineInventory2, MdOutlinePeopleAlt, MdOutlineHandshake, MdOutlineLocalShipping, MdOutlinePayments, MdOutlineSettings, MdOutlineLogout } from "react-icons/md";
+import { NavLink, useNavigate } from 'react-router-dom'; // 1. IMPORT THƯ VIỆN ĐIỀU HƯỚNG
+import { 
+  MdOutlineSpaceDashboard, MdOutlineInventory2, MdOutlinePeopleAlt, 
+  MdOutlineHandshake, MdOutlineLocalShipping, MdOutlinePayments, 
+  MdOutlineSettings, MdOutlineLogout 
+} from "react-icons/md";
 import './Sidebar.scss';
 
-const Sidebar = ({ activeTab, setActiveTab }) => {
+const Sidebar = () => {
+  const navigate = useNavigate(); // 2. KHỞI TẠO HÀM CHUYỂN TRANG
+
+  // 3. HÀM XỬ LÝ ĐĂNG XUẤT
+  const handleLogout = () => {
+    if (window.confirm("Bạn có chắc chắn muốn đăng xuất không?")) {
+      navigate('/login');
+    }
+  };
+
   return (
     <aside className="sidebar">
       <div className="logo-section">
         <h1>Chợ Tới Cửa</h1>
         <p>Quản lý chợ</p>
       </div>
+      
+      {/* 4. SỬ DỤNG NAVLINK ĐỂ ĐIỀU HƯỚNG VÀ TỰ ĐỘNG ACTIVE */}
       <nav className="nav-menu">
-        <a 
-          href="#" 
-          className={`nav-item ${activeTab === 'dashboard' ? 'active' : ''}`}
-          onClick={(e) => { e.preventDefault(); setActiveTab('dashboard'); }}
-        >
+        <NavLink to="/admin-dashboard" className={({ isActive }) => isActive ? "nav-item active" : "nav-item"}>
           <MdOutlineSpaceDashboard className="nav-icon" /> Bảng điều khiển
-        </a>
+        </NavLink>
         
-        <a 
-          href="#" 
-          className={`nav-item ${activeTab === 'products' ? 'active' : ''}`}
-          onClick={(e) => { e.preventDefault(); setActiveTab('products'); }}
-        >
+        <NavLink to="/product-management" className={({ isActive }) => isActive ? "nav-item active" : "nav-item"}>
           <MdOutlineInventory2 className="nav-icon" /> Quản lý sản phẩm
-        </a>
+        </NavLink>
         
-        <a 
-          href="#" 
-          className={`nav-item ${activeTab === 'users' ? 'active' : ''}`}
-          onClick={(e) => { e.preventDefault(); setActiveTab('users'); }}
-        >
+        <NavLink to="/user-management" className={({ isActive }) => isActive ? "nav-item active" : "nav-item"}>
           <MdOutlinePeopleAlt className="nav-icon" /> Quản lý người dùng
-        </a>
+        </NavLink>
         
-        <a href="#" className="nav-item"><MdOutlineHandshake className="nav-icon" /> Quản lý đối tác</a>
-        <a href="#" className="nav-item"><MdOutlineLocalShipping className="nav-icon" /> Quản lý vận chuyển</a>
-        <a href="#" className="nav-item"><MdOutlinePayments className="nav-icon" /> Cấu hình giá</a>
+        <NavLink to="/partner-login" className={({ isActive }) => isActive ? "nav-item active" : "nav-item"}>
+          <MdOutlineHandshake className="nav-icon" /> Quản lý đối tác
+        </NavLink>
+
+        <NavLink to="/tracking" className={({ isActive }) => isActive ? "nav-item active" : "nav-item"}>
+          <MdOutlineLocalShipping className="nav-icon" /> Quản lý vận chuyển
+        </NavLink>
+
+        <NavLink to="/pricing-config" className={({ isActive }) => isActive ? "nav-item active" : "nav-item"}>
+          <MdOutlinePayments className="nav-icon" /> Cấu hình giá
+        </NavLink>
       </nav>
+
       <div className="bottom-menu">
-        <a href="#" className="nav-item"><MdOutlineSettings className="nav-icon" /> Cài đặt</a>
-        <a href="#" className="nav-item"><MdOutlineLogout className="nav-icon" /> Đăng xuất</a>
+        <NavLink to="/settings" className={({ isActive }) => isActive ? "nav-item active" : "nav-item"}>
+          <MdOutlineSettings className="nav-icon" /> Cài đặt
+        </NavLink>
+        
+        {/* Nút đăng xuất không dùng link mà dùng sự kiện click */}
+        <div className="nav-item" onClick={handleLogout} style={{ cursor: 'pointer' }}>
+          <MdOutlineLogout className="nav-icon" /> Đăng xuất
+        </div>
       </div>
     </aside>
   );
