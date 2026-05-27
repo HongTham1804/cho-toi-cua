@@ -110,12 +110,13 @@ function App() {
           <Route path="/order-history/:orderId" element={<OrderDetail />} />
           <Route path="/order-detail" element={<OrderDetail />} />
           <Route path="/order-detail/:orderId" element={<OrderDetail />} />
-          <Route path="/review" element={<Review />} />
           <Route path="/notifications" element={<Notifications />} />
           <Route path="/account-settings" element={<AccountSettings />} />
           <Route path="/favorite-products" element={lazyPage(FavoriteProducts)} />
-          <Route path="/tracking" element={<Tracking />} />
         </Route>
+
+        <Route path="/tracking" element={<Tracking />} />
+        <Route path="/review" element={<Review />} />
 
         {/* Admin routes */}
         <Route path="/order-management" element={<OrderManagement />} />

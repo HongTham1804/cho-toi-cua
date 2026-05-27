@@ -1,7 +1,5 @@
 import './tracking.css';
 import { useEffect, useMemo, useState } from "react";
-import CustomerHeader from "../../components/CustomerHeader/CustomerHeader";
-import Footer from "../../components/Footer/Footer";
 import { fetchOrderTracking, getOrderIdFromUrl } from "./trackingApi.js";
 
 function calcEtaMinutes(etaTime) {
@@ -51,8 +49,6 @@ export default function App() {
 
   return (
     <div className="tracking-page">
-      <CustomerHeader />
-
       <main className="tracking-body" role="main">
         <section className="col-left" aria-label="Bản đồ và lộ trình">
           <EtaBanner eta={order?.eta} loading={loading} />
@@ -65,8 +61,6 @@ export default function App() {
           <TimelinePanel steps={order?.steps ?? []} loading={loading} error={error} />
         </aside>
       </main>
-
-      <Footer />
     </div>
   );
 }

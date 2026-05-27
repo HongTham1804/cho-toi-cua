@@ -1,7 +1,5 @@
 import './review.css';
 import { useEffect, useRef, useState } from "react";
-import CustomerHeader from "../../components/CustomerHeader/CustomerHeader";
-import Footer from "../../components/Footer/Footer";
 import { fetchReviewOrder, getOrderIdFromUrl, postReviews } from "./reviewApi.js";
 
 const STAR_HINTS = ["", "Rất tệ", "Tệ", "Bình thường", "Tốt", "Xuất sắc!"];
@@ -162,7 +160,6 @@ export default function App() {
 
   return (
     <div className="review-page">
-      <CustomerHeader />
       <Breadcrumb />
 
       <main className="review-main container" role="main">
@@ -202,7 +199,6 @@ export default function App() {
         )}
       </main>
 
-      <Footer />
       <Toast toast={toast} />
     </div>
   );
