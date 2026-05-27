@@ -108,7 +108,7 @@ function App() {
         <Route path="/UserDetail" element={<UserDetail />} />
         <Route path="/product-management" element={<ProductManagement />} />
         <Route path="/inventory" element={<Inventory />} />
-        <Route path="/product/:id" element={<ProductDetail />} />
+        <Route path="/product-detail" element={<ProductDetail />} />
         <Route path="/user-management" element={<UserManagement />} /> 
         <Route path="/product-management" element={<ProductManagement />} />
       </Routes>
