@@ -110,6 +110,7 @@ function App() {
           <Route path="/review" element={<Review />} />
           <Route path="/notifications" element={<Notifications />} />
           <Route path="/account-settings" element={<AccountSettings />} />
+           <Route path="/favorite-products" element={lazyPage(FavoriteProducts)} />
         </Route>
 
         <Route element={<AdminLayout />}>
@@ -126,8 +127,6 @@ function App() {
         <Route path="/delivery-management" element={lazyPage(DeliveryManagement)} />
         <Route path="/pricing-config" element={lazyPage(PartnerPricing)} />
         <Route path="/quanlydoitac-gia" element={lazyPage(PartnerPricing)} />
-        <Route path="/spyeuthich" element={lazyPage(FavoriteProducts)} />
-        <Route path="/favorite-products" element={lazyPage(FavoriteProducts)} />
         <Route path="/UserDetail" element={<UserDetail />} />
         <Route path="/product-management" element={<ProductManagement />} />
         <Route path="/inventory" element={<Inventory />} />
