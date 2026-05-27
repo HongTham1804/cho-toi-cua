@@ -61,7 +61,7 @@ const HISTORY_ORDERS = [
 
 const NAV_ITEMS = [
   { id: "orders", label: "Đơn hàng", icon: "fa-solid fa-clipboard-list", path: "/order-management" },
-  { id: "categories", label: "Danh mục", icon: "fa-solid fa-tags", path: "/inventory" },
+  { id: "categories", label: "Quản lý kho", icon: "fa-solid fa-tags", path: "/inventory" },
   { id: "store", label: "Cửa hàng", icon: "fa-solid fa-store", path: null },
   { id: "stats", label: "Thống kê", icon: "fa-solid fa-chart-bar", path: null },
 ];
@@ -144,7 +144,7 @@ export default function OrderManagement() {
       <div className="om-right">
         {/* Header */}
         <header className="om-header">
-          <h1 className="om-header-title">Quản lý Đơn hàng</h1>
+          
           <div className="om-search-wrap">
             <i className="fa-solid fa-magnifying-glass om-search-icon" />
             <input
@@ -155,11 +155,7 @@ export default function OrderManagement() {
               onChange={(e) => setSearchQuery(e.target.value)}
             />
           </div>
-          <div className="om-header-icons">
-            <button className="om-icon-btn"><i className="fa-regular fa-bell" /></button>
-            <button className="om-icon-btn"><i className="fa-regular fa-circle-question" /></button>
-            <button className="om-icon-btn"><i className="fa-solid fa-gear" /></button>
-          </div>
+          
         </header>
 
         {/* Main content */}

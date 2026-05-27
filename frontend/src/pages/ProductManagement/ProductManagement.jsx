@@ -4,7 +4,6 @@ import {
   LayoutDashboard, Package, Users, Briefcase, Truck, 
   Settings, LogOut, Search, Bell,
   ChevronDown, Plus, Edit, Trash2, X,
-  ClipboardList, Archive, Star // Import thêm icon cho các trang mới
 } from 'lucide-react';
 import './ProductManagement.scss';
 
@@ -110,16 +109,10 @@ const ProductManagement = () => {
             <NavLink to="/admin-dashboard" className={({ isActive }) => isActive ? "nav-item active" : "nav-item"}>
               <LayoutDashboard size={20} /><span>Bảng điều khiển</span>
             </NavLink>
-            <NavLink to="/order-management" className={({ isActive }) => isActive ? "nav-item active" : "nav-item"}>
-              <ClipboardList size={20} /><span>Quản lý đơn hàng</span>
-            </NavLink>
             <NavLink to="/product-management" className={({ isActive }) => isActive ? "nav-item active" : "nav-item"}>
               <Package size={20} /><span>Quản lý sản phẩm</span>
             </NavLink>
-            <NavLink to="/inventory" className={({ isActive }) => isActive ? "nav-item active" : "nav-item"}>
-              <Archive size={20} /><span>Quản lý kho hàng</span>
-            </NavLink>
-            <NavLink to="/UserDetail" className={({ isActive }) => isActive ? "nav-item active" : "nav-item"}>
+            <NavLink to="/user-management" className={({ isActive }) => isActive ? "nav-item active" : "nav-item"}>
               <Users size={20} /><span>Quản lý người dùng</span>
             </NavLink>
             <NavLink to="/quanlydoitac-gia" className={({ isActive }) => isActive ? "nav-item active" : "nav-item"}>
@@ -127,9 +120,6 @@ const ProductManagement = () => {
             </NavLink>
             <NavLink to="/quanlyvanchuyen" className={({ isActive }) => isActive ? "nav-item active" : "nav-item"}>
               <Truck size={20} /><span>Quản lý vận chuyển</span>
-            </NavLink>
-            <NavLink to="/review" className={({ isActive }) => isActive ? "nav-item active" : "nav-item"}>
-              <Star size={20} /><span>Đánh giá & Nhận xét</span>
             </NavLink>
           </ul>
         </nav>

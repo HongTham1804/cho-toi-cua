@@ -52,7 +52,7 @@ const FILTERS = [
 
 const NAV_ITEMS = [
   { id: "orders", label: "Đơn hàng", icon: "fa-solid fa-clipboard-list", path: "/order-management" },
-  { id: "categories", label: "Danh mục", icon: "fa-solid fa-tags", path: "/inventory" },
+  { id: "categories", label: "Quản lý kho", icon: "fa-solid fa-tags", path: "/inventory" },
   { id: "store", label: "Cửa hàng", icon: "fa-solid fa-store", path: null },
   { id: "stats", label: "Thống kê", icon: "fa-solid fa-chart-bar", path: null },
 ];
@@ -189,14 +189,7 @@ export default function Inventory() {
               placeholder="Tìm kiếm sản phẩm..."
             />
           </div>
-          <div className="inv-header-icons">
-            <button className="inv-icon-btn" aria-label="Thông báo">
-              <i className="fa-regular fa-bell" />
-            </button>
-            <button className="inv-icon-btn" aria-label="Tài khoản">
-              <i className="fa-regular fa-circle-user" />
-            </button>
-          </div>
+          
         </header>
 
         {/* Main */}
@@ -217,9 +210,7 @@ export default function Inventory() {
                   {f.label}
                 </button>
               ))}
-              <button className="inv-add-btn" onClick={() => setShowAddModal(true)}>
-                <i className="fa-solid fa-plus" /> Thêm sản phẩm
-              </button>
+              
             </div>
           </div>
 
