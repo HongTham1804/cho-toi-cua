@@ -5,7 +5,8 @@ import {
   LogOut, Search, Bell, HelpCircle, MoreVertical, TrendingUp, 
   DollarSign, ShoppingBag, UserCheck, AlertTriangle 
 } from 'lucide-react';
-
+import Sidebar from '../../components/Sidebar/Sidebar';
+import Header from '../../components/Header/Header';
 const Dashboard = () => {
   const [activeMenu, setActiveMenu] = useState('Tổng quan');
 
