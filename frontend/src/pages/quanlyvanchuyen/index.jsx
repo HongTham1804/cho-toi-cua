@@ -1,5 +1,5 @@
 import React from 'react';
-import './DeliveryManagement.css';
+import './index.css';
 import { Search, Bell, HelpCircle, Grid, Truck, MapPin, User, ChevronLeft, ChevronRight, RefreshCw } from 'lucide-react';
 
 export default function DeliveryManagement() {

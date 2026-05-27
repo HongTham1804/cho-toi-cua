@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import './PartnerPricing.css';
+import './index.css';
 import { Search, Bell, HelpCircle, Grid, Plus, Eye, Lock, ChevronLeft, ChevronRight, UserCheck, DollarSign, ArrowUpRight, Edit3, Trash2 } from 'lucide-react';
 
 export default function PartnerPricing() {

@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import './Dashboard.css';
+import './index.css';
 import { 
   LayoutGrid, ShoppingCart, Box, Users, BarChart3, Settings, 
   LogOut, Search, Bell, HelpCircle, MoreVertical, TrendingUp, 
@@ -197,4 +197,6 @@ const Dashboard = () => {
     </div>
   );
 };
+
+export default Dashboard;
 

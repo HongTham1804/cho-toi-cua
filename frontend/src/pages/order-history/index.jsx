@@ -1,9 +1,9 @@
 import { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import CustomerHeader from "../../components/CustomerHeader/CustomerHeader";
 import Footer from "../../components/Footer/Footer";
 import "./order-history.css";
 import {
-  fetchCurrentUser,
   fetchOrders,
   reorder,
 } from "./api/order-history-api";
@@ -40,64 +40,10 @@ function StoreIcon() {
   );
 }
 
-function ProfileIcon() {
-  return (
-    <svg
-      width="15" height="15" viewBox="0 0 24 24" fill="none"
-      stroke="currentColor" strokeWidth="2.2"
-      strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"
-    >
-      <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
-      <circle cx="12" cy="7" r="4" />
-    </svg>
-  );
-}
-
-function OrderIcon() {
-  return (
-    <svg
-      width="15" height="15" viewBox="0 0 24 24" fill="none"
-      stroke="currentColor" strokeWidth="2.2"
-      strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"
-    >
-      <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
-      <polyline points="14 2 14 8 20 8" />
-      <line x1="8" y1="13" x2="16" y2="13" />
-      <line x1="8" y1="17" x2="16" y2="17" />
-    </svg>
-  );
-}
-
-function HeartIcon() {
-  return (
-    <svg
-      width="15" height="15" viewBox="0 0 24 24" fill="none"
-      stroke="currentColor" strokeWidth="2.2"
-      strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"
-    >
-      <path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.6l-1-1a5.5 5.5 0 0 0-7.8 7.8l1 1L12 21l7.8-7.8 1-1a5.5 5.5 0 0 0 0-7.6z" />
-    </svg>
-  );
-}
-
-function PinIcon() {
-  return (
-    <svg
-      width="15" height="15" viewBox="0 0 24 24" fill="none"
-      stroke="currentColor" strokeWidth="2.2"
-      strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"
-    >
-      <path d="M21 10c0 7-9 13-9 13S3 17 3 10a9 9 0 0 1 18 0z" />
-      <circle cx="12" cy="10" r="3" />
-    </svg>
-  );
-}
-
 /* ═══════════════════════════════════════════════════════════════
    APP
 ═══════════════════════════════════════════════════════════════ */
 function App() {
-  const [user, setUser]               = useState(null);
   const [orders, setOrders]           = useState([]);
   const [activeStatus, setActiveStatus] = useState("all");
   const [isLoading, setIsLoading]     = useState(true);
@@ -106,11 +52,7 @@ function App() {
 
   useEffect(() => {
     async function loadPage() {
-      const [userData, orderData] = await Promise.all([
-        fetchCurrentUser(),
-        fetchOrders("all"),
-      ]);
-      setUser(userData);
+      const orderData = await fetchOrders("all");
       setOrders(orderData);
       setIsLoading(false);
     }
@@ -135,10 +77,6 @@ function App() {
     }
   }
 
-  function handleOpenDetail(orderId) {
-    showToast(`Đang mở chi tiết đơn #${orderId}...`);
-  }
-
   async function handleReorder(orderId) {
     setReorderingId(orderId);
     try {
@@ -156,10 +94,13 @@ function App() {
       <CustomerHeader />
 
       <div className="body-wrapper">
-        <Sidebar user={user} />
-
         <main className="order-history-main" role="main">
-          <h1 className="page-title">Lịch sử đơn hàng</h1>
+          <div className="order-page-heading">
+            <h1 className="page-title">Đơn mua</h1>
+            <a href="#order-list" className="purchase-history-link">
+              Xem lịch sử mua hàng &gt;
+            </a>
+          </div>
 
           <div
             className="order-tabs"
@@ -189,7 +130,6 @@ function App() {
                   key={order.id}
                   order={order}
                   reorderingId={reorderingId}
-                  onDetail={handleOpenDetail}
                   onReorder={handleReorder}
                 />
               ))}
@@ -212,58 +152,30 @@ function App() {
 }
 
 /* ═══════════════════════════════════════════════════════════════
-   SIDEBAR
-═══════════════════════════════════════════════════════════════ */
-function Sidebar({ user }) {
-  return (
-    <aside className="order-history-sidebar" aria-label="Menu tài khoản">
-      <div className="sidebar-user">
-        <div className="user-avatar" aria-hidden="true">
-          <ProfileIcon />
-        </div>
-        <div className="user-info">
-          <p className={`user-name ${!user ? "skeleton" : ""}`}>
-            {user?.name ?? "\u00a0\u00a0\u00a0\u00a0\u00a0"}
-          </p>
-          <p className={`user-tag ${!user ? "skeleton" : ""}`}>
-            {user?.tag ?? "\u00a0\u00a0\u00a0"}
-          </p>
-        </div>
-      </div>
-
-      <nav className="sidebar-nav" aria-label="Tài khoản">
-        <a href="#" className="sidebar-link">
-          <span className="sidebar-icon"><ProfileIcon /></span>
-          Thông tin tài khoản
-        </a>
-        <a href="#" className="sidebar-link active" aria-current="page">
-          <span className="sidebar-icon"><OrderIcon /></span>
-          Lịch sử đơn hàng
-        </a>
-        <a href="#" className="sidebar-link">
-          <span className="sidebar-icon"><HeartIcon /></span>
-          Sản phẩm yêu thích
-        </a>
-        <a href="#" className="sidebar-link">
-          <span className="sidebar-icon"><PinIcon /></span>
-          Sổ địa chỉ
-        </a>
-      </nav>
-    </aside>
-  );
-}
-
-/* ═══════════════════════════════════════════════════════════════
    ORDER CARD
 ═══════════════════════════════════════════════════════════════ */
-function OrderCard({ order, reorderingId, onDetail, onReorder }) {
+function OrderCard({ order, reorderingId, onReorder }) {
+  const navigate = useNavigate();
   const status = STATUS_MAP[order.status] ?? {
     label: order.status,
     className: "pending",
   };
+  const detailPath = `/order-detail/${encodeURIComponent(order.id)}`;
+  const openDetail = () => navigate(detailPath);
 
   return (
-    <article className="order-card">
+    <article
+      className="order-card order-card-clickable"
+      role="link"
+      tabIndex={0}
+      onClick={openDetail}
+      onKeyDown={(event) => {
+        if (event.key === "Enter" || event.key === " ") {
+          event.preventDefault();
+          openDetail();
+        }
+      }}
+    >
       <div className="order-card-header">
         <div className="store-info">
           <span className="store-icon"><StoreIcon /></span>
@@ -288,9 +200,12 @@ function OrderCard({ order, reorderingId, onDetail, onReorder }) {
 
           <div className="btn-group">
             <button
-              className="btn btn-outline"
               type="button"
-              onClick={() => onDetail(order.id)}
+              className="btn btn-outline"
+              onClick={(event) => {
+                event.stopPropagation();
+                openDetail();
+              }}
             >
               Chi tiết
             </button>
@@ -300,7 +215,10 @@ function OrderCard({ order, reorderingId, onDetail, onReorder }) {
                 className="btn btn-primary"
                 type="button"
                 disabled={reorderingId === order.id}
-                onClick={() => onReorder(order.id)}
+                onClick={(event) => {
+                  event.stopPropagation();
+                  onReorder(order.id);
+                }}
               >
                 {reorderingId === order.id ? "Đang xử lý..." : "Mua lại"}
               </button>

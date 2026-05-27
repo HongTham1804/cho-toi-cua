@@ -1,4 +1,5 @@
 import React from 'react';
+import './index.css';
 import { Search, Bell, HelpCircle, Grid, Heart, ShoppingCart, Star, Trash2 } from 'lucide-react';
 
 export default function FavoriteProducts() {
