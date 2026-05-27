@@ -117,7 +117,6 @@ export default function ProductDetail() {
       <div className="pd-not-found">
         <i className="fa-solid fa-box-open" />
         <p>Không tìm thấy sản phẩm.</p>
-        <button onClick={() => navigate("/inventory")}>← Quay lại Kho hàng</button>
       </div>
     );
   }
@@ -195,9 +194,6 @@ export default function ProductDetail() {
         <main className="pd-main">
           {/* Breadcrumb + actions */}
           <div className="pd-topbar">
-            <button className="pd-back-btn" onClick={() => navigate("/inventory")}>
-              <i className="fa-solid fa-arrow-left" /> Quay lại Kho hàng
-            </button>
             <h1 className="pd-page-title">Chi tiết sản phẩm</h1>
             <div className="pd-topbar-actions">
               <button className="pd-btn-edit" onClick={() => showToast("Chỉnh sửa sản phẩm...")}>

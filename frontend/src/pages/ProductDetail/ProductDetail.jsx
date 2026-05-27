@@ -3,16 +3,16 @@ import React, { useState } from 'react';
 import { useParams, Link } from 'react-router-dom'; // Thêm useParams
 import { productsData } from './data'; // Import data
 import ReviewModal from './ReviewModal';
-import './styles.css';
+import './style.css';
 
-const ProductDetail = ({ product }) => {
+const ProductDetail = () => {
 
     // 1. Lấy ID từ URL (ví dụ: /product/1 -> id = "1")
   const { id } = useParams();
 
   // 2. Tìm sản phẩm trong mảng data có id khớp với id trên URL
   // Lưu ý: params từ URL luôn là chuỗi (string), nên cần parseInt để so sánh với số
-    const product = productsData.find(item => item.id === parseInt(id));
+    const product = productsData.find(item => item.id === parseInt(id, 10));
     
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [quantity, setQuantity] = useState(1);

@@ -14,7 +14,7 @@ import Review from "./pages/review";
 import Tracking from "./pages/tracking";
 import OrderManagement from "./pages/order-management";
 import Inventory from "./pages/inventory";
-import ProductDetail from "./pages/product-detail";
+import ProductDetail from "./pages/ProductDetail/ProductDetail";
 import ProductManagement from "./pages/ProductManagement/ProductManagement";
 import GuestHomepage from "./pages/guest-homepage";
 import LoggedInHomepage from "./pages/logged-in-homepage";
@@ -113,6 +113,7 @@ function App() {
           <Route path="/notifications" element={<Notifications />} />
           <Route path="/account-settings" element={<AccountSettings />} />
           <Route path="/favorite-products" element={lazyPage(FavoriteProducts)} />
+          <Route path="/product/:id" element={<ProductDetail />} />
         </Route>
 
         <Route path="/tracking" element={<Tracking />} />
@@ -123,7 +124,6 @@ function App() {
         <Route path="/partner-login" element={<PartnerLogin />} />
         <Route path="/register-store" element={<RegisterStore />} />
         <Route path="/inventory" element={<Inventory />} />
-        <Route path="/product/:id" element={<ProductDetail />} />
        
         {/* Partner routes */}
         <Route path="/user-management" element={<UserManagement />} />
@@ -136,5 +136,4 @@ function App() {
     </div>
   );
 }
-
 export default App;
