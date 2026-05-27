@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { Suspense, useState } from "react";
 import { Outlet, Route, Routes, Link, useNavigate } from "react-router-dom";
 import "./App.css";
 
@@ -24,6 +24,17 @@ import ShoppingCart from "./pages/shopping-cart";
 import SelectRole from "./pages/select-role";
 import UserDetail from "./pages/UserDetail/UserDetail";
 import AccountSettings from './pages/account-settings';
+
+const AdminDashboard = React.lazy(() => import("./pages/admin-dashboard"));
+const DeliveryManagement = React.lazy(() => import("./pages/quanlyvanchuyen"));
+const PartnerPricing = React.lazy(() => import("./pages/quanlydoitac-gia"));
+const FavoriteProducts = React.lazy(() => import("./pages/spyeuthich"));
+
+const lazyPage = (Page) => (
+  <Suspense fallback={<div className="route-loading">Dang tai...</div>}>
+    <Page />
+  </Suspense>
+);
 
 function App() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -110,6 +121,13 @@ function App() {
         <Route path="/register-store" element={<RegisterStore />} />
         <Route path="/select-role" element={<SelectRole />} />
         <Route path="/tracking" element={<Tracking />} />
+        <Route path="/admin-dashboard" element={lazyPage(AdminDashboard)} />
+        <Route path="/quanlyvanchuyen" element={lazyPage(DeliveryManagement)} />
+        <Route path="/delivery-management" element={lazyPage(DeliveryManagement)} />
+        <Route path="/pricing-config" element={lazyPage(PartnerPricing)} />
+        <Route path="/quanlydoitac-gia" element={lazyPage(PartnerPricing)} />
+        <Route path="/spyeuthich" element={lazyPage(FavoriteProducts)} />
+        <Route path="/favorite-products" element={lazyPage(FavoriteProducts)} />
         <Route path="/UserDetail" element={<UserDetail />} />
         <Route path="/product-management" element={<ProductManagement />} />
         <Route path="/inventory" element={<Inventory />} />

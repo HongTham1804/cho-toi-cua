@@ -122,10 +122,10 @@ const ProductManagement = () => {
             <NavLink to="/UserDetail" className={({ isActive }) => isActive ? "nav-item active" : "nav-item"}>
               <Users size={20} /><span>Quản lý người dùng</span>
             </NavLink>
-            <NavLink to="/partner-login" className={({ isActive }) => isActive ? "nav-item active" : "nav-item"}>
+            <NavLink to="/quanlydoitac-gia" className={({ isActive }) => isActive ? "nav-item active" : "nav-item"}>
               <Briefcase size={20} /><span>Quản lý đối tác</span>
             </NavLink>
-            <NavLink to="/tracking" className={({ isActive }) => isActive ? "nav-item active" : "nav-item"}>
+            <NavLink to="/quanlyvanchuyen" className={({ isActive }) => isActive ? "nav-item active" : "nav-item"}>
               <Truck size={20} /><span>Quản lý vận chuyển</span>
             </NavLink>
             <NavLink to="/review" className={({ isActive }) => isActive ? "nav-item active" : "nav-item"}>

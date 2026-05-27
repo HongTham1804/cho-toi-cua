@@ -38,11 +38,11 @@ const Sidebar = () => {
           <MdOutlinePeopleAlt className="nav-icon" /> Quản lý người dùng
         </NavLink>
         
-        <NavLink to="/partner-login" className={({ isActive }) => isActive ? "nav-item active" : "nav-item"}>
+        <NavLink to="/quanlydoitac-gia" className={({ isActive }) => isActive ? "nav-item active" : "nav-item"}>
           <MdOutlineHandshake className="nav-icon" /> Quản lý đối tác
         </NavLink>
 
-        <NavLink to="/tracking" className={({ isActive }) => isActive ? "nav-item active" : "nav-item"}>
+        <NavLink to="/quanlyvanchuyen" className={({ isActive }) => isActive ? "nav-item active" : "nav-item"}>
           <MdOutlineLocalShipping className="nav-icon" /> Quản lý vận chuyển
         </NavLink>
 
