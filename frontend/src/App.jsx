@@ -124,8 +124,6 @@ function App() {
         <Route path="/tracking" element={<Tracking />} />
         <Route path="/admin-dashboard" element={lazyPage(AdminDashboard)} />
         <Route path="/quanlyvanchuyen" element={lazyPage(DeliveryManagement)} />
-        <Route path="/delivery-management" element={lazyPage(DeliveryManagement)} />
-        <Route path="/pricing-config" element={lazyPage(PartnerPricing)} />
         <Route path="/quanlydoitac-gia" element={lazyPage(PartnerPricing)} />
         <Route path="/UserDetail" element={<UserDetail />} />
         <Route path="/product-management" element={<ProductManagement />} />

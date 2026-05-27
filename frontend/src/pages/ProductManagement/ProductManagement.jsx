@@ -2,7 +2,7 @@ import React, { useState, useMemo } from 'react';
 import { NavLink, useNavigate } from 'react-router-dom'; // Thêm thư viện điều hướng
 import { 
   LayoutDashboard, Package, Users, Briefcase, Truck, 
-  CircleDollarSign, Settings, LogOut, Search, Bell, 
+  Settings, LogOut, Search, Bell,
   ChevronDown, Plus, Edit, Trash2, X,
   ClipboardList, Archive, Star // Import thêm icon cho các trang mới
 } from 'lucide-react';
@@ -130,9 +130,6 @@ const ProductManagement = () => {
             </NavLink>
             <NavLink to="/review" className={({ isActive }) => isActive ? "nav-item active" : "nav-item"}>
               <Star size={20} /><span>Đánh giá & Nhận xét</span>
-            </NavLink>
-            <NavLink to="/pricing-config" className={({ isActive }) => isActive ? "nav-item active" : "nav-item"}>
-              <CircleDollarSign size={20} /><span>Cấu hình giá</span>
             </NavLink>
           </ul>
         </nav>

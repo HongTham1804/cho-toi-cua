@@ -2,7 +2,7 @@ import React from 'react';
 import { NavLink, useNavigate } from 'react-router-dom'; // 1. IMPORT THƯ VIỆN ĐIỀU HƯỚNG
 import { 
   MdOutlineSpaceDashboard, MdOutlineInventory2, MdOutlinePeopleAlt, 
-  MdOutlineHandshake, MdOutlineLocalShipping, MdOutlinePayments, 
+  MdOutlineHandshake, MdOutlineLocalShipping,
   MdOutlineSettings, MdOutlineLogout 
 } from "react-icons/md";
 import './Sidebar.scss';
@@ -46,9 +46,6 @@ const Sidebar = () => {
           <MdOutlineLocalShipping className="nav-icon" /> Quản lý vận chuyển
         </NavLink>
 
-        <NavLink to="/pricing-config" className={({ isActive }) => isActive ? "nav-item active" : "nav-item"}>
-          <MdOutlinePayments className="nav-icon" /> Cấu hình giá
-        </NavLink>
       </nav>
 
       <div className="bottom-menu">
