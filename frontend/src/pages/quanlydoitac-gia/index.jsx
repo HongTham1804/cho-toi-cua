@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import './index.css';
 import { Search, Bell, HelpCircle, Grid, Plus, Eye, Lock, ChevronLeft, ChevronRight, UserCheck, DollarSign, ArrowUpRight, Edit3, Trash2 } from 'lucide-react';
 import Sidebar from '../../components/Sidebar/Sidebar';
+import Header from '../../components/Header/Header';
 export default function PartnerPricing() {
   const [activeTab, setActiveTab] = useState('shopper');
 
