@@ -14,9 +14,9 @@ return new class extends Migration
         Schema::create('orders', function (Blueprint $table) {
             $table->id();
             $table->foreignId('customer_id')->constrained('users')->cascadeOnDelete();
-            $table->unsignedBigInteger('store_id')->constrained('stores')->cascadeOnDelete();
+            $table->unsignedBigInteger('store_id'); // Tạm thời bỏ constraint chờ bảng stores
             $table->unsignedBigInteger('shipper_id')->nullable()->constrained('users')->nullOnDelete();
-            $table->unsignedBigInteger('voucher_id')->nullable()->constrained('vouchers')->nullOnDelete() ;
+            $table->unsignedBigInteger('voucher_id')->nullable(); // Tạm thời bỏ constraint chờ bảng vouchers
             $table->decimal('shipping_fee', 12, 2)->default(0);
             $table->decimal('subtotal', 12, 2)->default(0);
             $table->decimal('total_amount', 12, 2)->default(0);
