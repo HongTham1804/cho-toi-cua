@@ -1,71 +1,100 @@
-const MOCK_USER = {
-  name: "Nguyễn Văn A",
-  tag: "Thành viên thân thiết",
-};
+const API_BASE_URL = "http://localhost:8000/api";
 
-const MOCK_ORDERS = [
-  {
-    id: "CTC-98234",
-    storeName: "Co.opmart Nguyễn Đình Chiểu",
-    date: "24/10/2023 - 08:30",
-    products: "Rau muống hữu cơ, Cà chua bi, Thịt bò Úc (+3 sản phẩm)",
-    total: 345000,
-    status: "shipping",
-  },
-  {
-    id: "CTC-09870",
-    storeName: "Winmart Thảo Điền",
-    date: "20/10/2023 - 14:15",
-    products: "Sữa tươi TH True Milk, Bánh mì gối (+1 sản phẩm)",
-    total: 120000,
-    status: "completed",
-  },
-  {
-    id: "CTC-97350",
-    storeName: "Bách Hóa Xanh Q7",
-    date: "18/10/2023 - 09:00",
-    products: "Nước mắm Nam Ngư, Mì Hảo Hảo (+5 sản phẩm)",
-    total: 216000,
-    status: "cancelled",
-  },
-  {
-    id: "CTC-88120",
-    storeName: "Co.opmart Lý Thường Kiệt",
-    date: "15/10/2023 - 11:00",
-    products: "Trứng gà ta, Rau cải xanh, Bắp cải tím (+2 sản phẩm)",
-    total: 87000,
-    status: "completed",
-  },
-  {
-    id: "CTC-77001",
-    storeName: "Siêu thị Tân Cúc",
-    date: "10/10/2023 - 16:45",
-    products: "Dầu ăn Tường An, Nước tương Maggi (+4 sản phẩm)",
-    total: 189000,
-    status: "pending_payment",
-  },
-];
+function formatOrderDate(value) {
+  if (!value) return "Chưa cập nhật";
+
+  return new Intl.DateTimeFormat("vi-VN", {
+    day: "2-digit",
+    month: "2-digit",
+    year: "numeric",
+    hour: "2-digit",
+    minute: "2-digit",
+  }).format(new Date(value));
+}
+
+function buildProductSummary(details = []) {
+  if (!details.length) return "Chưa có sản phẩm";
+
+  const firstItems = details.slice(0, 2).map((item) => {
+    return `Sản phẩm #${item.product_id} x${item.quantity}`;
+  });
+
+  const remainingCount = details.length - firstItems.length;
+  const suffix = remainingCount > 0 ? ` (+${remainingCount} sản phẩm)` : "";
+
+  return `${firstItems.join(", ")}${suffix}`;
+}
+
+function normalizeOrder(order) {
+  const details = Array.isArray(order.details) ? order.details : [];
+
+  return {
+    id: order.id,
+    storeId: order.store_id,
+    storeName: `Siêu thị #${order.store_id}`,
+    date: formatOrderDate(order.created_at),
+    rawDate: order.created_at,
+    products: buildProductSummary(details),
+    details,
+    total: Number(order.total_amount ?? 0),
+    subtotal: Number(order.subtotal ?? 0),
+    shippingFee: Number(order.shipping_fee ?? 0),
+    shippingAddress: order.shipping_address ?? "",
+    paymentMethod: order.payment_method ?? "",
+    status: order.status ?? "pending",
+  };
+}
 
 export async function fetchCurrentUser() {
-  await new Promise((resolve) => setTimeout(resolve, 300));
-  return { ...MOCK_USER };
+  return {
+    name: "Khách hàng",
+    tag: "Thành viên",
+  };
 }
 
 export async function fetchOrders(status = "all") {
-  await new Promise((resolve) => setTimeout(resolve, 550));
+  const params = new URLSearchParams();
 
-  const orders = MOCK_ORDERS.map((order) => ({ ...order }));
+  if (status !== "all") {
+    params.set("status", status);
+  }
 
-  if (status === "all") return orders;
+  const query = params.toString();
+  const response = await fetch(`${API_BASE_URL}/orders${query ? `?${query}` : ""}`, {
+    headers: {
+      Accept: "application/json",
+    },
+  });
 
-  return orders.filter((order) => order.status === status);
+  if (!response.ok) {
+    throw new Error("Không thể tải danh sách đơn hàng.");
+  }
+
+  const result = await response.json();
+  const orders = Array.isArray(result.data?.data) ? result.data.data : [];
+
+  return orders.map(normalizeOrder);
+}
+
+export async function fetchOrder(orderId) {
+  const response = await fetch(`${API_BASE_URL}/orders/${encodeURIComponent(orderId)}`, {
+    headers: {
+      Accept: "application/json",
+    },
+  });
+
+  if (!response.ok) {
+    throw new Error("Không thể tải chi tiết đơn hàng.");
+  }
+
+  const result = await response.json();
+
+  return normalizeOrder(result.data);
 }
 
 export async function reorder(orderId) {
-  await new Promise((resolve) => setTimeout(resolve, 600));
-
   return {
     success: true,
-    message: `Đã thêm lại sản phẩm từ đơn #${orderId} vào giỏ hàng!`,
+    message: `Đã sẵn sàng mua lại đơn #${orderId}.`,
   };
 }
