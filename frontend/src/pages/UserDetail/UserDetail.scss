@@ -1,3 +1,5 @@
+@use "sass:color";
+
 $bg-color: #F9F9FF;
 $white: #FFFFFF;
 $border-color: #E2E8F0;
@@ -77,9 +79,9 @@ $blue-light: #EFF6FF;
         transition: all 0.2s;
         svg { font-size: 16px; }
       }
-      .btn-edit { background: $primary-green; color: $white; border: 1px solid $primary-green; &:hover { background: darken($primary-green, 5%); } }
+      .btn-edit { background: $primary-green; color: $white; border: 1px solid $primary-green; &:hover { background: color.adjust($primary-green, $lightness: -5%); } }
       .btn-reset { background: $white; color: $text-main; border: 1px solid $border-color; &:hover { background: #f1f5f9; } }
-      .btn-lock { background: $danger-color; color: $white; border: 1px solid $danger-color; &:hover { background: darken($danger-color, 5%); } }
+      .btn-lock { background: $danger-color; color: $white; border: 1px solid $danger-color; &:hover { background: color.adjust($danger-color, $lightness: -5%); } }
     }
   }
 
