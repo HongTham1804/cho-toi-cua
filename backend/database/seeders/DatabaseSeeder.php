@@ -4,7 +4,7 @@ namespace Database\Seeders;
 
 use Illuminate\Database\Seeder;
 use App\Models\User;
-use App\Models\Store;
+// use App\Models\Store; // Tạm tắt để chờ code của Anh Thư gộp vào
 use App\Models\Category;
 use App\Models\Product;
 
@@ -15,7 +15,7 @@ class DatabaseSeeder extends Seeder
      */
     public function run(): void
     {
-        // 1. Tạo tài khoản đối tác mẫu (để không bị lỗi khóa ngoại)
+        // 1. Tạo tài khoản đối tác mẫu
         $partner = User::firstOrCreate(
             ['email' => 'bachhoaxanh@gmail.com'],
             [
@@ -27,7 +27,8 @@ class DatabaseSeeder extends Seeder
             ]
         );
 
-        // 2. Tạo siêu thị mẫu
+        // 2. TẠM ẨN TOÀN BỘ KHỐI CODE NÀY - Tránh lỗi Class Store not found khi chưa gộp code của Anh Thư
+        /*
         $store = Store::firstOrCreate(
             ['partner_id' => $partner->id],
             [
@@ -37,6 +38,7 @@ class DatabaseSeeder extends Seeder
                 'status' => 'active'
             ]
         );
+        */
 
         // 3. Tạo 2 danh mục mẫu
         $catRau = Category::create([
@@ -53,7 +55,7 @@ class DatabaseSeeder extends Seeder
 
         // 4. Tạo các sản phẩm mẫu để test bộ lọc (Filter)
         Product::create([
-            'store_id' => $store->id,
+            'store_id' => 1, // Dùng số 1 ảo vì đã tắt khóa ngoại ở migration
             'category_id' => $catRau->id,
             'name' => 'Cà Chua Đà Lạt',
             'original_price' => 15000,
@@ -63,7 +65,7 @@ class DatabaseSeeder extends Seeder
         ]);
 
         Product::create([
-            'store_id' => $store->id,
+            'store_id' => 1, // Dùng số 1 ảo
             'category_id' => $catRau->id,
             'name' => 'Bắp Cải Trắng',
             'original_price' => 12000,
@@ -73,12 +75,12 @@ class DatabaseSeeder extends Seeder
         ]);
 
         Product::create([
-            'store_id' => $store->id,
+            'store_id' => 1, // Dùng số 1 ảo
             'category_id' => $catThit->id,
             'name' => 'Thịt Ba Chỉ Heo',
             'original_price' => 95000,
             'price' => 125000,
-            'discount_price' => 115000, // Có giá giảm
+            'discount_price' => 115000, 
             'stock' => 30,
             'description' => 'Thịt heo tươi nhập trong ngày.'
         ]);

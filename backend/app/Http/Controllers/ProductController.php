@@ -9,58 +9,131 @@ use Illuminate\Http\Request;
 
 class ProductController extends Controller
 {
-    // API Lấy danh sách sản phẩm (Tích hợp tìm kiếm & lọc)
+    /**
+     * API Lấy danh sách sản phẩm (Tích hợp tìm kiếm, lọc & sắp xếp)
+     * Phục vụ cho trang chủ của khách hàng dựa trên các query params.
+     */
     public function index(Request $request)
     {
-        $query = Product::query();
+        // Khởi tạo query và chỉ lấy các sản phẩm đang được bật bán (true)
+        $query = Product::query()->where('is_active', true);
 
-        if ($request->has('search')) {
+        // 1. Xử lý Tìm kiếm & Lọc (Filter) theo yêu cầu 
+        if ($request->has('search') && $request->search != '') {
             $query->where('name', 'like', '%' . $request->search . '%');
         }
 
-        if ($request->has('category_id')) {
+        if ($request->has('category_id') && $request->category_id != '') {
             $query->where('category_id', $request->category_id);
         }
 
-        if ($request->has('min_price')) {
+        if ($request->has('min_price') && $request->min_price != '') {
             $query->where('price', '>=', $request->min_price);
         }
 
-        if ($request->has('max_price')) {
+        if ($request->has('max_price') && $request->max_price != '') {
             $query->where('price', '<=', $request->max_price);
+        }
+
+        // 2. Xử lý Sắp xếp (Sort) [cite: 202]
+        if ($request->has('sort')) {
+            switch ($request->sort) {
+                case 'price_asc':
+                    $query->orderBy('price', 'asc');
+                    break;
+                case 'price_desc':
+                    $query->orderBy('price', 'desc');
+                    break;
+                case 'newest':
+                default:
+                    $query->latest();
+                    break;
+            }
+        } else {
+            // Mặc định lấy sản phẩm mới nhất nếu không truyền tham số sort
+            $query->latest(); 
         }
 
         return response()->json([
             'success' => true,
-            'data' => $query->latest()->paginate(15)
+            'data' => $query->paginate(15)
         ]);
     }
 
+    /**
+     * API Thêm sản phẩm mới (Dành cho Siêu thị / Đối tác)
+     * Sử dụng StoreProductRequest để tự động validate dữ liệu đầu vào.
+     */
     public function store(StoreProductRequest $request)
     {
         $product = Product::create($request->validated());
-        return response()->json(['success' => true, 'data' => $product], 201);
+        return response()->json([
+            'success' => true, 
+            'data' => $product
+        ], 201);
     }
 
+    /**
+     * API Xem chi tiết thông tin của 1 sản phẩm
+     */
     public function show($id)
     {
         $product = Product::find($id);
-        return $product ? response()->json(['success' => true, 'data' => $product]) : response()->json(['message' => 'Not found'], 404);
+        
+        if (!$product) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Không tìm thấy sản phẩm'
+            ], 404);
+        }
+
+        return response()->json([
+            'success' => true, 
+            'data' => $product
+        ]);
     }
 
+    /**
+     * API Cập nhật thông tin sản phẩm (Dành cho Siêu thị / Đối tác)
+     * Sử dụng UpdateProductRequest để chặn lỗi dữ liệu khi chỉnh sửa.
+     */
     public function update(UpdateProductRequest $request, $id)
     {
         $product = Product::find($id);
-        if (!$product) return response()->json(['message' => 'Not found'], 404);
+        
+        if (!$product) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Không tìm thấy sản phẩm trên hệ thống'
+            ], 404);
+        }
+
         $product->update($request->validated());
-        return response()->json(['success' => true, 'data' => $product]);
+        return response()->json([
+            'success' => true, 
+            'data' => $product
+        ]);
     }
 
+    /**
+     * API Xóa mềm sản phẩm
+     * Hệ thống sử dụng SoftDeletes để đảm bảo an toàn dữ liệu lịch sử đơn hàng.
+     */
     public function destroy($id)
     {
         $product = Product::find($id);
-        if (!$product) return response()->json(['message' => 'Not found'], 404);
+        
+        if (!$product) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Không tìm thấy sản phẩm để xóa'
+            ], 404);
+        }
+
         $product->delete();
-        return response()->json(['success' => true, 'message' => 'Đã xóa']);
+        return response()->json([
+            'success' => true, 
+            'message' => 'Đã xóa mềm sản phẩm thành công'
+        ]);
     }
 }

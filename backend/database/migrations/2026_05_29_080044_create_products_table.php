@@ -28,6 +28,7 @@ return new class extends Migration
             $table->integer('stock')->default(0); // Số lượng tồn kho [cite: 43]
             $table->string('image_url')->nullable(); // Hình ảnh [cite: 44]
             $table->text('description')->nullable(); // Mô tả [cite: 45]
+            $table->boolean('is_active')->default(true); // Trạng thái: true là đang bán, false là tắt bán
             
             $table->softDeletes(); // Xóa mềm [cite: 46]
             $table->timestamps(); // [cite: 47]
