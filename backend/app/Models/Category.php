@@ -9,13 +9,9 @@ class Category extends Model
 {
     use HasFactory;
 
-    protected $fillable = [
-        'name',
-        'slug',
-        'image_url'
-    ];
+    protected $fillable = ['name', 'slug', 'image_url'];
 
-    // Khai báo mối quan hệ: 1 Danh mục có nhiều Sản phẩm
+    // Mối quan hệ: Một Danh mục có nhiều Sản phẩm
     public function products()
     {
         return $this->hasMany(Product::class);

@@ -21,7 +21,12 @@ class Product extends Model
         'discount_price',
         'stock',
         'image_url',
-        'description'
+        'description',
+        'is_active',
+    ];
+
+    protected $casts = [
+        'is_active' => 'boolean',
     ];
 
     // Mối quan hệ: Sản phẩm thuộc về 1 Danh mục
