@@ -525,7 +525,7 @@ function AddProductModal({ onSave, onCancel }) {
             </div>
 
             <div className="inv-field">
-              <label className="inv-modal-label">Danh mục</label>
+              <label className="inv-modal-label">Quản lý kho</label>
               <select
                 className="inv-modal-select"
                 value={category}

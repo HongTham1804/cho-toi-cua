@@ -96,11 +96,8 @@ function App() {
       )}
 
       <Routes>
-        {/* Nguoi dung routes */}
         <Route path="/" element={<GuestHomepage />} />
         <Route path="/guest-homepage" element={<GuestHomepage />} />
-        <Route path="/login" element={<GuestHomepage initialAuth="login" />} />
-        <Route path="/select-role" element={<SelectRole />} />
 
         <Route element={<CustomerLayout />}>
           <Route path="/shopping-cart" element={<ShoppingCart />} />
@@ -119,19 +116,24 @@ function App() {
         <Route path="/tracking" element={<Tracking />} />
         <Route path="/review" element={<Review />} />
 
-        {/* Admin routes */}
+        {/* Partner routes */}
         <Route path="/order-management" element={<OrderManagement />} />
         <Route path="/partner-login" element={<PartnerLogin />} />
         <Route path="/register-store" element={<RegisterStore />} />
         <Route path="/inventory" element={<Inventory />} />
        
-        {/* Partner routes */}
+        {/* Admin routes */}
         <Route path="/user-management" element={<UserManagement />} />
         <Route path="/product-management" element={<ProductManagement />} />
         <Route path="/admin-dashboard" element={lazyPage(AdminDashboard)} />
         <Route path="/quanlyvanchuyen" element={lazyPage(DeliveryManagement)} />
         <Route path="/quanlydoitac-gia" element={lazyPage(PartnerPricing)} />
         <Route path="/UserDetail" element={<UserDetail />} />
+        <Route path="/product-management" element={<ProductManagement />} />
+        <Route path="/inventory" element={<Inventory />} />
+        <Route path="/product-detail" element={<ProductDetail />} />
+        <Route path="/user-management" element={<UserManagement />} /> 
+        <Route path="/product-management" element={<ProductManagement />} />
       </Routes>
     </div>
   );
