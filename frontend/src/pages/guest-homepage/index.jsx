@@ -274,7 +274,7 @@ function RegisterModal({ onClose, onShowLogin, onOtpRequested }) {
                 maxLength="10"
                 value={form.phone}
                 onChange={(event) => updateField('phone', event.target.value)}
-                placeholder="Nhập đủ 10 số điện thoại"
+                placeholder="Nhập số điện thoại"
                 required
               />
             </span>
