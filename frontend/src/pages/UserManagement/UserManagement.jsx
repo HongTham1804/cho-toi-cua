@@ -1,5 +1,4 @@
 import React, { useState, useMemo, useEffect } from 'react';
-import Sidebar from '../../components/Sidebar/Sidebar';
 import Header from '../../components/Header/Header';
 import { usersData } from './mockData';
 import { 
@@ -124,7 +123,6 @@ const UserManagement = () => {
 
   return (
     <div className="layout-container">
-      <Sidebar />
       <main className="main-content">
         <Header searchTerm={searchTerm} onSearchChange={setSearchTerm} />
         

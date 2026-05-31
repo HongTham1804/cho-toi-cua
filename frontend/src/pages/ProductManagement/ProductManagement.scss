@@ -159,7 +159,7 @@ $color-danger: #BA1A1A; // <--- THÊM DÒNG NÀY VÀO
       display: flex; align-items: center; gap: 8px; padding: 12px 32px;
       background: $color-primary; color: $color-white; border: none; border-radius: 8px;
       font-size: 16px; font-weight: 500; cursor: pointer;
-      &:hover { background: darken($color-primary, 5%); }
+      &:hover { background: #00583b; }
     }
   }
 

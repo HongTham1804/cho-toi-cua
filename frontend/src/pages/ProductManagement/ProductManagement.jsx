@@ -1,15 +1,11 @@
 import React, { useState, useMemo } from 'react';
-import { NavLink, useNavigate } from 'react-router-dom'; // Thêm thư viện điều hướng
 import { 
-  LayoutDashboard, Package, Users, Briefcase, Truck, 
-  Settings, LogOut, Search, Bell,
+  Search, Bell,
   ChevronDown, Plus, Edit, Trash2, X,
 } from 'lucide-react';
 import './ProductManagement.scss';
 
 const ProductManagement = () => {
-  const navigate = useNavigate(); // Hook dùng để chuyển trang cho nút Đăng xuất
-
   // 1. DỮ LIỆU MẪU
   const [products, setProducts] = useState([
     { id: '#CTC-001', name: 'Cải Bó Xôi Organic', category: 'Rau củ', price: '45,000', status: 'Đang bán', image: 'https://images.unsplash.com/photo-1576045057995-568f588f82fb?w=150&q=80' },
@@ -33,13 +29,6 @@ const ProductManagement = () => {
   });
 
   // ================= XỬ LÝ SỰ KIỆN =================
-
-  // Đăng xuất
-  const handleLogout = () => {
-    if (window.confirm("Bạn có chắc chắn muốn đăng xuất khỏi trang Quản trị không?")) {
-      navigate('/login');
-    }
-  };
 
   // Tìm kiếm và Lọc
   const filteredProducts = useMemo(() => {
@@ -98,44 +87,6 @@ const ProductManagement = () => {
 
   return (
     <div className="new-admin-layout">
-      {/* SIDEBAR ĐÃ ĐƯỢC TÍCH HỢP ĐIỀU HƯỚNG */}
-      <aside className="sidebar">
-        <div className="sidebar-brand">
-          <h1>Chợ Tới Cửa</h1>
-          <p>Market Management</p>
-        </div>
-        <nav className="sidebar-nav">
-          <ul className="nav-list">
-            <NavLink to="/admin-dashboard" className={({ isActive }) => isActive ? "nav-item active" : "nav-item"}>
-              <LayoutDashboard size={20} /><span>Bảng điều khiển</span>
-            </NavLink>
-            <NavLink to="/product-management" className={({ isActive }) => isActive ? "nav-item active" : "nav-item"}>
-              <Package size={20} /><span>Quản lý sản phẩm</span>
-            </NavLink>
-            <NavLink to="/user-management" className={({ isActive }) => isActive ? "nav-item active" : "nav-item"}>
-              <Users size={20} /><span>Quản lý người dùng</span>
-            </NavLink>
-            <NavLink to="/quanlydoitac-gia" className={({ isActive }) => isActive ? "nav-item active" : "nav-item"}>
-              <Briefcase size={20} /><span>Quản lý đối tác</span>
-            </NavLink>
-            <NavLink to="/quanlyvanchuyen" className={({ isActive }) => isActive ? "nav-item active" : "nav-item"}>
-              <Truck size={20} /><span>Quản lý vận chuyển</span>
-            </NavLink>
-          </ul>
-        </nav>
-        <div className="sidebar-footer">
-          <ul className="nav-list">
-            <NavLink to="/settings" className={({ isActive }) => isActive ? "nav-item active" : "nav-item"}>
-              <Settings size={20} /><span>Cài đặt</span>
-            </NavLink>
-            {/* Đổi thẻ Đăng xuất thành dạng có thể click gọi hàm */}
-            <li className="nav-item" onClick={handleLogout} style={{ cursor: 'pointer' }}>
-              <LogOut size={20} /><span>Đăng xuất</span>
-            </li>
-          </ul>
-        </div>
-      </aside>
-
       {/* MAIN CONTENT */}
       <main className="main-content">
         <header className="top-header">

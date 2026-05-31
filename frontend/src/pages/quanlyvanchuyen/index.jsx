@@ -1,8 +1,6 @@
 import React from 'react';
 import './index.css';
 import { Search, Bell, HelpCircle, Grid, Truck, MapPin, User, ChevronLeft, ChevronRight, RefreshCw } from 'lucide-react';
-import Sidebar from '../../components/Sidebar/Sidebar';
-import Header from '../../components/Header/Header';
 export default function DeliveryManagement() {
   const deliveries = [
     {

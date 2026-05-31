@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import './logged-in-homepage.css';
 
 import nenBg from '../../assets/ảnh nền.jpg';
@@ -11,6 +12,7 @@ import lottemartLogo from '../../assets/logos/Lottemart.webp';
 
 export default function LoggedInHomepage() {
   const [activeTab, setActiveTab] = useState('Trang chủ');
+  const navigate = useNavigate();
     // Dữ liệu giả (Mock data) cho các siêu thị để render tự động
   const storeList = [
     { id: 1, name: 'Bách Hóa Xanh', time: '15-20 phút', image: bachHoaXanhLogo },
@@ -42,19 +44,19 @@ export default function LoggedInHomepage() {
 
           <li 
               className={`nav-item-core ${activeTab === 'Trang chủ' ? 'active' : ''}`}
-              onClick={() => setActiveTab('Trang chủ')}
+              onClick={() => {
+                setActiveTab('Trang chủ');
+                navigate('/supermarket-details');
+              }}
             >
               <i className="fa-solid fa-house"></i> Trang chủ
             </li>
             <li 
-              className={`nav-item-core ${activeTab === 'Ưu đãi' ? 'active' : ''}`}
-              onClick={() => setActiveTab('Ưu đãi')}
-            >
-              <i className="fa-solid fa-tag"></i> Ưu đãi
-            </li>
-            <li 
               className={`nav-item-core ${activeTab === 'Sản phẩm yêu thích' ? 'active' : ''}`}
-              onClick={() => setActiveTab('Sản phẩm yêu thích')}
+              onClick={() => {
+                setActiveTab('Sản phẩm yêu thích');
+                navigate('/favorite-products');
+              }}
             >
               <i className="fa-solid fa-heart"></i> Sản phẩm yêu thích
             </li>

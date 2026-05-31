@@ -1,203 +1,188 @@
-import React, { useState } from 'react';
-import './index.css';
-import { 
-  LayoutGrid, ShoppingCart, Box, Users, BarChart3, Settings, 
-  LogOut, Search, Bell, HelpCircle, MoreVertical, TrendingUp, 
-  DollarSign, ShoppingBag, UserCheck, AlertTriangle 
-} from 'lucide-react';
-import Sidebar from '../../components/Sidebar/Sidebar';
-import Header from '../../components/Header/Header';
-const Dashboard = () => {
-  const [activeMenu, setActiveMenu] = useState('Tổng quan');
+import React from "react";
+import "./index.css";
+import {
+  Download,
+  RefreshCw,
+  Search,
+  ShoppingBag,
+  Store,
+  TrendingUp,
+  UserCheck,
+  Users,
+  Wallet,
+} from "lucide-react";
 
-  const menuItems = [
-    { name: 'Tổng quan', icon: <LayoutGrid size={20} /> },
-    { name: 'Đơn hàng', icon: <ShoppingCart size={20} /> },
-    { name: 'Kho hàng', icon: <Box size={20} /> },
-    { name: 'Người dùng', icon: <Users size={20} /> },
-    { name: 'Báo cáo', icon: <BarChart3 size={20} /> },
-    { name: 'Cài đặt', icon: <Settings size={20} /> },
-  ];
+const stats = [
+  {
+    label: "Tổng doanh thu",
+    value: "1,250,000,000 VND",
+    note: "so với tháng trước",
+    change: "+12%",
+    icon: Wallet,
+    tone: "green",
+  },
+  {
+    label: "Tổng đơn hàng",
+    value: "15,420",
+    note: "Tỷ lệ hoàn thành đơn 98%",
+    change: "+5.4%",
+    icon: ShoppingBag,
+    tone: "blue",
+  },
+  {
+    label: "Tổng đối tác",
+    value: "84 Đối tác",
+    note: "Siêu thị đang hoạt động",
+    change: "Trực tuyến",
+    icon: Store,
+    tone: "red",
+  },
+  {
+    label: "Shopper đang online",
+    value: "156 Shippers",
+    note: "Trên 12 quận nội thành",
+    change: "Đang hoạt động",
+    icon: Users,
+    tone: "emerald",
+  },
+];
 
+const revenueBars = [
+  { day: "Thứ 2", height: 52 },
+  { day: "Thứ 3", height: 38 },
+  { day: "Thứ 4", height: 72 },
+  { day: "Thứ 5", height: 64 },
+  { day: "Thứ 6", height: 78 },
+  { day: "Thứ 7", height: 84 },
+  { day: "Chủ Nhật", height: 55 },
+];
+
+const topPartners = [
+  {
+    name: "Co.op Mart Quận 1",
+    orders: "432 đơn hàng hôm nay",
+    rating: "4.8",
+    image: "https://images.unsplash.com/photo-1542838132-92c53300491e?w=80&auto=format&fit=crop&q=80",
+  },
+  {
+    name: "VinMart Thảo Điền",
+    orders: "315 đơn hàng hôm nay",
+    rating: "4.6",
+    image: "https://images.unsplash.com/photo-1543168256-418811576931?w=80&auto=format&fit=crop&q=80",
+  },
+  {
+    name: "Lotte Mart Quận 7",
+    orders: "298 đơn hàng hôm nay",
+    rating: "4.9",
+    image: "https://images.unsplash.com/photo-1604719312566-8912e9227c6a?w=80&auto=format&fit=crop&q=80",
+  },
+];
+
+export default function Dashboard() {
   return (
-    <div className="dashboard-container">
-      {/* Sidebar - Theo hình số 6 */}
-      <aside className="sidebar">
-        <div className="logo-section">
-          <h2>Chợ Tới Cửa</h2>
-          <p>Hệ thống Quản trị</p>
+    <div className="dashboard-page">
+      <header className="dashboard-topbar">
+        <div className="dashboard-topbar-left">
+          <div className="dashboard-search">
+            <Search size={18} className="dashboard-search-icon" aria-hidden="true" />
+            <input type="text" placeholder="Tìm dữ liệu, đối tác, đơn hàng..." />
+          </div>
+
+          <button type="button" className="dashboard-refresh-btn">
+            <RefreshCw size={15} />
+            Làm mới dữ liệu
+          </button>
         </div>
-        
-        <nav className="sidebar-nav">
-          {menuItems.map((item) => (
-            <div 
-              key={item.name} 
-              className={`nav-item ${activeMenu === item.name ? 'active' : ''}`}
-              onClick={() => setActiveMenu(item.name)}
-            >
-              {item.icon}
-              <span>{item.name}</span>
-            </div>
+
+        <div className="dashboard-topbar-actions">
+          <img
+            className="dashboard-avatar"
+            src="https://ui-avatars.com/api/?name=Admin&background=047857&color=fff"
+            alt="Admin"
+          />
+        </div>
+      </header>
+
+      <main className="dashboard-content">
+        <section className="dashboard-title-row">
+          <div>
+            <p className="dashboard-eyebrow">Tổng quan điều hành</p>
+            <h1>Chợ Tới Cửa vận hành và doanh thu thời gian thực</h1>
+          </div>
+          <button type="button" className="dashboard-export-btn">
+            <Download size={15} />
+            Xuất dữ liệu
+          </button>
+        </section>
+
+        <section className="dashboard-stat-grid" aria-label="Chỉ số tổng quan">
+          {stats.map(({ label, value, note, change, icon: Icon, tone }) => (
+            <article className="dashboard-stat-card" key={label}>
+              <div className="dashboard-stat-top">
+                <span className={`dashboard-stat-icon dashboard-stat-icon--${tone}`}>
+                  <Icon size={18} />
+                </span>
+                <span className={`dashboard-stat-change dashboard-stat-change--${tone}`}>
+                  {change}
+                </span>
+              </div>
+              <p>{label}</p>
+              <strong>{value}</strong>
+              <span>{note}</span>
+            </article>
           ))}
-        </nav>
+        </section>
 
-        <div className="sidebar-footer">
-          <div className="nav-item logout">
-            <LogOut size={20} />
-            <span>Đăng xuất</span>
-          </div>
-        </div>
-      </aside>
-
-      {/* Main Content Area */}
-      <main className="main-content">
-        {/* Header - Theo hình số 1/2 */}
-        <header className="top-header">
-          <div className="search-bar">
-            <Search size={18} className="search-icon" />
-            <input type="text" placeholder="Tìm kiếm đơn hàng, khách hàng..." />
-          </div>
-          
-          <div className="header-actions">
-            <Bell size={20} className="action-icon" />
-            <HelpCircle size={20} className="action-icon" />
-            <LayoutGrid size={20} className="action-icon" />
-            <div className="user-profile">
-              <img src="https://ui-avatars.com/api/?name=Admin&background=047857&color=fff" alt="Avatar" />
-            </div>
-          </div>
-        </header>
-
-        {/* Dashboard Content - Theo hình số 4 */}
-        <div className="content-body">
-          <div className="page-title">
-            <h1>Tổng quan hệ thống</h1>
-            <p>Cập nhật tình hình kinh doanh trong ngày hôm nay.</p>
-          </div>
-
-          {/* Metrics Cards */}
-          <div className="metrics-grid">
-            <div className="metric-card">
-              <div className="metric-info">
-                <span>Doanh thu hôm nay</span>
-                <h3>45.2M ₫</h3>
-                <p className="trend positive"><TrendingUp size={12} /> +12.6%</p>
+        <section className="dashboard-main-grid">
+          <article className="dashboard-chart-card">
+            <div className="dashboard-card-header">
+              <div>
+                <h2>Xu hướng doanh thu</h2>
+                <p>Hiệu suất 7 ngày gần nhất</p>
               </div>
-              <div className="metric-icon icon-emerald"><DollarSign /></div>
+              <div className="dashboard-segmented">
+                <button type="button" className="active">Doanh thu</button>
+                <button type="button">Đơn hàng</button>
+              </div>
             </div>
 
-            <div className="metric-card">
-              <div className="metric-info">
-                <span>Đơn hàng mới</span>
-                <h3>128</h3>
-                <p className="trend positive"><TrendingUp size={12} /> +5 đơn</p>
-              </div>
-              <div className="metric-icon icon-blue"><ShoppingBag /></div>
-            </div>
-
-            <div className="metric-card">
-              <div className="metric-info">
-                <span>Shopper đang HĐ</span>
-                <h3>42<small>/50</small></h3>
-                <div className="progress-bar"><div className="fill" style={{width: '84%'}}></div></div>
-              </div>
-              <div className="metric-icon icon-orange"><UserCheck /></div>
-            </div>
-
-            <div className="metric-card">
-              <div className="metric-info">
-                <span>Khách hàng mới</span>
-                <h3>36</h3>
-                <p className="trend negative">Tăng trưởng ổn định</p>
-              </div>
-              <div className="metric-icon icon-purple"><Users /></div>
-            </div>
-          </div>
-
-          {/* Charts Section */}
-          <div className="charts-grid">
-            <div className="chart-container main-chart">
-              <div className="chart-header">
-                <h4>Doanh thu 7 ngày gần nhất</h4>
-                <button className="btn-text">Chi tiết</button>
-              </div>
-              <div className="mock-bar-chart">
-                {/* Giả lập biểu đồ cột */}
-                {[40, 60, 45, 90, 65, 85, 100].map((h, i) => (
-                  <div key={i} className="bar-wrapper">
-                    <div className="bar" style={{height: `${h}%`}}></div>
-                    <span>T{i+2}</span>
+            <div className="dashboard-bar-chart" aria-label="Biểu đồ doanh thu 7 ngày">
+              {revenueBars.map((bar) => (
+                <div className="dashboard-bar-column" key={bar.day}>
+                  <div className="dashboard-bar-track">
+                    <span style={{ height: `${bar.height}%` }} />
                   </div>
-                ))}
-              </div>
-            </div>
-
-            <div className="chart-container side-chart">
-              <h4>Tỷ trọng theo Siêu thị</h4>
-              <div className="mock-donut-chart">
-                <div className="donut">
-                  <div className="inner-text">
-                    <strong>128</strong>
-                    <span>Tổng đơn</span>
-                  </div>
+                  <small>{bar.day}</small>
                 </div>
-              </div>
-              <ul className="chart-legend">
-                <li><span className="dot coop"></span> Co.opmart (45%)</li>
-                <li><span className="dot bigc"></span> Big C (30%)</li>
-                <li><span className="dot lotte"></span> Lotte Mart (25%)</li>
-              </ul>
+              ))}
             </div>
-          </div>
+          </article>
 
-          {/* Recent Orders & Urgent Alerts */}
-          <div className="bottom-grid">
-            <div className="recent-orders card">
-              <div className="card-header">
-                <h4>Đơn hàng mới nhất</h4>
-                <button className="btn-text">Xem tất cả</button>
-              </div>
-              <table className="simple-table">
-                <thead>
-                  <tr>
-                    <th>Mã đơn</th>
-                    <th>Khách hàng</th>
-                    <th>Tổng tiền</th>
-                    <th>Trạng thái</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  <tr>
-                    <td>#ORD-9821</td>
-                    <td>Nguyễn Văn A</td>
-                    <td>850.000₫</td>
-                    <td><span className="status pending">Chờ nhận</span></td>
-                  </tr>
-                  <tr>
-                    <td>#ORD-9820</td>
-                    <td>Trần Thị B</td>
-                    <td>1.250.000₫</td>
-                    <td><span className="status shipping">Đang giao</span></td>
-                  </tr>
-                </tbody>
-              </table>
+          <aside className="dashboard-partner-card">
+            <div className="dashboard-card-header">
+              <h2>Đối tác hàng đầu</h2>
+              <button type="button" className="dashboard-link-btn">Xem tất cả</button>
             </div>
 
-            <div className="urgent-alerts card">
-              <div className="card-header">
-                <h4><AlertTriangle size={16} color="#ef4444" /> Yêu cầu hỗ trợ gấp</h4>
-              </div>
-              <div className="alert-item">
-                <p><strong>#ORD-9750</strong>: Khách báo Shopper lấy thiếu hàng.</p>
-                <button className="btn-primary-sm">Xử lý ngay</button>
-              </div>
+            <div className="dashboard-partner-list">
+              {topPartners.map((partner) => (
+                <div className="dashboard-partner-item" key={partner.name}>
+                  <img src={partner.image} alt={partner.name} />
+                  <div>
+                    <strong>{partner.name}</strong>
+                    <span>{partner.orders}</span>
+                  </div>
+                  <b>{partner.rating}</b>
+                </div>
+              ))}
             </div>
-          </div>
-        </div>
+
+            <button type="button" className="dashboard-add-partner-btn">
+              + Thêm đối tác mới
+            </button>
+          </aside>
+        </section>
       </main>
     </div>
   );
-};
-
-export default Dashboard;
-
+}

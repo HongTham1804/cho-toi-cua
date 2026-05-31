@@ -1,87 +1,97 @@
-/* Khai báo các biến màu sắc dùng chung */
-$bg-color: #F9F9FF;
-$border-color: #BBCABF;
-$text-main: #151C27;
-$text-secondary: #3C4A42;
-$primary-green: #006C49;
+$font-family: "Inter", sans-serif;
+$color-primary: #006c49;
+$color-bg: #f9f9ff;
+$color-text-dark: #151c27;
+$color-text-muted: #3c4a42;
+$color-border: #bbcabf;
 
-.sidebar {
+.admin-sidebar {
   width: 260px;
-  min-width: 260px; /* Đảm bảo sidebar không bị co lại khi màn hình nhỏ */
-  height: 100vh; /* Chiều cao chiếm trọn màn hình */
-  position: sticky; /* Giữ sidebar đứng yên khi cuộn bảng dữ liệu */
-  top: 0;
-  background-color: $bg-color;
-  border-right: 1px solid $border-color;
+  min-width: 260px;
+  height: 100vh;
+  background-color: $color-bg;
+  border-right: 1px solid $color-border;
   display: flex;
   flex-direction: column;
   padding: 32px 0;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
   box-sizing: border-box;
-  overflow-y: auto; /* Cho phép cuộn phần menu nếu quá dài */
+  font-family: $font-family;
+  overflow-y: auto;
+  z-index: 20;
 
-  /* Ẩn thanh cuộn mặc định cho gọn gàng */
   &::-webkit-scrollbar {
     display: none;
   }
+
   -ms-overflow-style: none;
   scrollbar-width: none;
+}
 
-  .logo-section {
-    padding: 0 24px 32px;
-    
-    h1 {
-      color: $primary-green;
-      font-size: 32px;
-      font-weight: 700;
-      margin: 0;
-      letter-spacing: -0.64px;
-    }
-    
-    p {
-      color: $text-secondary;
-      font-size: 12px;
-      margin: 4px 0 0;
-      font-weight: 600;
-      letter-spacing: 0.6px;
-    }
+.admin-sidebar__brand {
+  padding: 0 16px 32px;
+
+  h1 {
+    margin: 0;
+    color: $color-primary;
+    font-size: 32px;
+    font-weight: 700;
+    line-height: 1.1;
+    letter-spacing: -0.64px;
   }
 
-  .nav-menu, .bottom-menu {
-    display: flex;
-    flex-direction: column;
-    padding: 0 8px;
-    gap: 4px;
+  p {
+    margin: 4px 0 0;
+    color: $color-text-muted;
+    font-size: 13px;
+  }
+}
+
+.admin-sidebar__nav,
+.admin-sidebar__footer {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 0 8px;
+}
+
+.admin-sidebar__nav {
+  flex: 1;
+  overflow-y: auto;
+}
+
+.admin-sidebar__footer {
+  border-top: 1px solid $color-border;
+  padding-top: 32px;
+}
+
+.admin-sidebar__item {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 8px 16px;
+  border: 0;
+  border-radius: 4px;
+  background: transparent;
+  color: $color-text-muted;
+  font: inherit;
+  font-size: 16px;
+  text-align: left;
+  text-decoration: none;
+  cursor: pointer;
+  transition: background-color 0.2s ease, color 0.2s ease;
+
+  &:hover {
+    background-color: rgba(0, 108, 73, 0.05);
   }
 
-  .bottom-menu {
-    margin-top: auto; /* Tự động đẩy cụm Cài đặt / Đăng xuất xuống sát đáy */
-    padding-top: 32px;
-  }
-
-  .nav-item {
-    padding: 8px 16px;
-    color: $text-secondary;
-    text-decoration: none;
-    font-size: 16px;
-    border-radius: 2px;
-    display: flex;
-    align-items: center;
-    gap: 12px; /* Khoảng cách giữa icon và chữ */
-    transition: all 0.2s ease-in-out; /* Hiệu ứng chuyển đổi mượt mà */
-
-    .nav-icon {
-      font-size: 20px; /* Kích thước chuẩn cho các react-icons */
-    }
-
-    &:hover {
-      background-color: rgba(226, 232, 248, 0.5); /* Đổi màu nhẹ khi rê chuột vào */
-    }
-
-    &.active {
-      background-color: #E2E8F8;
-      color: $text-main;
-      font-weight: 600;
-      border-left: 4px solid $primary-green;
-    }
+  &.active {
+    background-color: #e2e8f8;
+    border-left: 4px solid $color-primary;
+    border-top-left-radius: 0;
+    border-bottom-left-radius: 0;
+    color: $color-text-dark;
+    font-weight: 600;
   }
 }
