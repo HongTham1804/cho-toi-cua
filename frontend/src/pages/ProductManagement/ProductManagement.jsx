@@ -1,5 +1,6 @@
-import React, { useState, useMemo } from 'react';
-import { NavLink, useNavigate } from 'react-router-dom'; // Thêm thư viện điều hướng
+import React, { useEffect, useState, useMemo } from 'react'; // Đã import useMemo chuẩn chỉnh
+import axios from 'axios'; 
+import { NavLink, useNavigate } from 'react-router-dom'; 
 import { 
   LayoutDashboard, Package, Users, Briefcase, Truck, 
   Settings, LogOut, Search, Bell,
@@ -8,44 +9,57 @@ import {
 import './ProductManagement.scss';
 
 const ProductManagement = () => {
-  const navigate = useNavigate(); // Hook dùng để chuyển trang cho nút Đăng xuất
+  const navigate = useNavigate();
 
-  // 1. DỮ LIỆU MẪU
-  const [products, setProducts] = useState([
-    { id: '#CTC-001', name: 'Cải Bó Xôi Organic', category: 'Rau củ', price: '45,000', status: 'Đang bán', image: 'https://images.unsplash.com/photo-1576045057995-568f588f82fb?w=150&q=80' },
-    { id: '#CTC-002', name: 'Thịt Thăn Bò Úc', category: 'Thịt', price: '280,000', status: 'Đang bán', image: 'https://images.unsplash.com/photo-1603048297172-c92544798d5e?w=150&q=80' },
-    { id: '#CTC-003', name: 'Gạo ST25 Túi 5kg', category: 'Đồ khô', price: '195,000', status: 'Đã ẩn', image: 'https://images.unsplash.com/photo-1586201375761-83865001e8ac?w=150&q=80' },
-    { id: '#CTC-004', name: 'Cà Chua Cherry VietGAP', category: 'Rau củ', price: '55,000', status: 'Đang bán', image: 'https://images.unsplash.com/photo-1592924357228-91a4daadcfea?w=150&q=80' },
-    { id: '#CTC-005', name: 'Thịt Ba Chỉ Heo', category: 'Thịt', price: '160,000', status: 'Đang bán', image: 'https://images.unsplash.com/photo-1628318160410-b5413fc4f2fc?w=150&q=80' },
-  ]);
-
-  // 2. STATE TÌM KIẾM, LỌC & PHÂN TRANG
+  // --- 1. ĐỊNH NGHĨA TOÀN BỘ STATE QUẢN LÝ ---
+  const [products, setProducts] = useState([]);
+  const [editingId, setEditingId] = useState(null);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  
+  // State phục vụ Tìm kiếm & Phân trang hiển thị
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('Tất cả danh mục');
   const [visibleCount, setVisibleCount] = useState(4);
   const categories = ['Tất cả danh mục', 'Rau củ', 'Thịt', 'Đồ khô', 'Trái cây'];
 
-  // 3. STATE CHO MODAL THÊM/SỬA SẢN PHẨM
-  const [isModalOpen, setIsModalOpen] = useState(false);
-  const [editingId, setEditingId] = useState(null);
+  // State cấu trúc dữ liệu Form trùng khớp với cấu trúc migration Laravel
   const [formData, setFormData] = useState({
-    name: '', category: 'Rau củ', price: '', status: 'Đang bán', image: ''
+    name: '',
+    price: '',
+    original_price: '',
+    stock: '100',       // Mặc định giá trị dự phòng
+    store_id: 1,        // Mặc định giá trị dự phòng
+    category_id: 1,     // Mặc định giá trị dự phòng
+    category: 'Rau củ',
+    status: 'Đang bán',
+    image: ''
   });
 
-  // ================= XỬ LÝ SỰ KIỆN =================
-
-  // Đăng xuất
-  const handleLogout = () => {
-    if (window.confirm("Bạn có chắc chắn muốn đăng xuất khỏi trang Quản trị không?")) {
-      navigate('/login');
+  // --- 2. HÀM GỌI API LẤY DANH SÁCH SẢN PHẨM ---
+  const fetchProducts = async () => {
+    try {
+      const response = await axios.get('http://127.0.0.1:8000/api/products');
+      // Laravel phân trang sẽ trả dữ liệu về trong .data.data, trường hợp không phân trang sẽ lấy luôn .data
+      const data = response.data.data || response.data;
+      setProducts(data); 
+    } catch (error) {
+      console.error("Lỗi kết nối Backend:", error);
     }
   };
 
-  // Tìm kiếm và Lọc
+  useEffect(() => {
+    fetchProducts();
+  }, []);
+
+  // --- 3. BỘ LỌC TÌM KIẾM SẢN PHẨM (SỬ DỤNG USEMEMO) ---
   const filteredProducts = useMemo(() => {
     return products.filter((product) => {
-      const matchesSearch = product.name.toLowerCase().includes(searchTerm.toLowerCase()) || 
-                            product.id.toLowerCase().includes(searchTerm.toLowerCase());
+      const productName = product.name ? product.name.toLowerCase() : '';
+      const productId = product.id ? String(product.id).toLowerCase() : '';
+      
+      const matchesSearch = productName.includes(searchTerm.toLowerCase()) || 
+                            productId.includes(searchTerm.toLowerCase());
+      
       const matchesCategory = selectedCategory === 'Tất cả danh mục' || product.category === selectedCategory;
       return matchesSearch && matchesCategory;
     });
@@ -53,40 +67,107 @@ const ProductManagement = () => {
 
   const displayedProducts = filteredProducts.slice(0, visibleCount);
 
-  // Xóa sản phẩm
-  const handleDelete = (id, name) => {
-    if (window.confirm(`Bạn có chắc muốn xóa sản phẩm "${name}"?`)) {
-      setProducts(products.filter(p => p.id !== id));
-    }
-  };
+  // --- 4. CÁC HÀM XỬ LÝ SỰ KIỆN CRUD VÀ ĐIỀU HƯỚNG ---
 
-  // Mở Modal Thêm mới
+  // Bấm nút "Thêm sản phẩm mới" -> Mở Modal rỗng
   const handleAddNew = () => {
     setEditingId(null);
-    setFormData({ name: '', category: 'Rau củ', price: '', status: 'Đang bán', image: '' });
+    setFormData({ 
+      name: '', price: '', original_price: '', stock: '100', 
+      store_id: 1, category_id: 1, category: 'Rau củ', status: 'Đang bán', image: '' 
+    });
     setIsModalOpen(true);
   };
 
-  // Mở Modal Chỉnh sửa
+  // Bấm nút "Sửa" -> Đổ thông tin cũ lên Form
   const handleEdit = (product) => {
     setEditingId(product.id);
-    setFormData({ ...product });
+    setFormData({
+      name: product.name || '',
+      price: product.price || '',
+      original_price: product.original_price || product.price || '',
+      stock: product.stock || '100',
+      store_id: product.store_id || 1,
+      category_id: product.category_id || 1,
+      category: product.category || 'Rau củ',
+      status: product.status || 'Đang bán',
+      image: product.image || ''
+    });
     setIsModalOpen(true);
   };
 
-  // Lưu sản phẩm (Thêm hoặc Sửa)
-  const handleSaveProduct = (e) => {
+  // Bấm nút "Lưu" (Submit Form) -> Gửi yêu cầu sang Laravel
+  const handleSaveProduct = async (e) => {
     e.preventDefault();
-    if (editingId) {
-      setProducts(products.map(p => p.id === editingId ? { ...formData, id: editingId } : p));
-    } else {
-      const newProduct = { ...formData, id: `#CTC-00${products.length + 1}` };
-      setProducts([newProduct, ...products]);
+    
+    // Đảm bảo ép kiểu dữ liệu chuẩn số trước khi truyền lên DB
+    const payload = {
+      ...formData,
+      price: Number(formData.price),
+      original_price: Number(formData.original_price || formData.price),
+      stock: Number(formData.stock),
+      store_id: Number(formData.store_id),
+      category_id: Number(formData.category_id)
+    };
+
+    try {
+      if (editingId) {
+        // Gọi API cập nhật sản phẩm (PUT)
+        await axios.put(`http://127.0.0.1:8000/api/products/${editingId}`, payload);
+        alert("Cập nhật sản phẩm thành công!");
+      } else {
+        // Gửi API tạo mới sản phẩm (POST)
+        await axios.post('http://127.0.0.1:8000/api/products', payload);
+        alert("Thêm sản phẩm mới thành công!");
+      }
+      setIsModalOpen(false); // Đóng modal
+      fetchProducts();       // Làm mới bảng danh sách
+    } catch (error) {
+      console.error("Lỗi chi tiết từ Backend:", error.response?.data);
+      if (error.response?.data?.errors) {
+        alert("Lỗi dữ liệu đầu vào: " + JSON.stringify(error.response.data.errors));
+      } else {
+        alert("Lỗi hệ thống: " + (error.response?.data?.message || "Không thể thực hiện yêu cầu"));
+      }
     }
-    setIsModalOpen(false);
   };
 
-  // Helpers
+  // Bấm nút "Xóa" sản phẩm
+  const handleDelete = async (id, name) => {
+    if (window.confirm(`Bạn có chắc muốn xóa sản phẩm "${name}"?`)) {
+      try {
+        await axios.delete(`http://127.0.0.1:8000/api/products/${id}`);
+        alert("Đã xóa sản phẩm thành công!");
+        fetchProducts(); 
+      } catch (error) {
+        console.error("Lỗi xóa sản phẩm:", error);
+        alert("Không thể xóa sản phẩm này.");
+      }
+    }
+  };
+  // Hàm bật / tắt bán sản phẩm nhanh bằng API Patch
+const handleToggleStatus = async (id, currentStatus) => {
+  const nextStatus = currentStatus === 'Đang bán' ? 'Đã ẩn' : 'Đang bán';
+  try {
+    await axios.patch(`http://127.0.0.1:8000/api/products/${id}/toggle-status`, {
+      status: nextStatus
+    });
+    alert(`Đã chuyển trạng thái sản phẩm sang: ${nextStatus}`);
+    fetchProducts(); // Refresh danh sách công khai
+  } catch (error) {
+    console.error("Lỗi thay đổi trạng thái:", error);
+    alert("Không thể thay đổi trạng thái sản phẩm.");
+  }
+};
+
+  // Đăng xuất tài khoản admin
+  const handleLogout = () => {
+    if (window.confirm("Bạn có chắc chắn muốn đăng xuất khỏi trang Quản trị không?")) {
+      navigate('/login');
+    }
+  };
+
+  // Màu sắc Badge trạng thái danh mục
   const getCategoryStyle = (category) => {
     switch (category) {
       case 'Rau củ': return 'badge-green';
@@ -98,7 +179,7 @@ const ProductManagement = () => {
 
   return (
     <div className="new-admin-layout">
-      {/* SIDEBAR ĐÃ ĐƯỢC TÍCH HỢP ĐIỀU HƯỚNG */}
+      {/* SIDEBAR */}
       <aside className="sidebar">
         <div className="sidebar-brand">
           <h1>Chợ Tới Cửa</h1>
@@ -128,7 +209,6 @@ const ProductManagement = () => {
             <NavLink to="/settings" className={({ isActive }) => isActive ? "nav-item active" : "nav-item"}>
               <Settings size={20} /><span>Cài đặt</span>
             </NavLink>
-            {/* Đổi thẻ Đăng xuất thành dạng có thể click gọi hàm */}
             <li className="nav-item" onClick={handleLogout} style={{ cursor: 'pointer' }}>
               <LogOut size={20} /><span>Đăng xuất</span>
             </li>
@@ -205,7 +285,7 @@ const ProductManagement = () => {
                       <td>
                         <div className="img-placeholder">
                           {product.image ? (
-                            <img src={product.image} alt={product.name} />
+                            <img src={product.image} alt={product.name} style={{ width: '40px', height: '40px', objectFit: 'cover' }} />
                           ) : (
                             <div className="no-img">No Img</div>
                           )}
@@ -213,18 +293,23 @@ const ProductManagement = () => {
                       </td>
                       <td className="col-name">{product.name}</td>
                       <td>
-                        <span className={`badge ${getCategoryStyle(product.category)}`}>
-                          {product.category}
+                        <span className={`badge ${getCategoryStyle(product.category || 'Rau củ')}`}>
+                          {product.category || 'Rau củ'}
                         </span>
                       </td>
-                      <td className="col-price">{product.price} VND</td>
+                      <td className="col-price">{Number(product.price || 0).toLocaleString()} VND</td>
                       <td>
-                        <div className="status-container">
-                          <span className={`status-dot ${product.status === 'Đang bán' ? 'active' : 'inactive'}`}></span>
-                          <span className={`status-text ${product.status === 'Đang bán' ? 'active' : 'inactive'}`}>
-                            {product.status}
-                          </span>
-                        </div>
+                        <div 
+    className="status-container" 
+    onClick={() => handleToggleStatus(product.id, product.status || 'Đang bán')}
+    style={{ cursor: 'pointer' }} 
+    title="Click để bật/tắt bán nhanh"
+  >
+    <span className={`status-dot ${product.status === 'Đang bán' || !product.status ? 'active' : 'inactive'}`}></span>
+    <span className={`status-text ${product.status === 'Đang bán' || !product.status ? 'active' : 'inactive'}`}>
+      {product.status || 'Đang bán'}
+    </span>
+  </div>
                       </td>
                       <td className="text-right">
                         <div className="action-buttons">
@@ -276,7 +361,7 @@ const ProductManagement = () => {
                   </div>
                   <div className="form-group">
                     <label>Giá (VND)</label>
-                    <input type="text" required value={formData.price} onChange={(e) => setFormData({...formData, price: e.target.value})} placeholder="VD: 45,000" />
+                    <input type="number" required value={formData.price} onChange={(e) => setFormData({...formData, price: e.target.value})} placeholder="VD: 45000" />
                   </div>
                 </div>
                 <div className="form-row">

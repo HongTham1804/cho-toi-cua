@@ -1,5 +1,6 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useMemo } from 'react';
 import { Link } from 'react-router-dom';
+import axios from 'axios'; // Bổ sung axios để kết nối API Backend
 import CustomerHeader from '../../components/CustomerHeader/CustomerHeader';
 import Footer from '../../components/Footer/Footer';
 import heroImage from '../../assets/ảnh nền.jpg';
@@ -25,9 +26,64 @@ export default function GuestHomepage({ initialAuth = null }) {
   const isRegisterOpen = authMode === 'register';
   const isLoginOpen = authMode === 'login';
 
+  // --- THÀNH PHẦN BỔ SUNG: STATE QUẢN LÝ SẢN PHẨM & BỘ LỌC ĐÚNG ĐỀ BÀI ---
+  const [products, setProducts] = useState([]);
+  const [searchTerm, setSearchTerm] = useState('');
+  const [selectedCategory, setSelectedCategory] = useState('Tất cả');
+  const [minPrice, setMinPrice] = useState('');
+  const [maxPrice, setMaxPrice] = useState('');
+  const [sortBy, setSortBy] = useState('newest'); // Mặc định: Mới nhất
+
+  const categories = ['Tất cả', 'Rau củ', 'Thịt', 'Đồ khô', 'Trái cây'];
+
   useEffect(() => {
     setAuthMode(initialAuth);
   }, [initialAuth]);
+
+  // --- THÀNH PHẦN BỔ SUNG: GỌI API LẤY SẢN PHẨM TỪ LARAVEL ---
+  useEffect(() => {
+    const fetchGuestProducts = async () => {
+      try {
+        const response = await axios.get('http://127.0.0.1:8000/api/products');
+        const data = response.data.data || response.data;
+        // Khách hàng chỉ xem các sản phẩm được kích hoạt "Đang bán" (hoặc không set trạng thái ẩn)
+        const activeProducts = data.filter(p => p.status === 'Đang bán' || !p.status);
+        setProducts(activeProducts);
+      } catch (error) {
+        console.error("Lỗi lấy sản phẩm trang khách:", error);
+      }
+    };
+    fetchGuestProducts();
+  }, []);
+
+  // --- THÀNH PHẦN BỔ SUNG: XỬ LÝ BỘ LỌC (FILTER) VÀ TÌM KIẾM (SEARCH) NÂNG CAO ---
+  const filteredAndSortedProducts = useMemo(() => {
+    // 1. Thực hiện Lọc (Filter) dữ liệu trước
+    let result = products.filter((product) => {
+      const name = product.name ? product.name.toLowerCase() : '';
+      const price = Number(product.price || 0);
+
+      const matchesSearch = name.includes(searchTerm.toLowerCase());
+      const matchesCategory = selectedCategory === 'Tất cả' || product.category === selectedCategory;
+      
+      // Lọc theo khoảng giá (Chỉ lọc nếu người dùng có nhập số)
+      const matchesMinPrice = minPrice === '' || price >= Number(minPrice);
+      const matchesMaxPrice = maxPrice === '' || price <= Number(maxPrice);
+
+      return matchesSearch && matchesCategory && matchesMinPrice && matchesMaxPrice;
+    });
+
+    // 2. Thực hiện Sắp xếp (Sort) theo tiêu chí chọn lựa
+    if (sortBy === 'price_asc') {
+      result.sort((a, b) => Number(a.price) - Number(b.price)); // Giá tăng dần
+    } else if (sortBy === 'price_desc') {
+      result.sort((a, b) => Number(b.price) - Number(a.price)); // Giá giảm dần
+    } else if (sortBy === 'newest') {
+      result.sort((a, b) => b.id - a.id); // Mới nhất lên đầu (Dựa vào ID tự tăng)
+    }
+
+    return result;
+  }, [products, searchTerm, selectedCategory, minPrice, maxPrice, sortBy]);
 
   return (
     <div className="guest-home-page">
@@ -58,6 +114,7 @@ export default function GuestHomepage({ initialAuth = null }) {
           </div>
         </section>
 
+        {/* SECTION SIÊU THỊ ĐỐI TÁC */}
         <section className="guest-partners">
           <div className="guest-section-head">
             <h2>Siêu thị đối tác</h2>
@@ -75,6 +132,128 @@ export default function GuestHomepage({ initialAuth = null }) {
               </article>
             ))}
           </div>
+        </section>
+
+        {/* ========================================================================= */}
+        {/* THÀNH PHẦN BỔ SUNG MỚI: TOÀN BỘ CỤM BỘ LỌC & TÌM KIẾM SẢN PHẨM TRANG CHỦ KHACH */}
+        {/* ========================================================================= */}
+        <section className="guest-marketplace" style={{ marginTop: '50px' }}>
+          <div className="guest-section-head">
+            <h2>Sản phẩm tươi ngon hôm nay</h2>
+          </div>
+
+          {/* Thanh công cụ lọc đa năng */}
+          <div className="guest-filter-controls" style={{ display: 'flex', flexDirection: 'column', gap: '15px', background: '#fff', padding: '20px', borderRadius: '8px', marginBottom: '25px', boxShadow: '0 1px 3px rgba(0,0,0,0.05)' }}>
+            
+            <div style={{ display: 'flex', flexWrap: 'wrap', gap: '15px', alignItems: 'center' }}>
+              {/* Tìm kiếm tên */}
+              <div className="search-input-box" style={{ flex: '1', minWidth: '250px', position: 'relative' }}>
+                <input 
+                  type="text" 
+                  placeholder="🔍 Tìm sản phẩm theo tên..." 
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  style={{ width: '100%', padding: '10px 12px', borderRadius: '6px', border: '1px solid #cbd5e1' }}
+                />
+              </div>
+
+              {/* Lọc khoảng giá */}
+              <div className="price-filter-box" style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <span style={{ fontSize: '14px', color: '#64748b', fontWeight: '500' }}>Khoảng giá (VND):</span>
+                <input 
+                  type="number" 
+                  placeholder="Từ giá" 
+                  value={minPrice}
+                  onChange={(e) => setMinPrice(e.target.value)}
+                  style={{ width: '110px', padding: '8px 10px', borderRadius: '6px', border: '1px solid #cbd5e1' }}
+                />
+                <span>-</span>
+                <input 
+                  type="number" 
+                  placeholder="Đến giá" 
+                  value={maxPrice}
+                  onChange={(e) => setMaxPrice(e.target.value)}
+                  style={{ width: '110px', padding: '8px 10px', borderRadius: '6px', border: '1px solid #cbd5e1' }}
+                />
+              </div>
+
+              {/* Sắp xếp giá / thời gian */}
+              <div className="sort-filter-box">
+                <select 
+                  value={sortBy} 
+                  onChange={(e) => setSortBy(e.target.value)}
+                  style={{ padding: '10px', borderRadius: '6px', border: '1px solid #cbd5e1', background: '#fff', fontWeight: '500' }}
+                >
+                  <option value="newest">Mới nhất</option>
+                  <option value="price_asc">Giá: Thấp đến Cao</option>
+                  <option value="price_desc">Giá: Cao đến Thấp</option>
+                </select>
+              </div>
+            </div>
+
+            {/* Lọc theo Tabs danh mục */}
+            <div className="category-tab-row" style={{ display: 'flex', gap: '10px', flexWrap: 'wrap', borderTop: '1px solid #f1f5f9', paddingTop: '15px' }}>
+              {categories.map((cat, idx) => (
+                <button
+                  key={idx}
+                  type="button"
+                  onClick={() => setSelectedCategory(cat)}
+                  style={{
+                    padding: '8px 16px',
+                    borderRadius: '20px',
+                    border: 'none',
+                    fontWeight: '600',
+                    fontSize: '13px',
+                    cursor: 'pointer',
+                    backgroundColor: selectedCategory === cat ? '#10b981' : '#f1f5f9',
+                    color: selectedCategory === cat ? '#fff' : '#475569',
+                    transition: 'all 0.2s'
+                  }}
+                >
+                  {cat}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {/* Ô lưới hiển thị sản phẩm dạng Card của Khách */}
+          {filteredAndSortedProducts.length > 0 ? (
+            <div className="guest-product-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(220px, 1fr))', gap: '20px' }}>
+              {filteredAndSortedProducts.map((product) => (
+                <article 
+                  className="guest-product-card" 
+                  key={product.id} 
+                  style={{ background: '#fff', border: '1px solid #e2e8f0', borderRadius: '8px', overflow: 'hidden', display: 'flex', flexDirection: 'column', transition: 'transform 0.2s' }}
+                >
+                  <div style={{ height: '180px', background: '#f8fafc', position: 'relative', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                    {product.image ? (
+                      <img src={product.image} alt={product.name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                    ) : (
+                      <span style={{ color: '#94a3b8', fontSize: '13px' }}>Hình ảnh sản phẩm</span>
+                    )}
+                    <span style={{ position: 'absolute', top: '10px', left: '10px', background: '#e0f2fe', color: '#0369a1', fontSize: '11px', fontWeight: 'bold', padding: '3px 8px', borderRadius: '4px' }}>
+                      {product.category || 'Rau củ'}
+                    </span>
+                  </div>
+                  <div style={{ padding: '15px', display: 'flex', flexDirection: 'column', flex: '1', justifyContent: 'between' }}>
+                    <h3 style={{ fontSize: '15px', margin: '0 0 10px 0', color: '#1e293b', fontWeight: '600' }}>{product.name}</h3>
+                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginTop: 'auto' }}>
+                      <span style={{ color: '#ef4444', fontWeight: '700', fontSize: '16px' }}>
+                        {Number(product.price || 0).toLocaleString()}đ
+                      </span>
+                      <button type="button" style={{ background: '#10b981', color: '#fff', border: 'none', padding: '6px 12px', borderRadius: '6px', fontWeight: '600', fontSize: '12px', cursor: 'pointer' }}>
+                        Chọn mua
+                      </button>
+                    </div>
+                  </div>
+                </article>
+              ))}
+            </div>
+          ) : (
+            <div style={{ textAlignment: 'center', padding: '40px', background: '#fff', borderRadius: '8px', color: '#64748b', border: '1px dashed #cbd5e1' }}>
+              Không tìm thấy sản phẩm nào phù hợp với bộ lọc tìm kiếm của bạn.
+            </div>
+          )}
         </section>
       </main>
 
@@ -97,6 +276,9 @@ export default function GuestHomepage({ initialAuth = null }) {
   );
 }
 
+// ==========================================
+// CÁC HÀM MODAL GIỮ NGUYÊN KHÔNG THAY ĐỔI
+// ==========================================
 function RegisterModal({ onClose, onShowLogin }) {
   const [showPassword, setShowPassword] = useState(false);
 
