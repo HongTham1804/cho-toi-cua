@@ -16,6 +16,20 @@
   flex: 1;  /* Content chiếm hết khoảng trống giữa Header và Footer */
 }
 
+.admin-layout {
+  display: flex;
+  width: 100%;
+  min-height: 100vh;
+  background: #ffffff;
+}
+
+.admin-layout__content {
+  flex: 1;
+  min-width: 0;
+  height: 100vh;
+  overflow: hidden;
+}
+
 /* ===========================
    HEADER
 =========================== */

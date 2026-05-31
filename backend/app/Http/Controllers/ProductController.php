@@ -27,6 +27,10 @@ class ProductController extends Controller
             $query->where('category_id', $request->category_id);
         }
 
+        if ($request->has('store_id') && $request->store_id != '') {
+            $query->where('store_id', $request->store_id);
+        }
+
         if ($request->has('min_price') && $request->min_price != '') {
             $query->where('price', '>=', $request->min_price);
         }
@@ -54,9 +58,12 @@ class ProductController extends Controller
             $query->latest();
         }
 
+        $perPage = (int) $request->query('per_page', 25);
+        $perPage = min(max($perPage, 1), 100);
+
         return response()->json([
             'success' => true,
-            'data' => $query->paginate(15)
+            'data' => $query->paginate($perPage)
         ]);
     }
 

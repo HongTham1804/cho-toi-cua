@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { Link, useLocation, useNavigate, useParams } from "react-router-dom";
 import "./order-detail.css";
-import { fetchOrder, fetchOrders, reorder } from "../order-history/api/order-history-api";
+import { fetchOrders, reorder } from "../order-history/api/order-history-api";
 import imgRauMuong from "../../assets/rau muống.jpg";
 import imgTomato from "../../assets/Cà chua Mộc Châu.png";
 import imgBeef from "../../assets/Thịt bò.jpg";
@@ -9,17 +9,10 @@ import imgEggs from "../../assets/eggs.jpg";
 import imgSuplo from "../../assets/suplo.jpg";
 
 const STATUS_LABELS = {
-  pending: "Chờ xử lý",
-  preparing: "Đang lấy hàng",
+  pending_payment: "Chờ thanh toán",
   shipping: "Đang giao",
   completed: "Đã hoàn thành",
   cancelled: "Đã hủy",
-};
-
-const PAYMENT_METHOD_LABELS = {
-  cod: "Thanh toán khi nhận hàng",
-  bank_transfer: "Chuyển khoản ngân hàng",
-  momo: "Ví MoMo",
 };
 
 const ORDER_DETAILS = {
@@ -138,28 +131,7 @@ function formatCurrency(value) {
 }
 
 function buildDetail(order) {
-  const orderIdText = String(order.id);
-  const override = ORDER_DETAILS[orderIdText] ?? {};
-  const products = order.details?.length
-    ? order.details.map((item) => ({
-        id: item.id ?? `${orderIdText}-${item.product_id}`,
-        name: `Sản phẩm #${item.product_id}`,
-        variant: item.is_flash_sale ? "Đang áp dụng flash sale" : "Sản phẩm trong đơn",
-        image: imgSuplo,
-        quantity: item.quantity,
-        price: Number(item.unit_price ?? 0),
-      }))
-    : [
-        {
-          id: "default-product",
-          name: order.products,
-          variant: "Sản phẩm trong đơn",
-          image: imgSuplo,
-          quantity: 1,
-          price: order.total,
-        },
-      ];
-
+  const override = ORDER_DETAILS[order.id] ?? {};
   return {
     estimate: "Hôm nay, 18:30 - 19:00",
     carrier: "CTC Express: CTCVN000000000",
@@ -168,14 +140,23 @@ function buildDetail(order) {
     transportNote: "Thông tin vận chuyển được cập nhật theo thời gian thực.",
     receiver: "Nguyễn Văn A",
     phone: "(+84) 908 000 000",
-    address: order.shippingAddress || "Chưa cập nhật địa chỉ giao hàng",
-    paymentMethod: PAYMENT_METHOD_LABELS[order.paymentMethod] ?? order.paymentMethod ?? "Chưa cập nhật",
-    orderCode: orderIdText.replaceAll("-", ""),
+    address: "Khu Công Nghệ Cao, Thành phố Thủ Đức, TP.HCM",
+    paymentMethod: "Ví Chợ Tới Cửa",
+    orderCode: order.id.replaceAll("-", ""),
     orderedAt: order.date.replace(" - ", " "),
     paidAt: order.date.replace(" - ", " "),
     pickedAt: "",
     completedAt: order.status === "completed" ? order.date.replace(" - ", " ") : "",
-    products,
+    products: [
+      {
+        id: "default-product",
+        name: order.products,
+        variant: "Sản phẩm trong đơn",
+        image: imgSuplo,
+        quantity: 1,
+        price: order.total,
+      },
+    ],
     ...override,
   };
 }
@@ -193,22 +174,10 @@ export default function OrderDetail() {
     let active = true;
 
     async function loadOrder() {
+      const orders = await fetchOrders("all");
       const searchOrderId = new URLSearchParams(location.search).get("orderId");
-      const targetId = orderId ?? searchOrderId;
-      let nextOrder = null;
-
-      try {
-        if (targetId) {
-          nextOrder = await fetchOrder(decodeURIComponent(targetId));
-        } else {
-          const orders = await fetchOrders("all");
-          nextOrder = orders[0] ?? null;
-        }
-      } catch {
-        const orders = await fetchOrders("all");
-        const decodedId = decodeURIComponent(targetId ?? "");
-        nextOrder = orders.find((item) => String(item.id) === decodedId) ?? null;
-      }
+      const decodedId = decodeURIComponent(orderId ?? searchOrderId ?? "CTC-98234");
+      const nextOrder = orders.find((item) => item.id === decodedId) ?? null;
 
       if (!active) return;
       setOrder(nextOrder);
@@ -224,7 +193,6 @@ export default function OrderDetail() {
   const detail = useMemo(() => (order ? buildDetail(order) : null), [order]);
   const isCompleted = order?.status === "completed";
   const isShipping = order?.status === "shipping";
-  const isProcessing = order && !isCompleted && !isShipping;
   const statusLabel = STATUS_LABELS[order?.status] ?? "Thông tin đơn";
 
   function showToast(message) {
@@ -306,12 +274,6 @@ export default function OrderDetail() {
               <p className="hero-kicker">Thời gian nhận hàng dự kiến</p>
               <h2>{detail.estimate}</h2>
               <p>Giao đúng hẹn để bạn yên tâm nhận hàng tươi trong ngày.</p>
-            </>
-          ) : isProcessing ? (
-            <>
-              <p className="hero-kicker">Đơn hàng đang được xử lý</p>
-              <h2>Siêu thị đã nhận đơn hàng của bạn</h2>
-              <p>Chúng tôi sẽ cập nhật trạng thái khi đơn được chuẩn bị và bàn giao cho đơn vị vận chuyển.</p>
             </>
           ) : (
             <>
