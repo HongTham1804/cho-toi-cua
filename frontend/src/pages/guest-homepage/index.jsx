@@ -66,6 +66,7 @@ export default function GuestHomepage({ initialAuth = null }) {
   const isRegisterOpen = authMode === 'register';
   const isLoginOpen = authMode === 'login';
   const isOtpOpen = authMode === 'otp';
+  const isForgotPasswordOpen = authMode === 'forgot-password';
   const visibleStores = showAllStores ? expandedPartnerStores : partnerStores;
 
   function openLogin(message = '') {
@@ -161,7 +162,16 @@ export default function GuestHomepage({ initialAuth = null }) {
           notice={authNotice}
           onClose={() => setAuthMode(null)}
           onShowRegister={() => setAuthMode('register')}
+          onShowForgotPassword={() => setAuthMode('forgot-password')}
           onLoginSuccess={handleLoginSuccess}
+        />
+      )}
+
+      {isForgotPasswordOpen && (
+        <ForgotPasswordEmailModal
+          onClose={() => setAuthMode(null)}
+          onBackLogin={() => openLogin()}
+          onResetComplete={(message) => openLogin(message)}
         />
       )}
     </div>
@@ -410,7 +420,7 @@ function OtpModal({ email, notice, onClose, onBackRegister, onVerified }) {
   );
 }
 
-function LoginModal({ notice, onClose, onShowRegister, onLoginSuccess }) {
+function LoginModal({ notice, onClose, onShowRegister, onShowForgotPassword, onLoginSuccess }) {
   const [showPassword, setShowPassword] = useState(false);
   const [form, setForm] = useState({ identifier: '', password: '' });
   const [error, setError] = useState('');
@@ -475,14 +485,32 @@ function LoginModal({ notice, onClose, onShowRegister, onLoginSuccess }) {
             </span>
           </label>
 
-          <PasswordField
-            label="Mật khẩu"
-            value={form.password}
-            visible={showPassword}
-            placeholder="Nhập mật khẩu"
-            onToggle={() => setShowPassword((value) => !value)}
-            onChange={(value) => updateField('password', value)}
-          />
+          <label>
+            <span className="guest-login-password-label">
+              Mật khẩu
+              <button type="button" className="guest-login-forgot" onClick={onShowForgotPassword}>
+                Quên mật khẩu?
+              </button>
+            </span>
+            <span className="guest-register-field guest-register-field--password">
+              <i className="fa-solid fa-lock"></i>
+              <input
+                type={showPassword ? 'text' : 'password'}
+                value={form.password}
+                onChange={(event) => updateField('password', event.target.value)}
+                placeholder="Nhập mật khẩu"
+                minLength="8"
+                required
+              />
+              <button
+                type="button"
+                onClick={() => setShowPassword((value) => !value)}
+                aria-label={showPassword ? 'Ẩn mật khẩu' : 'Hiển thị mật khẩu'}
+              >
+                <i className={showPassword ? 'fa-regular fa-eye-slash' : 'fa-regular fa-eye'}></i>
+              </button>
+            </span>
+          </label>
 
           {error && <p className="guest-auth-message guest-auth-message--error">{error}</p>}
 
@@ -494,6 +522,255 @@ function LoginModal({ notice, onClose, onShowRegister, onLoginSuccess }) {
         <p className="guest-register-login">
           Chưa có tài khoản? <button type="button" onClick={onShowRegister}>Đăng ký ngay</button>
         </p>
+      </section>
+    </div>
+  );
+}
+
+function ForgotPasswordEmailModal({ onClose, onBackLogin, onResetComplete }) {
+  const [step, setStep] = useState('email');
+  const [email, setEmail] = useState('');
+  const [otp, setOtp] = useState('');
+  const [resetToken, setResetToken] = useState('');
+  const [passwords, setPasswords] = useState({
+    password: '',
+    password_confirmation: '',
+  });
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const [error, setError] = useState('');
+  const [notice, setNotice] = useState('');
+  const [submitting, setSubmitting] = useState(false);
+
+  function updatePassword(field, value) {
+    setPasswords((current) => ({ ...current, [field]: value }));
+  }
+
+  async function handleEmailSubmit(event) {
+    event.preventDefault();
+    setError('');
+    setNotice('');
+
+    const normalizedEmail = email.trim();
+
+    if (!EMAIL_REGEX.test(normalizedEmail)) {
+      setError('Vui lòng nhập email hợp lệ.');
+      return;
+    }
+
+    setSubmitting(true);
+
+    try {
+      const result = await postJson('/auth/forgot-password/send-otp', {
+        email: normalizedEmail,
+      });
+      setEmail(result.email || normalizedEmail);
+      setOtp('');
+      setResetToken('');
+      setNotice(result.message || 'OTP đặt lại mật khẩu đã được gửi đến email của bạn.');
+      setStep('otp');
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setSubmitting(false);
+    }
+  }
+
+  async function handleOtpSubmit(event) {
+    event.preventDefault();
+    setError('');
+    setNotice('');
+
+    if (otp.length !== 6) {
+      setError('Vui lòng nhập đủ 6 số OTP.');
+      return;
+    }
+
+    setSubmitting(true);
+
+    try {
+      const result = await postJson('/auth/forgot-password/verify-otp', {
+        email,
+        otp,
+      });
+      setResetToken(result.reset_token || '');
+      setNotice(result.message || 'Xác minh OTP thành công. Vui lòng đặt mật khẩu mới.');
+      setStep('reset');
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setSubmitting(false);
+    }
+  }
+
+  async function handleResetSubmit(event) {
+    event.preventDefault();
+    setError('');
+    setNotice('');
+
+    if (passwords.password.length < 8) {
+      setError('Mật khẩu phải có ít nhất 8 ký tự.');
+      return;
+    }
+
+    if (passwords.password !== passwords.password_confirmation) {
+      setError('Xác nhận mật khẩu không khớp.');
+      return;
+    }
+
+    setSubmitting(true);
+
+    try {
+      const result = await postJson('/auth/forgot-password/reset', {
+        email,
+        reset_token: resetToken,
+        password: passwords.password,
+        password_confirmation: passwords.password_confirmation,
+      });
+      onResetComplete(result.message || 'Đặt lại mật khẩu thành công. Vui lòng đăng nhập lại.');
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setSubmitting(false);
+    }
+  }
+
+  const subtitle = step === 'email'
+    ? 'Nhập email tài khoản của bạn để nhận mã OTP đặt lại mật khẩu.'
+    : step === 'otp'
+      ? `Nhập mã 6 số đã gửi đến ${email}.`
+      : 'Nhập mật khẩu mới của bạn để hoàn tất đặt lại.';
+
+  return (
+    <div className="guest-register-overlay" onClick={onClose}>
+      <section
+        className="guest-register-modal guest-forgot-modal"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="guest-forgot-title"
+        onClick={(event) => event.stopPropagation()}
+      >
+        <button className="guest-register-close" type="button" onClick={onClose} aria-label="Đóng">
+          <i className="fa-solid fa-xmark"></i>
+        </button>
+
+        <div className="guest-register-icon" aria-hidden="true">
+          <i className="fa-solid fa-key"></i>
+        </div>
+
+        <h2 id="guest-forgot-title">Quên mật khẩu</h2>
+        <p className="guest-register-subtitle">{subtitle}</p>
+
+        {step === 'email' && (
+          <form className="guest-register-form" onSubmit={handleEmailSubmit}>
+            <label>
+              Email
+              <span className="guest-register-field">
+                <i className="fa-regular fa-envelope"></i>
+                <input
+                  type="email"
+                  value={email}
+                  onChange={(event) => setEmail(event.target.value)}
+                  placeholder="Nhập email đã đăng ký"
+                  required
+                />
+              </span>
+            </label>
+
+            {notice && <p className="guest-auth-message guest-auth-message--success">{notice}</p>}
+            {error && <p className="guest-auth-message guest-auth-message--error">{error}</p>}
+
+            <button className="guest-register-submit" type="submit" disabled={submitting}>
+              {submitting ? 'Đang gửi OTP...' : 'Gửi mã OTP'} <i className="fa-solid fa-arrow-right"></i>
+            </button>
+
+            <button className="guest-auth-link-button" type="button" onClick={onBackLogin}>
+              Quay lại đăng nhập
+            </button>
+          </form>
+        )}
+
+        {step === 'otp' && (
+          <form className="guest-register-form" onSubmit={handleOtpSubmit}>
+            {notice && <p className="guest-auth-message guest-auth-message--success">{notice}</p>}
+
+            <label>
+              Mã OTP
+              <span className="guest-register-field guest-otp-field">
+                <i className="fa-solid fa-key"></i>
+                <input
+                  type="text"
+                  inputMode="numeric"
+                  maxLength="6"
+                  value={otp}
+                  onChange={(event) => setOtp(event.target.value.replace(/\D/g, '').slice(0, 6))}
+                  placeholder="Nhập 6 số OTP"
+                  required
+                />
+              </span>
+            </label>
+
+            {error && <p className="guest-auth-message guest-auth-message--error">{error}</p>}
+
+            <button className="guest-register-submit" type="submit" disabled={submitting || otp.length !== 6}>
+              {submitting ? 'Đang xác minh...' : 'Xác minh OTP'} <i className="fa-solid fa-arrow-right"></i>
+            </button>
+
+            <button
+              className="guest-auth-link-button"
+              type="button"
+              onClick={() => {
+                setStep('email');
+                setNotice('');
+                setError('');
+              }}
+            >
+              Nhập email khác
+            </button>
+          </form>
+        )}
+
+        {step === 'reset' && (
+          <form className="guest-register-form" onSubmit={handleResetSubmit}>
+            {notice && <p className="guest-auth-message guest-auth-message--success">{notice}</p>}
+
+            <PasswordField
+              label="Mật khẩu mới"
+              value={passwords.password}
+              visible={showPassword}
+              placeholder="Ít nhất 8 ký tự"
+              onToggle={() => setShowPassword((value) => !value)}
+              onChange={(value) => updatePassword('password', value)}
+            />
+
+            <PasswordField
+              label="Xác nhận mật khẩu mới"
+              value={passwords.password_confirmation}
+              visible={showConfirmPassword}
+              placeholder="Nhập lại mật khẩu mới"
+              onToggle={() => setShowConfirmPassword((value) => !value)}
+              onChange={(value) => updatePassword('password_confirmation', value)}
+            />
+
+            {error && <p className="guest-auth-message guest-auth-message--error">{error}</p>}
+
+            <button className="guest-register-submit" type="submit" disabled={submitting}>
+              {submitting ? 'Đang đặt lại...' : 'Đặt lại mật khẩu'} <i className="fa-solid fa-arrow-right"></i>
+            </button>
+
+            <button
+              className="guest-auth-link-button"
+              type="button"
+              onClick={() => {
+                setStep('otp');
+                setNotice('');
+                setError('');
+              }}
+            >
+              Quay lại nhập OTP
+            </button>
+          </form>
+        )}
       </section>
     </div>
   );
