@@ -110,6 +110,7 @@ function App() {
           <Route path="/notifications" element={<Notifications />} />
           <Route path="/account-settings" element={<AccountSettings />} />
           <Route path="/favorite-products" element={lazyPage(FavoriteProducts)} />
+          <Route path="/spyeuthich" element={lazyPage(FavoriteProducts)} />
           <Route path="/product/:id" element={<ProductDetail />} />
         </Route>
 
