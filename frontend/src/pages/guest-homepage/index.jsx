@@ -52,9 +52,12 @@ export default function GuestHomepage({ initialAuth = null }) {
               Tươi ngon từ nông trại đến tận cửa nhà. Chọn siêu thị yêu thích
               của bạn và chúng tôi sẽ lo phần còn lại.
             </p>
-            <Link to="/select-role" className="guest-hero-cta">
-              Bắt đầu mua sắm <i className="fa-solid fa-arrow-right"></i>
-            </Link>
+            <button
+              className="guest-hero-cta"
+              onClick={() => setAuthMode('login')}
+            >
+                 Bắt đầu mua sắm <i className="fa-solid fa-arrow-right"></i>
+            </button>
           </div>
         </section>
 

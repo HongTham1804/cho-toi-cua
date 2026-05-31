@@ -124,7 +124,11 @@ const UserManagement = () => {
   return (
     <div className="layout-container">
       <main className="main-content">
-        <Header searchTerm={searchTerm} onSearchChange={setSearchTerm} />
+        <Header
+          searchTerm={searchTerm}
+          onSearchChange={setSearchTerm}
+          placeholder="Tìm theo Tên, Email, Số điện thoại, ID..."
+        />
         
         <div className="content-canvas">
           <div className="page-header">

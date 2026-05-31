@@ -1,88 +1,163 @@
-$bg-color: #F9F9FF;
-$border-color: #BBCABF;
-$text-main: #151C27;
-$text-secondary: #3C4A42;
+$font-family: "Be Vietnam Pro", sans-serif;
+$color-primary: #006c49;
+$color-bg: #f9f9ff;
+$color-text-dark: #151c27;
+$color-text-muted: #3c4a42;
+$color-text-light: #6b7280;
+$color-border: #bbcabf;
 
 .top-header {
-  height: 64px;
-  background: $bg-color;
-  border-bottom: 1px solid $border-color;
   display: flex;
   justify-content: space-between;
   align-items: center;
   padding: 0 32px;
+  height: 64px;
+  background: $color-bg;
+  border-bottom: 1px solid $color-border;
+  font-family: $font-family;
 
-  .search-bar {
+  .header-left {
     display: flex;
     align-items: center;
-    background: #F0F3FF;
-    border: 1px solid $border-color;
-    border-radius: 12px;
-    padding: 8px 16px;
-    width: 448px;
-    transition: all 0.3s ease;
+    gap: 24px;
+    min-width: 0;
 
-    /* Đổi viền đậm hơn khi click vào ô tìm kiếm */
-    &:focus-within {
-      border-color: #006C49; 
-      box-shadow: 0 0 0 2px rgba(0, 108, 73, 0.1);
+    .search-box {
+      position: relative;
+      width: 448px;
+
+      .icon-search {
+        position: absolute;
+        left: 12px;
+        top: 50%;
+        transform: translateY(-50%);
+        color: $color-text-light;
+        font-size: 18px;
+        pointer-events: none;
+      }
+
+      input {
+        width: 100%;
+        box-sizing: border-box;
+        padding: 10px 16px 10px 40px;
+        background: #f0f3ff;
+        border: 1px solid $color-border;
+        border-radius: 12px;
+        color: $color-text-dark;
+        font-family: $font-family;
+        font-size: 16px;
+        outline: none;
+
+        &:focus {
+          border-color: $color-primary;
+        }
+
+        &::placeholder {
+          color: $color-text-light;
+        }
+      }
     }
 
-    .search-icon {
-      color: #6C7A71;
-      font-size: 18px;
-    }
+    .category-filter {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      color: $color-text-muted;
+      font-size: 16px;
 
-    input {
-      border: none;
-      background: transparent;
-      outline: none;
-      width: 100%;
-      margin-left: 12px;
-      font-size: 14px;
-      color: $text-main;
+      .dropdown {
+        position: relative;
+        display: flex;
+        align-items: center;
+        background: #f0f3ff;
+        border: 1px solid $color-border;
+        border-radius: 4px;
 
-      &::placeholder {
-        color: #6B7280;
+        select {
+          appearance: none;
+          min-width: 178px;
+          padding: 8px 32px 8px 12px;
+          background: transparent;
+          border: none;
+          color: $color-text-dark;
+          cursor: pointer;
+          outline: none;
+          font-family: $font-family;
+          font-size: 16px;
+        }
+
+        .icon-chevron {
+          position: absolute;
+          right: 8px;
+          pointer-events: none;
+          color: $color-text-dark;
+        }
       }
     }
   }
 
-  .user-profile {
+  .header-right {
     display: flex;
     align-items: center;
     gap: 16px;
 
-    .icon {
-      font-size: 20px;
-      color: $text-secondary;
+    .notification {
+      position: relative;
       cursor: pointer;
-      transition: color 0.2s;
+      padding: 8px;
+      color: $color-text-muted;
 
-      &:hover {
-        color: #006C49;
+      .icon-bell {
+        font-size: 20px;
+      }
+
+      .dot-red {
+        position: absolute;
+        top: 8px;
+        right: 8px;
+        width: 8px;
+        height: 8px;
+        background: #ba1a1a;
+        border: 2px solid $color-bg;
+        border-radius: 50%;
       }
     }
 
     .divider {
       width: 1px;
       height: 32px;
-      background: $border-color;
-      margin: 0 4px;
+      background: $color-border;
     }
-    
-    .admin-avatar {
-      width: 32px;
-      height: 32px;
-      border-radius: 12px;
-      border: 1px solid $border-color;
-      object-fit: cover;
-    }
-    
-    .admin-name {
-      font-weight: 600;
-      font-size: 16px;
-      color: $text-main;
+
+    .user-profile {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      cursor: pointer;
+
+      .user-info {
+        display: flex;
+        flex-direction: column;
+        align-items: flex-end;
+
+        .user-name {
+          color: $color-text-dark;
+          font-size: 16px;
+        }
+
+        .user-role {
+          color: $color-text-muted;
+          font-size: 13px;
+        }
+      }
+
+      .avatar {
+        width: 40px;
+        height: 40px;
+        border-radius: 12px;
+        border: 1px solid $color-border;
+        object-fit: cover;
+      }
     }
   }
 }

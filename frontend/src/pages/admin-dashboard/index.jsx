@@ -38,7 +38,7 @@ const stats = [
     tone: "red",
   },
   {
-    label: "Shopper đang online",
+    label: "Shipper đang online",
     value: "156 Shippers",
     note: "Trên 12 quận nội thành",
     change: "Đang hoạt động",

@@ -5,6 +5,11 @@
   --bg-main: #F8F9FF;
 }
 
+body,
+.App {
+  font-family: 'Be Vietnam Pro', sans-serif;
+}
+
 .customer-layout {
   display: flex;
   flex-direction: column;  /* ← Xếp dọc: Header → Content → Footer */
@@ -21,13 +26,15 @@
   width: 100%;
   min-height: 100vh;
   background: #ffffff;
+  font-family: 'Be Vietnam Pro', sans-serif;
 }
 
 .admin-layout__content {
   flex: 1;
   min-width: 0;
   height: 100vh;
-  overflow: hidden;
+  overflow-x: hidden;
+  overflow-y: auto;
 }
 
 /* ===========================
