@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import './logged-in-homepage.css';
 
@@ -6,8 +6,7 @@ import nenBg from '../../assets/ảnh nền.jpg';
 import '@fortawesome/fontawesome-free/css/all.min.css'
 import winmartLogo from '../../assets/logos/Winmart.jpg';
 import bachHoaXanhLogo from '../../assets/logos/BHX.webp';
-import coopmartLogo from '../../assets/logos/Coopmart.jpg';
-import lottemartLogo from '../../assets/logos/Lottemart.webp';
+import goLogo from '../../assets/logos/GO.png';
 
 
 export default function LoggedInHomepage() {
@@ -16,13 +15,8 @@ export default function LoggedInHomepage() {
     // Dữ liệu giả (Mock data) cho các siêu thị để render tự động
   const storeList = [
     { id: 1, name: 'Bách Hóa Xanh', time: '15-20 phút', image: bachHoaXanhLogo },
-    { id: 2, name: 'Bách Hóa Xanh', time: '20-25 phút', image: bachHoaXanhLogo },
-    { id: 3, name: 'Bách Hóa Xanh', time: '10-15 phút', image: bachHoaXanhLogo },
-    { id: 4, name: 'Bách Hóa Xanh', time: '15-20 phút', image: bachHoaXanhLogo },
-    { id: 5, name: 'WinMart', time: '15-20 phút', image: winmartLogo },
-    { id: 6, name: 'Co.op Mart', time: '20-25 phút', image: coopmartLogo },
-    { id: 7, name: 'Lotte Mart', time: '10-15 phút', image: lottemartLogo },
-    { id: 8, name: 'Bách Hóa Xanh', time: '15-20 phút', image: bachHoaXanhLogo },
+    { id: 2, name: 'WinMart', time: '15-20 phút', image: winmartLogo },
+    { id: 3, name: 'GO!', time: '20-25 phút', image: goLogo },
   ];
 
   return (

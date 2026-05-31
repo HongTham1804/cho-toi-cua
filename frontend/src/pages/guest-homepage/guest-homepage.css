@@ -63,6 +63,7 @@
 }
 
 .guest-hero-cta {
+  border: 0;
   display: inline-flex;
   align-items: center;
   gap: 10px;
@@ -70,9 +71,11 @@
   border-radius: 8px;
   background: #007a55;
   color: #ffffff;
+  font: inherit;
   font-size: 14px;
   font-weight: 700;
   text-decoration: none;
+  cursor: pointer;
   box-shadow: 0 12px 24px rgba(0, 122, 85, 0.18);
   transition: transform 0.2s ease, background 0.2s ease;
 }
@@ -101,20 +104,27 @@
   font-weight: 800;
 }
 
-.guest-section-head a {
+.guest-section-head a,
+.guest-section-head button {
+  border: 0;
+  padding: 0;
+  background: transparent;
   color: #007a55;
+  font: inherit;
   font-size: 13px;
   font-weight: 800;
   text-decoration: none;
+  cursor: pointer;
 }
 
-.guest-section-head a:hover {
+.guest-section-head a:hover,
+.guest-section-head button:hover {
   text-decoration: underline;
 }
 
 .guest-store-grid {
   display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
+  grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 22px;
 }
 
@@ -133,8 +143,8 @@
 }
 
 .guest-store-logo-wrap {
-  width: 98px;
-  height: 98px;
+  width: 110px;
+  height: 110px;
   border: 1px solid #e5e7eb;
   border-radius: 8px;
   display: flex;
@@ -144,8 +154,8 @@
 }
 
 .guest-store-logo-wrap img {
-  width: 76px;
-  height: 76px;
+  width: 86px;
+  height: 86px;
   object-fit: contain;
 }
 
@@ -400,6 +410,59 @@
 .guest-register-submit:hover {
   background: #006c49;
   transform: translateY(-1px);
+}
+
+.guest-register-submit:disabled {
+  cursor: not-allowed;
+  opacity: 0.68;
+  transform: none;
+}
+
+.guest-auth-message {
+  margin: 0;
+  padding: 12px;
+  border-radius: 6px;
+  font-size: 13px;
+  font-weight: 700;
+  line-height: 1.45;
+}
+
+.guest-auth-message--error {
+  border: 1px solid #fecaca;
+  background: #fef2f2;
+  color: #dc2626;
+}
+
+.guest-auth-message--success {
+  border: 1px solid #bbf7d0;
+  background: #f0fdf4;
+  color: #047857;
+}
+
+.guest-auth-link-button {
+  align-self: center;
+  border: 0;
+  background: transparent;
+  color: #007a55;
+  font: inherit;
+  font-size: 13px;
+  font-weight: 800;
+  cursor: pointer;
+}
+
+.guest-auth-link-button:hover {
+  text-decoration: underline;
+}
+
+.guest-otp-modal {
+  max-width: 430px;
+}
+
+.guest-otp-field input {
+  text-align: center;
+  letter-spacing: 0;
+  font-size: 20px;
+  font-weight: 800;
 }
 
 .guest-register-login {
