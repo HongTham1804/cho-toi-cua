@@ -14,8 +14,6 @@ return new class extends Migration
             $table->foreignId('category_id')->constrained('categories')->onDelete('cascade');
             $table->string('name');
             $table->decimal('original_price', 12, 2);
-            $table->decimal('markup_percentage', 5, 2)->nullable();
-            $table->decimal('markup_fixed', 12, 2)->nullable();
             $table->decimal('price', 12, 2);
             $table->decimal('discount_price', 12, 2)->nullable();
             $table->integer('stock')->default(0);

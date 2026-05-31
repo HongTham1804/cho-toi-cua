@@ -15,8 +15,6 @@ class Product extends Model
         'category_id',
         'name',
         'original_price',
-        'markup_percentage',
-        'markup_fixed',
         'price',
         'discount_price',
         'stock',

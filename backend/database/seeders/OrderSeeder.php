@@ -103,7 +103,7 @@ class OrderSeeder extends Seeder
         $order3 = DB::table('orders')->insertGetId([
             'customer_id' => $customerId,
             'store_id' => $p3StoreId,
-            'shipper_id' => null,
+            'shipper_id' => 3,
             'voucher_id' => null,
             'shipping_fee' => $ship3,
             'subtotal' => $sub3,
@@ -135,7 +135,7 @@ class OrderSeeder extends Seeder
         $order4 = DB::table('orders')->insertGetId([
             'customer_id' => $customerId,
             'store_id' => $p1StoreId,
-            'shipper_id' => null,
+            'shipper_id' => 4,
             'voucher_id' => null,
             'shipping_fee' => $ship4,
             'subtotal' => $sub4,
@@ -203,37 +203,7 @@ class OrderSeeder extends Seeder
             'updated_at' => now()->subDays(7),
         ]);
 
-        // 6. ĐƠN HÀNG 6: Hoàn thành khác (completed) - Test Flash Sale và MoMo
-        // Dùng sản phẩm 1
-        $q6 = 5;
-        $ship6 = 10000;
-        $sub6 = $p1Price * $q6;
 
-        $order6 = DB::table('orders')->insertGetId([
-            'customer_id' => $customerId,
-            'store_id' => $p1StoreId,
-            'shipper_id' => null,
-            'voucher_id' => null,
-            'shipping_fee' => $ship6,
-            'subtotal' => $sub6,
-            'total_amount' => $sub6 + $ship6,
-            'shipping_address' => '888 Cach Mang Thang Tam, Quan 10, TP.HCM',
-            'payment_method' => 'momo',
-            'status' => 'completed',
-            'created_at' => now()->subDays(5),
-            'updated_at' => now()->subDays(5),
-        ]);
-
-        DB::table('order_details')->insert([
-            'order_id' => $order6,
-            'product_id' => $p1Id,
-            'quantity' => $q6,
-            'unit_price' => $p1Price,
-            'original_price' => $p1OrigPrice,
-            'is_flash_sale' => true, // Đơn hàng flash sale
-            'created_at' => now()->subDays(5),
-            'updated_at' => now()->subDays(5),
-        ]);
     }
 
     private function getOrCreateCustomerId(): int
@@ -255,7 +225,7 @@ class OrderSeeder extends Seeder
 
     private function getProducts(): array
     {
-        if (! Schema::hasTable('products')) {
+        if (!Schema::hasTable('products')) {
             return [];
         }
 

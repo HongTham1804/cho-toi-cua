@@ -1,39 +1,84 @@
-import { useEffect, useState } from 'react';
-import { Link } from 'react-router-dom';
+import { useState } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
 import CustomerHeader from '../../components/CustomerHeader/CustomerHeader';
 import Footer from '../../components/Footer/Footer';
 import heroImage from '../../assets/ảnh nền.jpg';
 import bachHoaXanhLogo from '../../assets/logos/BHX.webp';
 import winmartLogo from '../../assets/logos/Winmart.jpg';
-import coopmartLogo from '../../assets/logos/Coopmart.jpg';
-import lottemartLogo from '../../assets/logos/Lottemart.webp';
+import goLogo from '../../assets/logos/GO.png';
 import './guest-homepage.css';
+
+const API_BASE_URL = 'http://localhost:8000/api';
+const PHONE_REGEX = /^\d{10}$/;
+const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 const partnerStores = [
   { id: 1, name: 'Bách Hóa Xanh', time: '15-20 phút', image: bachHoaXanhLogo },
-  { id: 2, name: 'Bách Hóa Xanh', time: '20-25 phút', image: bachHoaXanhLogo },
-  { id: 3, name: 'Bách Hóa Xanh', time: '10-15 phút', image: bachHoaXanhLogo },
-  { id: 4, name: 'Bách Hóa Xanh', time: '15-20 phút', image: bachHoaXanhLogo },
-  { id: 5, name: 'WinMart', time: '15-20 phút', image: winmartLogo },
-  { id: 6, name: 'Co.op Mart', time: '20-25 phút', image: coopmartLogo },
-  { id: 7, name: 'Lotte Mart', time: '10-15 phút', image: lottemartLogo },
-  { id: 8, name: 'Bách Hóa Xanh', time: '15-20 phút', image: bachHoaXanhLogo },
+  { id: 2, name: 'WinMart', time: '15-20 phút', image: winmartLogo },
+  { id: 3, name: 'GO!', time: '20-25 phút', image: goLogo },
 ];
 
+function getApiError(result, fallback) {
+  if (result?.message) return result.message;
+
+  const firstFieldErrors = result?.errors ? Object.values(result.errors)[0] : null;
+  if (Array.isArray(firstFieldErrors) && firstFieldErrors.length) {
+    return firstFieldErrors[0];
+  }
+
+  return fallback;
+}
+
+async function postJson(path, payload) {
+  const response = await fetch(`${API_BASE_URL}${path}`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      Accept: 'application/json',
+    },
+    body: JSON.stringify(payload),
+  });
+
+  const result = await response.json();
+
+  if (!response.ok) {
+    throw new Error(getApiError(result, 'Yêu cầu không thành công. Vui lòng thử lại.'));
+  }
+
+  return result;
+}
+
 export default function GuestHomepage({ initialAuth = null }) {
+  const navigate = useNavigate();
   const [authMode, setAuthMode] = useState(initialAuth);
+  const [pendingEmail, setPendingEmail] = useState('');
+  const [authNotice, setAuthNotice] = useState('');
   const isRegisterOpen = authMode === 'register';
   const isLoginOpen = authMode === 'login';
+  const isOtpOpen = authMode === 'otp';
 
-  useEffect(() => {
-    setAuthMode(initialAuth);
-  }, [initialAuth]);
+  function openLogin(message = '') {
+    setAuthNotice(message);
+    setAuthMode('login');
+  }
+
+  function handleOtpRequested(email, message) {
+    setPendingEmail(email);
+    setAuthNotice(message);
+    setAuthMode('otp');
+  }
+
+  function handleLoginSuccess(result) {
+    localStorage.setItem('auth_token', result.token);
+    localStorage.setItem('auth_user', JSON.stringify(result.user));
+    navigate('/logged-in-homepage', { replace: true });
+  }
 
   return (
     <div className="guest-home-page">
       <CustomerHeader
         variant="guest"
-        onLoginClick={() => setAuthMode('login')}
+        onLoginClick={() => openLogin()}
         onRegisterClick={() => setAuthMode('register')}
       />
 
@@ -83,25 +128,91 @@ export default function GuestHomepage({ initialAuth = null }) {
       {isRegisterOpen && (
         <RegisterModal
           onClose={() => setAuthMode(null)}
-          onShowLogin={() => setAuthMode('login')}
+          onShowLogin={() => openLogin()}
+          onOtpRequested={handleOtpRequested}
+        />
+      )}
+
+      {isOtpOpen && (
+        <OtpModal
+          email={pendingEmail}
+          notice={authNotice}
+          onClose={() => setAuthMode(null)}
+          onBackRegister={() => setAuthMode('register')}
+          onVerified={() => openLogin('Đăng ký thành công. Vui lòng đăng nhập lại.')}
         />
       )}
 
       {isLoginOpen && (
         <LoginModal
+          notice={authNotice}
           onClose={() => setAuthMode(null)}
           onShowRegister={() => setAuthMode('register')}
+          onLoginSuccess={handleLoginSuccess}
         />
       )}
     </div>
   );
 }
 
-function RegisterModal({ onClose, onShowLogin }) {
+function RegisterModal({ onClose, onShowLogin, onOtpRequested }) {
   const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const [form, setForm] = useState({
+    name: '',
+    phone: '',
+    email: '',
+    password: '',
+    password_confirmation: '',
+  });
+  const [error, setError] = useState('');
+  const [submitting, setSubmitting] = useState(false);
 
-  function handleSubmit(event) {
+  function updateField(field, value) {
+    if (field === 'phone') {
+      setForm((current) => ({ ...current, phone: value.replace(/\D/g, '').slice(0, 10) }));
+      return;
+    }
+
+    setForm((current) => ({ ...current, [field]: value }));
+  }
+
+  async function handleSubmit(event) {
     event.preventDefault();
+    setError('');
+
+    const payload = {
+      ...form,
+      name: form.name.trim(),
+      phone: form.phone.trim(),
+      email: form.email.trim(),
+    };
+
+    if (!PHONE_REGEX.test(payload.phone)) {
+      setError('Số điện thoại phải nhập đúng 10 chữ số.');
+      return;
+    }
+
+    if (!EMAIL_REGEX.test(payload.email)) {
+      setError('Email không đúng định dạng. Vui lòng nhập lại.');
+      return;
+    }
+
+    if (payload.password !== payload.password_confirmation) {
+      setError('Xác nhận mật khẩu không khớp.');
+      return;
+    }
+
+    setSubmitting(true);
+
+    try {
+      const result = await postJson('/auth/register/send-otp', payload);
+      onOtpRequested(result.email || payload.email, result.message || 'OTP đã được gửi đến email của bạn.');
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setSubmitting(false);
+    }
   }
 
   return (
@@ -129,7 +240,13 @@ function RegisterModal({ onClose, onShowLogin }) {
             Họ và tên
             <span className="guest-register-field">
               <i className="fa-regular fa-user"></i>
-              <input type="text" placeholder="Nhập họ và tên của bạn" required />
+              <input
+                type="text"
+                value={form.name}
+                onChange={(event) => updateField('name', event.target.value)}
+                placeholder="Nhập họ và tên của bạn"
+                required
+              />
             </span>
           </label>
 
@@ -137,7 +254,16 @@ function RegisterModal({ onClose, onShowLogin }) {
             Số điện thoại
             <span className="guest-register-field">
               <i className="fa-solid fa-phone"></i>
-              <input type="tel" placeholder="Nhập số điện thoại" required />
+              <input
+                type="tel"
+                inputMode="numeric"
+                pattern="[0-9]{10}"
+                maxLength="10"
+                value={form.phone}
+                onChange={(event) => updateField('phone', event.target.value)}
+                placeholder="Nhập đủ 10 số điện thoại"
+                required
+              />
             </span>
           </label>
 
@@ -145,32 +271,39 @@ function RegisterModal({ onClose, onShowLogin }) {
             Email
             <span className="guest-register-field">
               <i className="fa-regular fa-envelope"></i>
-              <input type="email" placeholder="example@gmail.com" required />
-            </span>
-          </label>
-
-          <label>
-            Mật khẩu
-            <span className="guest-register-field guest-register-field--password">
-              <i className="fa-solid fa-lock"></i>
               <input
-                type={showPassword ? 'text' : 'password'}
-                placeholder="Ít nhất 8 ký tự"
-                minLength="8"
+                type="email"
+                value={form.email}
+                onChange={(event) => updateField('email', event.target.value)}
+                placeholder="example@gmail.com"
+                autoComplete="email"
                 required
               />
-              <button
-                type="button"
-                onClick={() => setShowPassword((value) => !value)}
-                aria-label={showPassword ? 'Ẩn mật khẩu' : 'Hiển thị mật khẩu'}
-              >
-                <i className={`fa-regular ${showPassword ? 'fa-eye-slash' : 'fa-eye'}`}></i>
-              </button>
             </span>
           </label>
 
-          <button className="guest-register-submit" type="submit">
-            Đăng ký <i className="fa-solid fa-arrow-right"></i>
+          <PasswordField
+            label="Mật khẩu"
+            value={form.password}
+            visible={showPassword}
+            placeholder="Ít nhất 8 ký tự"
+            onToggle={() => setShowPassword((value) => !value)}
+            onChange={(value) => updateField('password', value)}
+          />
+
+          <PasswordField
+            label="Xác nhận mật khẩu"
+            value={form.password_confirmation}
+            visible={showConfirmPassword}
+            placeholder="Nhập lại mật khẩu"
+            onToggle={() => setShowConfirmPassword((value) => !value)}
+            onChange={(value) => updateField('password_confirmation', value)}
+          />
+
+          {error && <p className="guest-auth-message guest-auth-message--error">{error}</p>}
+
+          <button className="guest-register-submit" type="submit" disabled={submitting}>
+            {submitting ? 'Đang gửi OTP...' : 'Đăng ký'} <i className="fa-solid fa-arrow-right"></i>
           </button>
         </form>
 
@@ -188,11 +321,108 @@ function RegisterModal({ onClose, onShowLogin }) {
   );
 }
 
-function LoginModal({ onClose, onShowRegister }) {
-  const [showPassword, setShowPassword] = useState(false);
+function OtpModal({ email, notice, onClose, onBackRegister, onVerified }) {
+  const [otp, setOtp] = useState('');
+  const [error, setError] = useState('');
+  const [submitting, setSubmitting] = useState(false);
 
-  function handleSubmit(event) {
+  async function handleSubmit(event) {
     event.preventDefault();
+    setError('');
+    setSubmitting(true);
+
+    try {
+      await postJson('/auth/register/verify-otp', { email, otp });
+      onVerified();
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setSubmitting(false);
+    }
+  }
+
+  return (
+    <div className="guest-register-overlay" onClick={onClose}>
+      <section
+        className="guest-register-modal guest-otp-modal"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="guest-otp-title"
+        onClick={(event) => event.stopPropagation()}
+      >
+        <button className="guest-register-close" type="button" onClick={onClose} aria-label="Đóng">
+          <i className="fa-solid fa-xmark"></i>
+        </button>
+
+        <div className="guest-register-icon" aria-hidden="true">
+          <i className="fa-solid fa-shield-halved"></i>
+        </div>
+
+        <h2 id="guest-otp-title">Nhập mã OTP</h2>
+        <p className="guest-register-subtitle">
+          Nhập mã 6 số đã gửi đến <strong>{email}</strong>
+        </p>
+
+        <form className="guest-register-form" onSubmit={handleSubmit}>
+          {notice && <p className="guest-auth-message guest-auth-message--success">{notice}</p>}
+
+          <label>
+            Mã OTP
+            <span className="guest-register-field guest-otp-field">
+              <i className="fa-solid fa-key"></i>
+              <input
+                type="text"
+                inputMode="numeric"
+                maxLength="6"
+                value={otp}
+                onChange={(event) => setOtp(event.target.value.replace(/\D/g, '').slice(0, 6))}
+                placeholder="Nhập 6 số OTP"
+                required
+              />
+            </span>
+          </label>
+
+          {error && <p className="guest-auth-message guest-auth-message--error">{error}</p>}
+
+          <button className="guest-register-submit" type="submit" disabled={submitting || otp.length !== 6}>
+            {submitting ? 'Đang xác minh...' : 'Xác minh OTP'} <i className="fa-solid fa-arrow-right"></i>
+          </button>
+
+          <button className="guest-auth-link-button" type="button" onClick={onBackRegister}>
+            Sửa thông tin đăng ký
+          </button>
+        </form>
+      </section>
+    </div>
+  );
+}
+
+function LoginModal({ notice, onClose, onShowRegister, onLoginSuccess }) {
+  const [showPassword, setShowPassword] = useState(false);
+  const [form, setForm] = useState({ identifier: '', password: '' });
+  const [error, setError] = useState('');
+  const [submitting, setSubmitting] = useState(false);
+
+  function updateField(field, value) {
+    setForm((current) => ({ ...current, [field]: value }));
+  }
+
+  async function handleSubmit(event) {
+    event.preventDefault();
+    setError('');
+    setSubmitting(true);
+
+    try {
+      const result = await postJson('/auth/login', {
+        identifier: form.identifier.trim(),
+        password: form.password,
+      });
+      onLoginSuccess(result);
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setSubmitting(false);
+    }
   }
 
   return (
@@ -216,50 +446,35 @@ function LoginModal({ onClose, onShowRegister }) {
         <p className="guest-register-subtitle">Vui lòng đăng nhập để tiếp tục mua sắm</p>
 
         <form className="guest-register-form" onSubmit={handleSubmit}>
-          <label>
-            Số điện thoại
-            <span className="guest-register-field">
-              <i className="fa-solid fa-phone"></i>
-              <input type="tel" placeholder="Nhập số điện thoại" required />
-            </span>
-          </label>
+          {notice && <p className="guest-auth-message guest-auth-message--success">{notice}</p>}
 
           <label>
-            Mật khẩu
-            <a className="guest-login-forgot" href="#">Quên mật khẩu?</a>
-            <span className="guest-register-field guest-register-field--password">
-              <i className="fa-solid fa-lock"></i>
+            Email hoặc số điện thoại
+            <span className="guest-register-field">
+              <i className="fa-regular fa-envelope"></i>
               <input
-                type={showPassword ? 'text' : 'password'}
-                placeholder="Nhập mật khẩu"
+                type="text"
+                value={form.identifier}
+                onChange={(event) => updateField('identifier', event.target.value)}
+                placeholder="Nhập email hoặc số điện thoại"
                 required
               />
-              <button
-                type="button"
-                onClick={() => setShowPassword((value) => !value)}
-                aria-label={showPassword ? 'Ẩn mật khẩu' : 'Hiển thị mật khẩu'}
-              >
-                <i className={`fa-regular ${showPassword ? 'fa-eye-slash' : 'fa-eye'}`}></i>
-              </button>
             </span>
           </label>
 
-          <div className="guest-login-location-group">
-            <p className="guest-login-section-title">Địa chỉ hiện tại</p>
-            <button className="guest-location-card" type="button">
-              <span className="guest-location-icon">
-                <i className="fa-solid fa-location-crosshairs"></i>
-              </span>
-              <span>
-                <strong>Cập nhật vị trí</strong>
-                <small>Sử dụng vị trí hiện tại của bạn</small>
-              </span>
-              <i className="fa-solid fa-chevron-right"></i>
-            </button>
-          </div>
+          <PasswordField
+            label="Mật khẩu"
+            value={form.password}
+            visible={showPassword}
+            placeholder="Nhập mật khẩu"
+            onToggle={() => setShowPassword((value) => !value)}
+            onChange={(value) => updateField('password', value)}
+          />
 
-          <button className="guest-register-submit" type="submit">
-            Đăng nhập <i className="fa-solid fa-right-to-bracket"></i>
+          {error && <p className="guest-auth-message guest-auth-message--error">{error}</p>}
+
+          <button className="guest-register-submit" type="submit" disabled={submitting}>
+            {submitting ? 'Đang đăng nhập...' : 'Đăng nhập'} <i className="fa-solid fa-arrow-right"></i>
           </button>
         </form>
 
@@ -268,5 +483,31 @@ function LoginModal({ onClose, onShowRegister }) {
         </p>
       </section>
     </div>
+  );
+}
+
+function PasswordField({ label, value, visible, placeholder, onToggle, onChange }) {
+  return (
+    <label>
+      {label}
+      <span className="guest-register-field guest-register-field--password">
+        <i className="fa-solid fa-lock"></i>
+        <input
+          type={visible ? 'text' : 'password'}
+          value={value}
+          onChange={(event) => onChange(event.target.value)}
+          placeholder={placeholder}
+          minLength="8"
+          required
+        />
+        <button
+          type="button"
+          onClick={onToggle}
+          aria-label={visible ? 'Ẩn mật khẩu' : 'Hiển thị mật khẩu'}
+        >
+          <i className={`fa-regular ${visible ? 'fa-eye-slash' : 'fa-eye'}`}></i>
+        </button>
+      </span>
+    </label>
   );
 }
