@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+<<<<<<< HEAD
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes; // Nhớ import cái này
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -23,10 +24,37 @@ class Product extends Model
 
     // Mối quan hệ N-1: Sản phẩm thuộc về một danh mục [cite: 122]
     public function category(): BelongsTo
+=======
+use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\SoftDeletes;
+
+class Product extends Model
+{
+    use HasFactory, SoftDeletes; // Kích hoạt xóa mềm
+
+    protected $fillable = [
+        'store_id',
+        'category_id',
+        'name',
+        'original_price',
+        'markup_percentage',
+        'markup_fixed',
+        'price',
+        'discount_price',
+        'stock',
+        'image_url',
+        'description'
+    ];
+
+    // Mối quan hệ: Sản phẩm thuộc về 1 Danh mục
+    public function category()
+>>>>>>> 850014e7c93576d4c5831768d2a492695014519a
     {
         return $this->belongsTo(Category::class);
     }
 
+<<<<<<< HEAD
     // Mối quan hệ N-1: Sản phẩm thuộc về một siêu thị [cite: 124]
     public function store(): BelongsTo
     {
@@ -54,4 +82,11 @@ public function scopeSort($query, $sort)
         default => $query->orderBy('created_at', 'desc'),
     };
 }
+=======
+    // Mối quan hệ: Sản phẩm thuộc về 1 Siêu thị
+    public function store()
+    {
+        return $this->belongsTo(Store::class);
+    }
+>>>>>>> 850014e7c93576d4c5831768d2a492695014519a
 }
