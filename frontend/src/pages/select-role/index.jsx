@@ -27,7 +27,7 @@ export default function SelectRole() {
       <div className="role-cards-container-core">
         
         {/* THẺ NGƯỜI MUA */}
-        <Link to="/logged-in-homepage" className="role-selection-card-core">
+        <Link to="/guest-homepage" className="role-selection-card-core">
           <div className="role-card-banner-core">
             <img src={customerImg} alt="Người mua" />
           </div>

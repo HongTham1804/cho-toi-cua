@@ -1,65 +1,70 @@
-import React from 'react';
-import { NavLink, useNavigate } from 'react-router-dom'; // 1. IMPORT THƯ VIỆN ĐIỀU HƯỚNG
-import { 
-  MdOutlineSpaceDashboard, MdOutlineInventory2, MdOutlinePeopleAlt, 
-  MdOutlineHandshake, MdOutlineLocalShipping,
-  MdOutlineSettings, MdOutlineLogout 
-} from "react-icons/md";
-import './Sidebar.scss';
+import React from "react";
+import { NavLink, useNavigate } from "react-router-dom";
+import {
+  Briefcase,
+  LayoutDashboard,
+  LogOut,
+  Package,
+  Settings,
+  Truck,
+  Users,
+} from "lucide-react";
+import "./Sidebar.scss";
 
-const Sidebar = () => {
-  const navigate = useNavigate(); // 2. KHỞI TẠO HÀM CHUYỂN TRANG
+const navItems = [
+  { to: "/admin-dashboard", label: "Bảng điều khiển", icon: LayoutDashboard },
+  { to: "/product-management", label: "Quản lý sản phẩm", icon: Package },
+  { to: "/user-management", label: "Quản lý người dùng", icon: Users },
+  { to: "/quanlydoitac-gia", label: "Quản lý đối tác", icon: Briefcase },
+  { to: "/quanlyvanchuyen", label: "Quản lý vận chuyển", icon: Truck },
+];
 
-  // 3. HÀM XỬ LÝ ĐĂNG XUẤT
+export default function Sidebar() {
+  const navigate = useNavigate();
+
   const handleLogout = () => {
-    if (window.confirm("Bạn có chắc chắn muốn đăng xuất không?")) {
-      navigate('/login');
+    if (window.confirm("Bạn có chắc chắn muốn đăng xuất khỏi trang quản trị không?")) {
+      navigate("/select-role", { replace: true });
     }
   };
 
   return (
-    <aside className="sidebar">
-      <div className="logo-section">
+    <aside className="admin-sidebar">
+      <div className="admin-sidebar__brand">
         <h1>Chợ Tới Cửa</h1>
-        <p>Quản lý chợ</p>
+        <p>Market Management</p>
       </div>
-      
-      {/* 4. SỬ DỤNG NAVLINK ĐỂ ĐIỀU HƯỚNG VÀ TỰ ĐỘNG ACTIVE */}
-      <nav className="nav-menu">
-        <NavLink to="/admin-dashboard" className={({ isActive }) => isActive ? "nav-item active" : "nav-item"}>
-          <MdOutlineSpaceDashboard className="nav-icon" /> Bảng điều khiển
-        </NavLink>
-        
-        <NavLink to="/product-management" className={({ isActive }) => isActive ? "nav-item active" : "nav-item"}>
-          <MdOutlineInventory2 className="nav-icon" /> Quản lý sản phẩm
-        </NavLink>
-        
-        <NavLink to="/user-management" className={({ isActive }) => isActive ? "nav-item active" : "nav-item"}>
-          <MdOutlinePeopleAlt className="nav-icon" /> Quản lý người dùng
-        </NavLink>
-        
-        <NavLink to="/quanlydoitac-gia" className={({ isActive }) => isActive ? "nav-item active" : "nav-item"}>
-          <MdOutlineHandshake className="nav-icon" /> Quản lý đối tác
-        </NavLink>
 
-        <NavLink to="/quanlyvanchuyen" className={({ isActive }) => isActive ? "nav-item active" : "nav-item"}>
-          <MdOutlineLocalShipping className="nav-icon" /> Quản lý vận chuyển
-        </NavLink>
-
+      <nav className="admin-sidebar__nav" aria-label="Điều hướng quản trị">
+        {navItems.map(({ to, label, icon: Icon }) => (
+          <NavLink
+            key={to}
+            to={to}
+            className={({ isActive }) =>
+              isActive ? "admin-sidebar__item active" : "admin-sidebar__item"
+            }
+          >
+            <Icon size={20} />
+            <span>{label}</span>
+          </NavLink>
+        ))}
       </nav>
 
-      <div className="bottom-menu">
-        <NavLink to="/settings" className={({ isActive }) => isActive ? "nav-item active" : "nav-item"}>
-          <MdOutlineSettings className="nav-icon" /> Cài đặt
+      <div className="admin-sidebar__footer">
+        <NavLink
+          to="/settings"
+          className={({ isActive }) =>
+            isActive ? "admin-sidebar__item active" : "admin-sidebar__item"
+          }
+        >
+          <Settings size={20} />
+          <span>Cài đặt</span>
         </NavLink>
-        
-        {/* Nút đăng xuất không dùng link mà dùng sự kiện click */}
-        <div className="nav-item" onClick={handleLogout} style={{ cursor: 'pointer' }}>
-          <MdOutlineLogout className="nav-icon" /> Đăng xuất
-        </div>
+        <button type="button" className="admin-sidebar__item" onClick={handleLogout}>
+          <LogOut size={20} />
+          <span>Đăng xuất</span>
+        </button>
       </div>
     </aside>
   );
-};
-
-export default Sidebar;
+}

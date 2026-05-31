@@ -2,7 +2,7 @@ import React, { Suspense, useState } from "react";
 import { Outlet, Route, Routes, Link, useNavigate } from "react-router-dom";
 import "./App.css";
 
-import Header from "./components/Header/Header";
+import Sidebar from "./components/Sidebar/Sidebar";
 import CustomerHeader from "./components/CustomerHeader/CustomerHeader";
 import Footer from "./components/Footer/Footer";
 import UserManagement from "./pages/UserManagement/UserManagement";
@@ -60,9 +60,9 @@ function App() {
   );
 
   const AdminLayout = () => (
-    <div className="admin-container">
-      <Header />
-      <div className="main-content">
+    <div className="admin-layout">
+      <Sidebar />
+      <div className="admin-layout__content">
         <Outlet />
       </div>
     </div>
@@ -98,6 +98,7 @@ function App() {
       <Routes>
         <Route path="/" element={<GuestHomepage />} />
         <Route path="/guest-homepage" element={<GuestHomepage />} />
+        <Route path="/select-role" element={<SelectRole />} />
 
         <Route element={<CustomerLayout />}>
           <Route path="/shopping-cart" element={<ShoppingCart />} />
@@ -110,7 +111,6 @@ function App() {
           <Route path="/notifications" element={<Notifications />} />
           <Route path="/account-settings" element={<AccountSettings />} />
           <Route path="/favorite-products" element={lazyPage(FavoriteProducts)} />
-          <Route path="/spyeuthich" element={lazyPage(FavoriteProducts)} />
           <Route path="/product/:id" element={<ProductDetail />} />
         </Route>
 
@@ -124,17 +124,16 @@ function App() {
         <Route path="/inventory" element={<Inventory />} />
        
         {/* Admin routes */}
-        <Route path="/user-management" element={<UserManagement />} />
-        <Route path="/product-management" element={<ProductManagement />} />
-        <Route path="/admin-dashboard" element={lazyPage(AdminDashboard)} />
-        <Route path="/quanlyvanchuyen" element={lazyPage(DeliveryManagement)} />
-        <Route path="/quanlydoitac-gia" element={lazyPage(PartnerPricing)} />
+        <Route element={<AdminLayout />}>
+          <Route path="/admin-dashboard" element={lazyPage(AdminDashboard)} />
+          <Route path="/product-management" element={<ProductManagement />} />
+          <Route path="/user-management" element={<UserManagement />} />
+          <Route path="/quanlydoitac-gia" element={lazyPage(PartnerPricing)} />
+          <Route path="/quanlyvanchuyen" element={lazyPage(DeliveryManagement)} />
+        </Route>
         <Route path="/UserDetail" element={<UserDetail />} />
-        <Route path="/product-management" element={<ProductManagement />} />
         <Route path="/inventory" element={<Inventory />} />
         <Route path="/product-detail" element={<ProductDetail />} />
-        <Route path="/user-management" element={<UserManagement />} /> 
-        <Route path="/product-management" element={<ProductManagement />} />
       </Routes>
     </div>
   );
