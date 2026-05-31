@@ -1,5 +1,5 @@
 import React, { Suspense, useState } from "react";
-import { Outlet, Route, Routes, Link, useNavigate } from "react-router-dom";
+import { Navigate, Outlet, Route, Routes, Link, useNavigate, useParams } from "react-router-dom";
 import "./App.css";
 
 import Sidebar from "./components/Sidebar/Sidebar";
@@ -35,6 +35,11 @@ const lazyPage = (Page) => (
     <Page />
   </Suspense>
 );
+
+function ProductDetailRedirect() {
+  const { id } = useParams();
+  return <Navigate to={`/product-detail/${id}`} replace />;
+}
 
 function App() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -111,11 +116,13 @@ function App() {
           <Route path="/notifications" element={<Notifications />} />
           <Route path="/account-settings" element={<AccountSettings />} />
           <Route path="/favorite-products" element={lazyPage(FavoriteProducts)} />
-          <Route path="/product/:id" element={<ProductDetail />} />
         </Route>
 
         <Route path="/tracking" element={<Tracking />} />
         <Route path="/review" element={<Review />} />
+        <Route path="/product/:id" element={<ProductDetailRedirect />} />
+        <Route path="/product-detail" element={<ProductDetail />} />
+        <Route path="/product-detail/:id" element={<ProductDetail />} />
 
         {/* Partner routes */}
         <Route path="/order-management" element={<OrderManagement />} />
@@ -133,7 +140,6 @@ function App() {
         </Route>
         <Route path="/UserDetail" element={<UserDetail />} />
         <Route path="/inventory" element={<Inventory />} />
-        <Route path="/product-detail" element={<ProductDetail />} />
       </Routes>
     </div>
   );

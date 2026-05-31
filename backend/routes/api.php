@@ -10,6 +10,9 @@ use Illuminate\Support\Facades\Route;
 Route::prefix('auth')->group(function () {
     Route::post('/register/send-otp', [AuthController::class, 'sendRegisterOtp']);
     Route::post('/register/verify-otp', [AuthController::class, 'verifyRegisterOtp']);
+    Route::post('/forgot-password/send-otp', [AuthController::class, 'sendForgotPasswordOtp']);
+    Route::post('/forgot-password/verify-otp', [AuthController::class, 'verifyForgotPasswordOtp']);
+    Route::post('/forgot-password/reset', [AuthController::class, 'resetForgotPassword']);
     Route::post('/login', [AuthController::class, 'login']);
 });
 
