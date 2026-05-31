@@ -1,23 +1,58 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import './logged-in-homepage.css';
 
 import nenBg from '../../assets/ảnh nền.jpg';
 import '@fortawesome/fontawesome-free/css/all.min.css'
-import winmartLogo from '../../assets/logos/Winmart.jpg';
 import bachHoaXanhLogo from '../../assets/logos/BHX.webp';
+import winmartLogo from '../../assets/logos/Winmart.jpg';
 import goLogo from '../../assets/logos/GO.png';
+import { fetchStores } from '../../services/productApi';
+
+const getStoreLogo = (store) => {
+  if (store.logo_url?.includes('Winmart')) return winmartLogo;
+  if (store.logo_url?.includes('GO')) return goLogo;
+  return bachHoaXanhLogo;
+};
+
+const getDeliveryTime = (storeId) => (Number(storeId) === 3 ? '20-25 phút' : '15-20 phút');
+
+const getShortStoreName = (storeName = '') => {
+  if (storeName.includes('WinMart')) return 'WinMart';
+  if (storeName.includes('GO')) return 'GO!';
+  return 'Bách Hóa Xanh';
+};
 
 
 export default function LoggedInHomepage() {
   const [activeTab, setActiveTab] = useState('Trang chủ');
+  const [stores, setStores] = useState([]);
   const navigate = useNavigate();
-    // Dữ liệu giả (Mock data) cho các siêu thị để render tự động
-  const storeList = [
-    { id: 1, name: 'Bách Hóa Xanh', time: '15-20 phút', image: bachHoaXanhLogo },
-    { id: 2, name: 'WinMart', time: '15-20 phút', image: winmartLogo },
-    { id: 3, name: 'GO!', time: '20-25 phút', image: goLogo },
-  ];
+
+  useEffect(() => {
+    fetchStores()
+      .then((apiStores) => setStores(apiStores.slice(0, 3)))
+      .catch(() => setStores([]));
+  }, []);
+
+  const repeatedStores = stores.length
+    ? Array.from({ length: 9 }, (_, index) => {
+        const store = stores[index % stores.length];
+        return {
+          ...store,
+          cardId: `${store.id}-${index}`,
+          displayName: getShortStoreName(store.name),
+          image: getStoreLogo(store),
+          time: getDeliveryTime(store.id),
+        };
+      })
+    : [];
+
+  const openStoreDetails = (store) => {
+    navigate(`/supermarket-details?store_id=${store.id}`, {
+      state: { store_id: store.id },
+    });
+  };
 
   return (
     <div className="homepage-wrapper-core">
@@ -40,7 +75,7 @@ export default function LoggedInHomepage() {
               className={`nav-item-core ${activeTab === 'Trang chủ' ? 'active' : ''}`}
               onClick={() => {
                 setActiveTab('Trang chủ');
-                navigate('/supermarket-details');
+                navigate('/logged-in-homepage');
               }}
             >
               <i className="fa-solid fa-house"></i> Trang chủ
@@ -86,7 +121,12 @@ export default function LoggedInHomepage() {
             {/* Sửa lại thẻ p này */}
             <p className="fresh-subtitle-core">Trải nghiệm nông sản sạch từ nông trại đến tận cửa nhà bạn.</p>
             
-            <button className="btn-buy-now">Mua ngay ➔</button>
+            <button
+              className="btn-buy-now"
+              onClick={() => document.querySelector('.store-section-core')?.scrollIntoView({ behavior: 'smooth' })}
+            >
+              Mua ngay ➔
+            </button>
             </div>
             <div className="banner-card-custom banner-offer">
                 {/* Icon in chìm khổng lồ */}
@@ -105,19 +145,25 @@ export default function LoggedInHomepage() {
           <section className="store-section-core">
             <h2>Chọn siêu thị gần bạn</h2>
             <div className="store-grid-layout">
-              {storeList.map((store) => (
-                <div key={store.id} className="store-card-custom">
+              {repeatedStores.map((store) => (
+                <button
+                  key={store.cardId}
+                  type="button"
+                  className="store-card-custom"
+                  onClick={() => openStoreDetails(store)}
+                >
                   
                   {/* Thay thế biểu tượng bằng thẻ img */}
                   <div className="store-img-placeholder">
                     <img src={store.image} alt={store.name} className="store-logo-img" />
                   </div>
-                  
+
                   <div className="store-info-core">
-                    <h3>{store.name}</h3>
+                    <h3>{store.displayName}</h3>
                     <span className="time-delivery-core">⏱ {store.time}</span>
                   </div>
-                </div>
+
+                </button>
               ))}
             </div>
           </section>

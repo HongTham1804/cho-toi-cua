@@ -16,7 +16,9 @@ class ProductController extends Controller
     public function index(Request $request)
     {
         // Khởi tạo query và chỉ lấy các sản phẩm đang được bật bán (true)
-        $query = Product::query()->where('is_active', true);
+        $query = Product::query()
+            ->with(['category', 'store'])
+            ->where('is_active', true);
 
         // 1. Xử lý Tìm kiếm & Lọc (Filter) theo yêu cầu
         if ($request->has('search') && $request->search != '') {

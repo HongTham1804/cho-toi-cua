@@ -388,15 +388,16 @@ a { text-decoration: none; color: inherit; }
   border-radius: var(--om-radius-md);
   overflow: hidden;
   flex-shrink: 0;
-  background: var(--om-green-lt);
+  background: #ffffff;
   border: 1px solid var(--om-border);
 }
 
 .om-item-img {
   width: 100%;
   height: 100%;
-  object-fit: cover;
+  object-fit: contain;
   display: block;
+  padding: 3px;
 }
 
 .om-item-info {

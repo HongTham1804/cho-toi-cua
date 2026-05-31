@@ -2,61 +2,48 @@
 
 namespace Database\Seeders;
 
+use App\Models\Store;
+use App\Models\User;
 use Illuminate\Database\Seeder;
-use Illuminate\Support\Facades\DB;
 
 class StoreSeeder extends Seeder
 {
     public function run(): void
     {
-        // Thêm Bách Hóa Xanh (partner_id = 2 theo như UserSeeder)
-        DB::table('stores')->insert([
-            'partner_id' => 2,
-            'name' => 'Bách Hóa Xanh Thủ Đức',
-            'address' => 'Bình Thạnh, TP.HCM',
-            'logo_url' => null,
-            'status' => 'active',
-            'created_at' => now(),
-            'updated_at' => now(),
-        ]);
+        $partners = User::where('role', 'partner')->get()->values();
+        $fallbackPartnerId = $partners->first()?->id ?? User::query()->value('id');
 
-        // Thêm WinMart (partner_id = 3 theo như UserSeeder)
-        DB::table('stores')->insert([
-            'partner_id' => 3,
-            'name' => 'Bách Hóa Xanh Thủ Đức',
-            'address' => 'Thủ Đức, TP.HCM',
-            'logo_url' => 'logos/BHX.webp',
-            'status' => 'active',
-            'created_at' => now(),
-            'updated_at' => now(),
-        ]);
-        DB::table('stores')->insert([
-            'partner_id' => 4,
-            'name' => 'WinMart Bình Dương',
-            'address' => 'Bình Dương, TP.HCM',
-            'logo_url' => 'logos/Winmart.jpg',
-            'status' => 'active',
-            'created_at' => now(),
-            'updated_at' => now(),
-        ]);
-        DB::table('stores')->insert([
-            'partner_id' => 5,
-            'name' => 'Bách Hóa Xanh Thủ Đức',
-            'address' => 'Thủ Đức, TP.HCM',
-            'logo_url' => 'logos/BHX.webp',
-            'status' => 'active',
-            'created_at' => now(),
-            'updated_at' => now(),
-        ]);
-        DB::table('stores')->insert([
-            'partner_id' => 6,
-            'name' => 'WinMart Bình Tân',
-            'address' => 'Bình Tân, TP.HCM',
-            'logo_url' => 'logos/Winmart.jpg',
-            'status' => 'active',
-            'created_at' => now(),
-            'updated_at' => now(),
-        ]);
+        $stores = [
+            [
+                'id' => 1,
+                'partner_id' => $partners->get(0)?->id ?? $fallbackPartnerId,
+                'name' => 'Bách Hóa Xanh Lê Văn Chí',
+                'address' => 'Bách Hóa Xanh Lê Văn Chí, TP. Thủ Đức',
+                'logo_url' => 'logos/BHX.webp',
+                'status' => 'active',
+            ],
+            [
+                'id' => 2,
+                'partner_id' => $partners->get(1)?->id ?? $fallbackPartnerId,
+                'name' => 'WinMart Lê Văn Việt',
+                'address' => 'WinMart Lê Văn Việt, TP. Thủ Đức',
+                'logo_url' => 'logos/Winmart.jpg',
+                'status' => 'active',
+            ],
+            [
+                'id' => 3,
+                'partner_id' => $partners->get(2)?->id ?? $fallbackPartnerId,
+                'name' => 'GO! Dĩ An',
+                'address' => 'GO! Dĩ An, TP. Dĩ An',
+                'logo_url' => 'logos/GO.png',
+                'status' => 'active',
+            ],
+        ];
 
+        foreach ($stores as $store) {
+            Store::updateOrCreate(['id' => $store['id']], $store);
+        }
+
+        Store::whereNotIn('id', [1, 2, 3])->update(['status' => 'inactive']);
     }
 }

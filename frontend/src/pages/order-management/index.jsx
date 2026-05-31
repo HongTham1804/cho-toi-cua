@@ -1,36 +1,58 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import "./index.css";
 import '@fortawesome/fontawesome-free/css/all.min.css';
-import imgEggs from "../../assets/eggs.jpg";
-import imgVeggies from "../../assets/Rau cải xanh.jpg";
-import imgBeef from "../../assets/Thịt bò.jpg";
 import imgQR from "../../assets/QR.jpg";
 
-/* ─── Mock data ──────────────────────────────────────────────────── */
-const NEW_ORDERS_TEMPLATE = [
-  {
-    id: "ORD-9824",
-    time: "10:42 AM",
-    itemCount: 3,
-    status: "waiting",
-    items: [
-      { name: "Cải thìa hữu cơ (500g)", qty: 2, price: 30000, imgKey: "veggies" },
-      { name: "Thịt bò thăn ngoại (300g)", qty: 1, price: 125000, imgKey: "beef" },
-    ],
-    total: 155000,
-  },
-  {
-    id: "ORD-9825",
-    time: "10:45 AM",
-    itemCount: 1,
-    status: "waiting",
-    items: [
-      { name: "Trứng gà ta (Vỉ 10 quả)", qty: 1, price: 35000, imgKey: "eggs" },
-    ],
-    total: 35000,
-  },
-];
+const API_BASE_URL = "http://localhost:8000/api";
+const API_ORIGIN = API_BASE_URL.replace(/\/api$/, "");
+
+const resolveImageUrl = (imageUrl) => {
+  if (!imageUrl) return "";
+  if (imageUrl.startsWith("http")) return imageUrl;
+  return `${API_ORIGIN}${imageUrl.startsWith("/") ? imageUrl : `/${imageUrl}`}`;
+};
+
+const formatTime = (value) => {
+  if (!value) return "";
+
+  return new Date(value).toLocaleTimeString("vi-VN", {
+    hour: "2-digit",
+    minute: "2-digit",
+  });
+};
+
+const mapApiOrder = (order) => ({
+  id: `ORD-${String(order.id).padStart(4, "0")}`,
+  rawId: String(order.id),
+  time: formatTime(order.created_at),
+  customer: order.customer?.name || "Khách hàng",
+  itemCount: (order.details || []).filter((detail) => detail.product?.name && detail.product?.image_url).length,
+  status: "waiting",
+  items: (order.details || [])
+    .filter((detail) => detail.product?.name && detail.product?.image_url)
+    .map((detail) => ({
+    name: detail.product?.name || "Sản phẩm",
+    qty: Number(detail.quantity || 1),
+    price: Number(detail.unit_price || 0),
+    image: resolveImageUrl(detail.product?.image_url),
+  })),
+  total: Number(order.total_amount || 0),
+});
+
+async function fetchNewOrders() {
+  const response = await fetch(`${API_BASE_URL}/orders?status=pending&per_page=100`);
+
+  if (!response.ok) {
+    throw new Error("Không thể tải đơn hàng mới.");
+  }
+
+  const payload = await response.json();
+  const orders = Array.isArray(payload?.data?.data) ? payload.data.data : [];
+  return orders
+    .map(mapApiOrder)
+    .filter((order) => order.items.length > 0);
+}
 
 const SHIPPER_ORDERS = [
   {
@@ -73,14 +95,34 @@ function formatCurrency(value) {
 /* ─── Main page ──────────────────────────────────────────────────── */
 export default function OrderManagement() {
   const navigate = useNavigate();
-  const IMG_MAP = { eggs: imgEggs, veggies: imgVeggies, beef: imgBeef };
 
   const [activeTab, setActiveTab] = useState("new");
   const [activeNav, setActiveNav] = useState("orders");
   const [isOpen, setIsOpen] = useState(true);
-  const [orders, setOrders] = useState(NEW_ORDERS_TEMPLATE);
+  const [orders, setOrders] = useState([]);
+  const [isLoadingOrders, setIsLoadingOrders] = useState(true);
   const [toast, setToast] = useState("");
   const [searchQuery, setSearchQuery] = useState("");
+
+  useEffect(() => {
+    let isMounted = true;
+
+    setIsLoadingOrders(true);
+    fetchNewOrders()
+      .then((apiOrders) => {
+        if (isMounted) setOrders(apiOrders);
+      })
+      .catch((error) => {
+        if (isMounted) showToast(error.message || "Không thể tải đơn hàng mới.");
+      })
+      .finally(() => {
+        if (isMounted) setIsLoadingOrders(false);
+      });
+
+    return () => {
+      isMounted = false;
+    };
+  }, []);
 
   function showToast(msg) {
     setToast(msg);
@@ -94,7 +136,17 @@ export default function OrderManagement() {
     showToast(`Đơn #${orderId} đã sẵn sàng giao!`);
   }
 
-  const waitingOrders = orders.filter((o) => o.status === "waiting");
+  const normalizedSearch = searchQuery.trim().toLowerCase();
+  const searchedOrders = orders.filter((order) => {
+    if (!normalizedSearch) return true;
+
+    return (
+      order.id.toLowerCase().includes(normalizedSearch) ||
+      order.customer.toLowerCase().includes(normalizedSearch) ||
+      order.items.some((item) => item.name.toLowerCase().includes(normalizedSearch))
+    );
+  });
+  const waitingOrders = searchedOrders.filter((o) => o.status === "waiting");
 
   return (
     <div className="om-page">
@@ -196,13 +248,14 @@ export default function OrderManagement() {
         {/* Tab: Đơn hàng mới */}
         {activeTab === "new" && (
           <>
-            {waitingOrders.length > 0 ? (
+            {isLoadingOrders ? (
+              <EmptyState faIcon="fa-solid fa-spinner fa-spin" title="Đang tải đơn mới" sub="Đang lấy dữ liệu từ backend." />
+            ) : waitingOrders.length > 0 ? (
               <div className="om-orders-grid">
                 {waitingOrders.map((order) => (
                   <NewOrderCard
                     key={order.id}
                     order={order}
-                    imgMap={IMG_MAP}
                     onReady={handleReady}
                   />
                 ))}
@@ -322,7 +375,7 @@ export default function OrderManagement() {
 }
 
 /* ─── New order card ─────────────────────────────────────────────── */
-function NewOrderCard({ order, imgMap, onReady }) {
+function NewOrderCard({ order, onReady }) {
   const [done, setDone] = useState(false);
 
   function handleClick() {
@@ -348,7 +401,7 @@ function NewOrderCard({ order, imgMap, onReady }) {
         {order.items.map((item, idx) => (
           <li key={idx} className="om-item-row">
             <span className="om-item-img-wrap">
-              <img src={imgMap[item.imgKey]} alt={item.name} className="om-item-img" />
+              <img src={item.image} alt={item.name} className="om-item-img" />
             </span>
             <div className="om-item-info">
               <span className="om-item-name">{item.name}</span>

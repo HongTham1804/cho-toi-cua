@@ -1,68 +1,90 @@
-const MOCK_USER = {
-  name: "Nguyễn Văn A",
-  tag: "Thành viên thân thiết",
+import { addCartItem } from "../../../services/cartStorage";
+import { mapApiProduct } from "../../../services/productApi";
+
+const API_BASE_URL = "http://localhost:8000/api";
+
+const normalizePageItems = (payload) => {
+  if (Array.isArray(payload?.data?.data)) return payload.data.data;
+  if (Array.isArray(payload?.data)) return payload.data;
+  return [];
 };
 
-const MOCK_ORDERS = [
-  {
-    id: "CTC-98234",
-    storeName: "GO! Dĩ An",
-    date: "24/10/2023 - 08:30",
-    products: "Rau muống hữu cơ, Cà chua bi, Thịt bò Úc (+3 sản phẩm)",
-    total: 345000,
-    status: "pending",
-  },
-  {
-    id: "CTC-09870",
-    storeName: "WinMart Lê Văn Việt",
-    date: "20/10/2023 - 14:15",
-    products: "Sữa tươi TH True Milk, Bánh mì gối (+1 sản phẩm)",
-    total: 120000,
-    status: "preparing",
-  },
-  {
-    id: "CTC-97350",
-    storeName: "Bách Hóa Xanh Lê Văn Chí",
-    date: "18/10/2023 - 09:00",
-    products: "Nước mắm Nam Ngư, Mì Hảo Hảo (+5 sản phẩm)",
-    total: 216000,
-    status: "shipping",
-  },
-  {
-    id: "CTC-88120",
-    storeName: "GO! Dĩ An",
-    date: "15/10/2023 - 11:00",
-    products: "Trứng gà ta, Rau cải xanh, Bắp cải tím (+2 sản phẩm)",
-    total: 87000,
-    status: "completed",
-  },
-  {
-    id: "CTC-77001",
-    storeName: "WinMart Lê Văn Việt",
-    date: "10/10/2023 - 16:45",
-    products: "Dầu ăn Tường An, Nước tương Maggi (+4 sản phẩm)",
-    total: 189000,
-    status: "cancelled",
-  },
-];
+const formatOrderDate = (value) => {
+  if (!value) return "";
 
-export async function fetchCurrentUser() {
-  await new Promise((resolve) => setTimeout(resolve, 300));
-  return { ...MOCK_USER };
-}
+  return new Date(value).toLocaleString("vi-VN", {
+    hour: "2-digit",
+    minute: "2-digit",
+    day: "2-digit",
+    month: "2-digit",
+    year: "numeric",
+  });
+};
+
+const formatProducts = (details = []) => {
+  const names = details
+    .filter((detail) => detail.product?.name && detail.product?.image_url)
+    .map((detail) => {
+    const productName = detail.product.name;
+    return `${productName}${Number(detail.quantity) > 1 ? ` x${detail.quantity}` : ""}`;
+  });
+
+  if (names.length <= 2) return names.join(", ");
+
+  return `${names.slice(0, 2).join(", ")} (+${names.length - 2} sản phẩm)`;
+};
+
+const mapOrder = (order) => ({
+  id: String(order.id),
+  storeName: order.store?.name || "Siêu thị",
+  date: formatOrderDate(order.created_at),
+  products: formatProducts(order.details),
+  validProductCount: (order.details || []).filter((detail) => detail.product?.name && detail.product?.image_url).length,
+  total: Number(order.total_amount || 0),
+  status: order.status || "pending",
+});
 
 export async function fetchOrders(status = "all") {
-  await new Promise((resolve) => setTimeout(resolve, 550));
+  const params = new URLSearchParams({ per_page: "100" });
 
-  const orders = MOCK_ORDERS.map((order) => ({ ...order }));
+  if (status && status !== "all") {
+    params.set("status", status);
+  }
 
-  if (status === "all") return orders;
+  const response = await fetch(`${API_BASE_URL}/orders?${params.toString()}`);
 
-  return orders.filter((order) => order.status === status);
+  if (!response.ok) {
+    throw new Error("Không thể tải danh sách đơn hàng.");
+  }
+
+  const payload = await response.json();
+  return normalizePageItems(payload)
+    .map(mapOrder)
+    .filter((order) => order.validProductCount > 0);
 }
 
 export async function reorder(orderId) {
-  await new Promise((resolve) => setTimeout(resolve, 600));
+  const response = await fetch(`${API_BASE_URL}/orders/${orderId}`);
+
+  if (!response.ok) {
+    throw new Error("Không thể lấy chi tiết đơn hàng.");
+  }
+
+  const payload = await response.json();
+  const details = payload?.data?.details || [];
+
+  details.forEach((detail) => {
+    if (!detail.product) return;
+
+    const product = mapApiProduct({
+      ...detail.product,
+      store: payload.data.store,
+    });
+
+    for (let index = 0; index < Number(detail.quantity || 1); index += 1) {
+      addCartItem(product);
+    }
+  });
 
   return {
     success: true,

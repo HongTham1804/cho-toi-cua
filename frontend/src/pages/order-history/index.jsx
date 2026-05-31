@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import CustomerHeader from "../../components/CustomerHeader/CustomerHeader";
 import Footer from "../../components/Footer/Footer";
 import "./order-history.css";
@@ -46,37 +46,44 @@ function StoreIcon() {
    APP
 ═══════════════════════════════════════════════════════════════ */
 function App() {
+  const [searchParams] = useSearchParams();
+  const statusFromUrl = searchParams.get("status");
+  const initialStatus = TABS.some((tab) => tab.value === statusFromUrl) ? statusFromUrl : "all";
   const [orders, setOrders]           = useState([]);
-  const [activeStatus, setActiveStatus] = useState("all");
+  const [activeStatus, setActiveStatus] = useState(initialStatus);
   const [isLoading, setIsLoading]     = useState(true);
   const [toast, setToast]             = useState("");
   const [reorderingId, setReorderingId] = useState("");
 
   useEffect(() => {
+    let isMounted = true;
+
     async function loadPage() {
-      const orderData = await fetchOrders("all");
-      setOrders(orderData);
-      setIsLoading(false);
+      setIsLoading(true);
+      try {
+        const orderData = await fetchOrders(activeStatus);
+        if (isMounted) setOrders(orderData);
+      } catch {
+        if (isMounted) showToast("Không thể tải danh sách đơn hàng.");
+      } finally {
+        if (isMounted) setIsLoading(false);
+      }
     }
+
     loadPage();
-  }, []);
+
+    return () => {
+      isMounted = false;
+    };
+  }, [activeStatus]);
 
   function showToast(message) {
     setToast(message);
     setTimeout(() => setToast(""), 3200);
   }
 
-  async function handleChangeTab(status) {
+  function handleChangeTab(status) {
     setActiveStatus(status);
-    setIsLoading(true);
-    try {
-      const data = await fetchOrders(status);
-      setOrders(data);
-    } catch {
-      showToast("Không thể tải danh sách đơn hàng.");
-    } finally {
-      setIsLoading(false);
-    }
   }
 
   async function handleReorder(orderId) {

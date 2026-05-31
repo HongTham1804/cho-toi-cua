@@ -1,4 +1,4 @@
-/* ===========================
+﻿/* ===========================
    ROOT VARIABLES
 =========================== */
 :root {
@@ -58,17 +58,27 @@ body {
   position: relative;
   border-radius: 12px;
   overflow: hidden;
+  background: #ffffff;
 }
 
 .supermarket-banner-large {
+  display: block;
   width: 100%;
   height: 260px;
+  max-height: 260px;
+  overflow: hidden;
 }
 
 .supermarket-banner-large img {
+  display: block;
   width: 100%;
   height: 100%;
   object-fit: cover;
+  object-position: center;
+}
+
+.supermarket-banner-large--go img {
+  object-position: center 18%;
 }
 
 .shop-info-card {
@@ -112,12 +122,20 @@ body {
 }
 
 .status-badge {
-  background-color: #e6f4ee;
-  color: var(--green-primary);
   padding: 2px 8px;
   border-radius: 20px;
   font-size: 12px;
   font-weight: 600;
+}
+
+.status-badge.open {
+  background-color: #e6f4ee;
+  color: var(--green-primary);
+}
+
+.status-badge.closed {
+  background-color: #fee2e2;
+  color: #b91c1c;
 }
 
 .shop-address {
@@ -266,12 +284,38 @@ body {
 }
 
 .p-img {
-  background-color: var(--bg-light-blue);
-  height: 120px;
+  background-color: #ffffff;
+  height: 170px;
   display: flex;
   align-items: center;
   justify-content: center;
   font-size: 48px;
+  overflow: hidden;
+  padding: 0;
+}
+
+.p-img img,
+.p-img-flash img {
+  width: 96%;
+  height: 100%;
+  object-fit: contain;
+  transform: scale(1.18);
+  transform-origin: center;
+}
+
+.p-img img {
+  object-fit: contain;
+  padding: 0;
+}
+
+.p-img--safe-fit {
+  background-color: #ffffff;
+  padding: 6px;
+}
+
+.p-img--safe-fit img {
+  width: 100%;
+  transform: none;
 }
 
 .p-info {
@@ -295,6 +339,18 @@ body {
   color: var(--green-primary);
 }
 
+.product-price-stack {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.product-price-stack .p-original {
+  color: #8a8f98;
+  font-size: 12px;
+  text-decoration: line-through;
+}
+
 .btn-add-cart {
   background-color: var(--green-primary);
   color: white;
@@ -313,6 +369,11 @@ body {
 
 .btn-add-cart:hover {
   background-color: #005239;
+}
+
+.btn-add-cart.added {
+  background-color: #16a34a;
+  transform: scale(1.08);
 }
 
 /* ===========================
@@ -431,25 +492,43 @@ body {
 
 .discount-badge {
   position: absolute;
-  top: 12px;
-  left: 12px;
+  top: 16px;
+  left: 16px;
   background: #d32f2f;
   color: white;
-  padding: 4px 8px;
-  border-radius: 4px;
+  padding: 5px 10px;
+  border-radius: 999px;
   font-size: 12px;
   font-weight: bold;
+  line-height: 1;
+  min-width: 48px;
+  text-align: center;
+  white-space: nowrap;
+  z-index: 3;
+  box-shadow: 0 4px 10px rgba(211, 47, 47, 0.22);
 }
 
 .p-img-flash {
-  height: 120px; /* Thu từ 180px xuống 120px cho bằng với thẻ sản phẩm thường */
-  background: var(--bg-light-blue); /* Đổi màu nền cho đồng bộ */
+  height: 170px; /* Giữ ảnh lớn hơn nhưng không cắt sản phẩm */
+  background: #ffffff; /* Nền trắng để không lộ viền xanh quanh ảnh */
   border-radius: 6px;
   display: flex;
   align-items: center;
   justify-content: center;
   font-size: 48px; /* Cho icon thịt nhỏ lại xíu */
   margin-bottom: 12px;
+  overflow: hidden;
+  padding: 0;
+}
+
+.p-img-flash--safe-fit {
+  background-color: #ffffff;
+  padding: 6px;
+}
+
+.p-img-flash--safe-fit img {
+  width: 100%;
+  transform: none;
 }
 
 .p-info-flash h3 {
@@ -538,3 +617,25 @@ body {
   background: var(--green-primary);
   color: white;
 }
+
+.products-end-note {
+  color: #64748b;
+  font-size: 13px;
+  margin: 20px 0 0;
+  text-align: center;
+}
+
+.products-error-note {
+  color: #b91c1c;
+  font-size: 13px;
+  grid-column: 1 / -1;
+  margin: 0;
+}
+
+.products-loading-note {
+  color: #64748b;
+  font-size: 13px;
+  font-weight: 500;
+  margin-left: 10px;
+}
+

@@ -1,52 +1,69 @@
-import React, { useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import './shopping-cart.css';
 import '@fortawesome/fontawesome-free/css/all.min.css';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
+import { addCartItem, readCartItems, writeCartItems } from '../../services/cartStorage';
+import { fetchProducts } from '../../services/productApi';
+
+const API_BASE_URL = 'http://localhost:8000/api';
+const DEFAULT_CUSTOMER_ID = 4;
+
+const getCurrentCustomer = () => {
+  try {
+    return JSON.parse(window.localStorage.getItem('auth_user')) || {};
+  } catch {
+    return {};
+  }
+};
 
 export default function ShoppingCart() {
+  const navigate = useNavigate();
   const [isPromoOpen, setIsPromoOpen] = useState(false);
-  const [cartItems, setCartItems] = useState([
+  const [cartItems, setCartItems] = useState(() => readCartItems());
+  const [recommendedPool, setRecommendedPool] = useState([]);
+  const [isCheckingOut, setIsCheckingOut] = useState(false);
+  const [checkoutError, setCheckoutError] = useState('');
+  const primaryStoreId = cartItems[0]?.store_id || 1;
 
-    {
-      id: 1,
-      name: 'Cô Chua Cherry Hủi Cà Đỏ Lạt',
-      description: 'Hộp 500g',
-      price: 45000,
-      quantity: 2,
-      image: '🍒'
-    },
-    {
-      id: 2,
-      name: 'Phí là Cà Hồ Nội Nơi Tuei',
-      description: 'Khay 300g - Cắt thái sẵn',
-      price: 185000,
-      quantity: 1,
-      image: '🧡'
-    }
-  ]);
+  useEffect(() => {
+    writeCartItems(cartItems);
+  }, [cartItems]);
 
-  const recommendedProducts = [
-    {
-      id: 3,
-      name: 'Nành lá, Ngh í lá bạt',
-      price: 15000,
-      image: '🌿'
-    },
-    {
-      id: 4,
-      name: 'Chanh không hạt Vĩnh Long',
-      price: 22000,
-      image: '🍋'
-    }
-  ];
+  useEffect(() => {
+    let isMounted = true;
+
+    fetchProducts({ storeId: primaryStoreId, perPage: 12 })
+      .then((products) => {
+        if (isMounted) setRecommendedPool(products);
+      })
+      .catch(() => {
+        if (isMounted) setRecommendedPool([]);
+      });
+
+    return () => {
+      isMounted = false;
+    };
+  }, [primaryStoreId]);
+
+  const cartItemIds = useMemo(
+    () => new Set(cartItems.map((item) => String(item.id))),
+    [cartItems]
+  );
+
+  const recommendedProducts = useMemo(
+    () => recommendedPool.filter((product) => !cartItemIds.has(String(product.id))).slice(0, 4),
+    [cartItemIds, recommendedPool]
+  );
 
   const handleQuantityChange = (id, change) => {
     setCartItems(items =>
-      items.map(item =>
-        item.id === id
-          ? { ...item, quantity: Math.max(1, item.quantity + change) }
-          : item
-      )
+      items
+        .map(item =>
+          item.id === id
+            ? { ...item, quantity: Number(item.quantity || 0) + change }
+            : item
+        )
+        .filter(item => item.quantity > 0)
     );
   };
 
@@ -55,11 +72,52 @@ export default function ShoppingCart() {
   };
 
   const handleAddRecommended = (product) => {
-    const existing = cartItems.find(item => item.id === product.id);
-    if (existing) {
-      handleQuantityChange(product.id, 1);
-    } else {
-      setCartItems([...cartItems, { ...product, quantity: 1 }]);
+    setCartItems(addCartItem(product));
+  };
+
+  const handleCheckout = async () => {
+    if (cartItems.length === 0 || isCheckingOut) return;
+
+    const currentCustomer = getCurrentCustomer();
+    const payload = {
+      customer_id: Number(currentCustomer.id || DEFAULT_CUSTOMER_ID),
+      store_id: Number(primaryStoreId),
+      shipping_address:
+        currentCustomer.address || 'Thu Duc, TP.HCM',
+      payment_method: 'cod',
+      shipping_fee: shippingFee,
+      items: cartItems.map((item) => ({
+        product_id: Number(item.id),
+        quantity: Number(item.quantity),
+        is_flash_sale: Boolean(item.originalPrice),
+      })),
+    };
+
+    setIsCheckingOut(true);
+    setCheckoutError('');
+
+    try {
+      const response = await fetch(`${API_BASE_URL}/orders`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(payload),
+      });
+
+      const result = await response.json().catch(() => ({}));
+
+      if (!response.ok) {
+        throw new Error(result.message || 'Không thể tạo đơn hàng.');
+      }
+
+      writeCartItems([]);
+      setCartItems([]);
+      navigate('/order-history?status=pending');
+    } catch (error) {
+      setCheckoutError(error.message || 'Không thể tạo đơn hàng. Bạn kiểm tra backend/API rồi thử lại.');
+    } finally {
+      setIsCheckingOut(false);
     }
   };
 
@@ -77,7 +135,7 @@ export default function ShoppingCart() {
         <div className="page-title-section">
           {/* NÚT QUAY LẠI MUA SẮM (MỚI THÊM) */}
           <div className="back-to-shop">
-            <Link to="/supermarket-details" className="back-link">
+            <Link to={`/supermarket-details?store_id=${primaryStoreId}`} className="back-link">
                 <i className="fa-solid fa-arrow-left"></i> Tiếp tục mua sắm
             </Link>
           </div>
@@ -109,7 +167,13 @@ export default function ShoppingCart() {
                 cartItems.map(item => (
                   <div key={item.id} className="cart-item-row">
                     <div className="item-image">
-                      <span className="emoji-placeholder">{item.image}</span>
+                      {String(item.image).startsWith('/') ||
+                      String(item.image).startsWith('data:') ||
+                      String(item.image).startsWith('http') ? (
+                        <img src={item.image} alt={item.name} className="cart-item-img" />
+                      ) : (
+                        <span className="emoji-placeholder">{item.image}</span>
+                      )}
                     </div>
                     <div className="item-details">
                       <h3 className="item-name">{item.name}</h3>
@@ -284,8 +348,15 @@ export default function ShoppingCart() {
               )}
 
               {/* Checkout Button */}
-              <button className="btn-checkout">
-                <span>Tiến hành thanh toán</span>
+              {checkoutError && <p className="checkout-error">{checkoutError}</p>}
+
+              <button
+                className="btn-checkout"
+                type="button"
+                onClick={handleCheckout}
+                disabled={cartItems.length === 0 || isCheckingOut}
+              >
+                <span>{isCheckingOut ? 'Đang tạo đơn...' : 'Tiến hành đặt hàng'}</span>
                 <i className="fa-solid fa-arrow-right"></i>
               </button>
 
@@ -310,7 +381,7 @@ export default function ShoppingCart() {
               {recommendedProducts.map(product => (
                 <div key={product.id} className="recommended-card">
                   <div className="rec-image">
-                    <span className="emoji-placeholder">{product.image}</span>
+                    <img src={product.image} alt={product.name} />
                   </div>
                   <h4>{product.name}</h4>
                   <p className="rec-price">{product.price.toLocaleString('vi-VN')}₫</p>

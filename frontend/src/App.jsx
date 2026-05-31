@@ -126,6 +126,9 @@ function App() {
 
         {/* Partner routes */}
         <Route path="/order-management" element={<OrderManagement />} />
+        <Route path="/order-mangement" element={<OrderManagement />} />
+        <Route path="/order-mangagement" element={<OrderManagement />} />
+        <Route path="/order-managment" element={<OrderManagement />} />
         <Route path="/partner-login" element={<PartnerLogin />} />
         <Route path="/register-store" element={<RegisterStore />} />
         <Route path="/inventory" element={<Inventory />} />

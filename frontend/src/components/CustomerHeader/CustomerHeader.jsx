@@ -1,11 +1,130 @@
 import '@fortawesome/fontawesome-free/css/all.min.css';
 import logoMain from '../../assets/logo-main.png'; 
-import React, { useState } from 'react';
-import { Link } from 'react-router-dom';
+import React, { useEffect, useMemo, useState } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
+import { CART_CHANGED_EVENT, getCartTotalQuantity } from '../../services/cartStorage';
+import { fetchCategories, fetchProducts } from '../../services/productApi';
+import bachHoaXanhLogo from '../../assets/logos/BHX.webp';
+import winmartLogo from '../../assets/logos/Winmart.jpg';
+import goLogo from '../../assets/logos/GO.png';
+
+const DEFAULT_CATEGORY = 'Tất cả sản phẩm';
+
+const getStoreLogo = (storeName, logoUrl = '') => {
+  if (storeName?.includes('WinMart') || logoUrl.includes('Winmart')) return winmartLogo;
+  if (storeName?.includes('GO') || logoUrl.includes('GO')) return goLogo;
+  return bachHoaXanhLogo;
+};
 
 export default function CustomerHeader({ onMenuClick, onLoginClick, onRegisterClick, variant = 'customer' }) {
     const [isAddressModalOpen, setIsAddressModalOpen] = useState(false);
+    const [searchValue, setSearchValue] = useState('');
+    const [selectedCategory, setSelectedCategory] = useState(DEFAULT_CATEGORY);
+    const [selectedProduct, setSelectedProduct] = useState(null);
+    const [cartQuantity, setCartQuantity] = useState(0);
+    const [products, setProducts] = useState([]);
+    const [categories, setCategories] = useState([DEFAULT_CATEGORY]);
     const isGuest = variant === 'guest';
+    const navigate = useNavigate();
+
+    useEffect(() => {
+      if (isGuest) {
+        return undefined;
+      }
+
+      const syncCartQuantity = () => setCartQuantity(getCartTotalQuantity());
+      syncCartQuantity();
+      window.addEventListener(CART_CHANGED_EVENT, syncCartQuantity);
+      window.addEventListener('storage', syncCartQuantity);
+
+      return () => {
+        window.removeEventListener(CART_CHANGED_EVENT, syncCartQuantity);
+        window.removeEventListener('storage', syncCartQuantity);
+      };
+    }, [isGuest]);
+
+    useEffect(() => {
+      if (isGuest) {
+        return undefined;
+      }
+
+      let isMounted = true;
+
+      Promise.all([fetchProducts(), fetchCategories()])
+        .then(([apiProducts, apiCategories]) => {
+          if (!isMounted) return;
+          setProducts(apiProducts);
+          setCategories([DEFAULT_CATEGORY, ...apiCategories.map((category) => category.name)]);
+        })
+        .catch(() => {
+          if (!isMounted) return;
+          setProducts([]);
+          setCategories([DEFAULT_CATEGORY]);
+        });
+
+      return () => {
+        isMounted = false;
+      };
+    }, [isGuest]);
+
+    const searchText = searchValue.trim().toLowerCase();
+    const isSearchOpen = !isGuest && (searchValue || selectedCategory !== DEFAULT_CATEGORY);
+
+    const productResults = useMemo(() => {
+      if (!isSearchOpen) {
+        return [];
+      }
+
+      const filteredProducts = products.filter((product) => {
+        const matchesName = !searchText || product.name.toLowerCase().includes(searchText);
+        const matchesCategory = selectedCategory === DEFAULT_CATEGORY || product.category === selectedCategory;
+        return matchesName && matchesCategory;
+      });
+
+      const uniqueByName = new Map();
+      filteredProducts.forEach((product) => {
+        if (!uniqueByName.has(product.name)) {
+          uniqueByName.set(product.name, product);
+        }
+      });
+
+      return Array.from(uniqueByName.values()).slice(0, 8);
+    }, [isSearchOpen, products, searchText, selectedCategory]);
+
+    const storesForSelectedProduct = useMemo(() => {
+      if (!selectedProduct) {
+        return [];
+      }
+
+      const availableStoreIds = new Set(
+        products
+          .filter((product) => product.name === selectedProduct.name)
+          .map((product) => product.store_id)
+      );
+
+      const storesById = new Map();
+      products.forEach((product) => {
+        if (availableStoreIds.has(product.store_id) && !storesById.has(product.store_id)) {
+          storesById.set(product.store_id, {
+            store_id: product.store_id,
+            displayName: product.storeName,
+            logo: getStoreLogo(product.storeName, product.storeLogo),
+            time: product.store_id === 3 ? '20-25 phút' : '15-20 phút',
+          });
+        }
+      });
+
+      return Array.from(storesById.values());
+    }, [products, selectedProduct]);
+
+    const handleSelectStore = (store) => {
+      setSearchValue('');
+      setSelectedProduct(null);
+      setSelectedCategory(DEFAULT_CATEGORY);
+      navigate(`/supermarket-details?store_id=${store.store_id}`, {
+        state: { store_id: store.store_id },
+      });
+    };
 
     return (
     <header className={`header-core ${isGuest ? 'guest-header-core' : ''}`}>
@@ -18,12 +137,82 @@ export default function CustomerHeader({ onMenuClick, onLoginClick, onRegisterCl
         </div>
 
         <div className="search-bar-wrapper">
+          {!isGuest && (
+            <select
+              className="search-category-select"
+              value={selectedCategory}
+              onChange={(event) => {
+                setSelectedCategory(event.target.value);
+                setSelectedProduct(null);
+              }}
+            >
+              {categories.map((category) => (
+                <option key={category} value={category}>
+                  {category}
+                </option>
+              ))}
+            </select>
+          )}
           <input
             type="text"
             placeholder="Tìm kiếm sản phẩm, danh mục..."
             className="search-input"
+            value={searchValue}
+            onChange={(event) => {
+              setSearchValue(event.target.value);
+              setSelectedProduct(null);
+            }}
+            onFocus={() => setSelectedProduct(null)}
           />
           <i className="fa-solid fa-magnifying-glass search-icon"></i>
+
+          {isSearchOpen && (
+            <div className="search-dropdown-core">
+              <div className="search-dropdown-title">Sản phẩm phù hợp</div>
+              {productResults.length > 0 ? (
+                <div className="search-result-list">
+                  {productResults.map((product) => (
+                    <button
+                      type="button"
+                      key={product.id}
+                      className={`search-product-row ${selectedProduct?.name === product.name ? 'active' : ''}`}
+                      onClick={() => setSelectedProduct(product)}
+                    >
+                      <img src={product.image} alt={product.name} />
+                      <span>
+                        <strong>{product.name}</strong>
+                        <small>{product.category}</small>
+                      </span>
+                    </button>
+                  ))}
+                </div>
+              ) : (
+                <p className="search-empty-state">Không tìm thấy sản phẩm phù hợp.</p>
+              )}
+
+              {selectedProduct && (
+                <div className="search-store-panel">
+                  <div className="search-dropdown-title">Chọn siêu thị có sản phẩm này</div>
+                  <div className="search-store-list">
+                    {storesForSelectedProduct.map((store) => (
+                      <button
+                        type="button"
+                        key={store.store_id}
+                        className="search-store-row"
+                        onClick={() => handleSelectStore(store)}
+                      >
+                        <img src={store.logo} alt={store.displayName} />
+                        <span>
+                          <strong>{store.displayName}</strong>
+                          <small>{store.time}</small>
+                        </span>
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
         </div>
 
         {isGuest ? (
@@ -62,6 +251,7 @@ export default function CustomerHeader({ onMenuClick, onLoginClick, onRegisterCl
             </div>
             <Link to="/shopping-cart" className="icon-item">
               <i className="fa-solid fa-cart-shopping"></i>
+              {cartQuantity > 0 && <span className="cart-badge-core">{cartQuantity}</span>}
             </Link>
             <Link to="/notifications" className="icon-item">
               <i className="fa-solid fa-bell"></i>
