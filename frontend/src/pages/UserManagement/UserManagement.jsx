@@ -1,4 +1,4 @@
-import React, { useState, useMemo, useEffect } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import Header from '../../components/Header/Header';
 import { usersData } from './mockData';
 import { 
@@ -32,10 +32,6 @@ const UserManagement = () => {
     }, 500);
     return () => clearTimeout(timer); // Dọn dẹp timer
   }, []);
-
-  useEffect(() => {
-    setCurrentPage(1);
-  }, [searchTerm, roleFilter, statusFilter, typeFilter]);
 
   const filteredUsers = users.filter((user) => {
     const matchSearch = 
@@ -79,7 +75,7 @@ const UserManagement = () => {
   };
 
   const handleResetFilters = () => {
-    setSearchTerm(''); setRoleFilter('all'); setStatusFilter('all'); setTypeFilter('all'); setSortConfig(null);
+    setSearchTerm(''); setRoleFilter('all'); setStatusFilter('all'); setTypeFilter('all'); setSortConfig(null); setCurrentPage(1);
   };
 
   const handleAddUser = (e) => {
@@ -124,7 +120,14 @@ const UserManagement = () => {
   return (
     <div className="layout-container">
       <main className="main-content">
-        <Header searchTerm={searchTerm} onSearchChange={setSearchTerm} />
+          <Header
+            searchTerm={searchTerm}
+            onSearchChange={(value) => {
+              setSearchTerm(value);
+              setCurrentPage(1);
+            }}
+          placeholder="Tìm theo Tên, Email, Số điện thoại, ID..."
+        />
         
         <div className="content-canvas">
           <div className="page-header">
@@ -141,7 +144,7 @@ const UserManagement = () => {
           <div className="filters">
             <div className="filter-item">
               <label>Vai trò tài khoản</label>
-              <select value={roleFilter} onChange={(e) => setRoleFilter(e.target.value)}>
+              <select value={roleFilter} onChange={(e) => { setRoleFilter(e.target.value); setCurrentPage(1); }}>
                 <option value="all">Tất cả vai trò</option>
                 <option value="Quản trị viên">Quản trị viên</option>
                 <option value="Nhân viên giao hàng">Nhân viên giao hàng</option>
@@ -150,7 +153,7 @@ const UserManagement = () => {
             </div>
             <div className="filter-item">
               <label>Trạng thái tài khoản</label>
-              <select value={statusFilter} onChange={(e) => setStatusFilter(e.target.value)}>
+              <select value={statusFilter} onChange={(e) => { setStatusFilter(e.target.value); setCurrentPage(1); }}>
                 <option value="all">Tất cả trạng thái</option>
                 <option value="Đang hoạt động">Đang hoạt động</option>
                 <option value="Bị khóa">Bị khóa</option>
@@ -158,7 +161,7 @@ const UserManagement = () => {
             </div>
             <div className="filter-item">
               <label>Loại thành viên</label>
-              <select value={typeFilter} onChange={(e) => setTypeFilter(e.target.value)}>
+              <select value={typeFilter} onChange={(e) => { setTypeFilter(e.target.value); setCurrentPage(1); }}>
                 <option value="all">Tất cả các loại</option>
                 <option value="VIP">VIP</option>
                 <option value="THƯỜNG">THƯỜNG</option>

@@ -75,9 +75,14 @@
   color: #0d9488;
 }
 
-.order-detail-status--pending_payment {
+.order-detail-status--pending {
   background: #fef3c7;
   color: #d97706;
+}
+
+.order-detail-status--preparing {
+  background: #dcfce7;
+  color: #15803d;
 }
 
 .order-detail-status--cancelled {

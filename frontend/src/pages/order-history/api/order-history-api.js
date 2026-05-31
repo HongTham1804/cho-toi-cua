@@ -6,31 +6,31 @@ const MOCK_USER = {
 const MOCK_ORDERS = [
   {
     id: "CTC-98234",
-    storeName: "Co.opmart Nguyễn Đình Chiểu",
+    storeName: "GO! Dĩ An",
     date: "24/10/2023 - 08:30",
     products: "Rau muống hữu cơ, Cà chua bi, Thịt bò Úc (+3 sản phẩm)",
     total: 345000,
-    status: "shipping",
+    status: "pending",
   },
   {
     id: "CTC-09870",
-    storeName: "Winmart Thảo Điền",
+    storeName: "WinMart Lê Văn Việt",
     date: "20/10/2023 - 14:15",
     products: "Sữa tươi TH True Milk, Bánh mì gối (+1 sản phẩm)",
     total: 120000,
-    status: "completed",
+    status: "preparing",
   },
   {
     id: "CTC-97350",
-    storeName: "Bách Hóa Xanh Q7",
+    storeName: "Bách Hóa Xanh Lê Văn Chí",
     date: "18/10/2023 - 09:00",
     products: "Nước mắm Nam Ngư, Mì Hảo Hảo (+5 sản phẩm)",
     total: 216000,
-    status: "cancelled",
+    status: "shipping",
   },
   {
     id: "CTC-88120",
-    storeName: "Co.opmart Lý Thường Kiệt",
+    storeName: "GO! Dĩ An",
     date: "15/10/2023 - 11:00",
     products: "Trứng gà ta, Rau cải xanh, Bắp cải tím (+2 sản phẩm)",
     total: 87000,
@@ -38,11 +38,11 @@ const MOCK_ORDERS = [
   },
   {
     id: "CTC-77001",
-    storeName: "Siêu thị Tân Cúc",
+    storeName: "WinMart Lê Văn Việt",
     date: "10/10/2023 - 16:45",
     products: "Dầu ăn Tường An, Nước tương Maggi (+4 sản phẩm)",
     total: 189000,
-    status: "pending_payment",
+    status: "cancelled",
   },
 ];
 

@@ -1,5 +1,5 @@
 // Variables
-$font-family: 'Inter', sans-serif;
+$font-family: 'Be Vietnam Pro', sans-serif;
 $color-primary: #006C49;
 $color-bg: #F9F9FF;
 $color-white: #FFFFFF;
@@ -145,6 +145,8 @@ $color-danger: #BA1A1A; // <--- THÊM DÒNG NÀY VÀO
   }
 
   .content-body {
+    flex: 1;
+    min-height: 0;
     padding: 32px;
     overflow-y: auto;
     background: $color-white;

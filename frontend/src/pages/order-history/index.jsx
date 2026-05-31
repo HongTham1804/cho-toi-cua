@@ -9,18 +9,20 @@ import {
 } from "./api/order-history-api";
 
 const STATUS_MAP = {
-  pending_payment: { label: "Chờ thanh toán", className: "pending" },
-  shipping:        { label: "Đang giao",       className: "shipping" },
-  completed:       { label: "Hoàn thành",      className: "completed" },
-  cancelled:       { label: "Đã hủy",          className: "cancelled" },
+  pending:   { label: "Chờ xử lý",     className: "pending" },
+  preparing: { label: "Đang lấy hàng", className: "preparing" },
+  shipping:  { label: "Đang giao",     className: "shipping" },
+  completed: { label: "Đã hoàn thành", className: "completed" },
+  cancelled: { label: "Đã hủy",        className: "cancelled" },
 };
 
 const TABS = [
-  { value: "all",             label: "Tất cả" },
-  { value: "pending_payment", label: "Chờ thanh toán" },
-  { value: "shipping",        label: "Đang giao" },
-  { value: "completed",       label: "Đã hoàn thành" },
-  { value: "cancelled",       label: "Đã hủy" },
+  { value: "all",       label: "Tất cả" },
+  { value: "pending",   label: "Chờ xử lý" },
+  { value: "preparing", label: "Đang lấy hàng" },
+  { value: "shipping",  label: "Đang giao" },
+  { value: "completed", label: "Đã hoàn thành" },
+  { value: "cancelled", label: "Đã hủy" },
 ];
 
 function formatCurrency(value) {

@@ -9,7 +9,8 @@ import imgEggs from "../../assets/eggs.jpg";
 import imgSuplo from "../../assets/suplo.jpg";
 
 const STATUS_LABELS = {
-  pending_payment: "Chờ thanh toán",
+  pending: "Chờ xử lý",
+  preparing: "Đang lấy hàng",
   shipping: "Đang giao",
   completed: "Đã hoàn thành",
   cancelled: "Đã hủy",

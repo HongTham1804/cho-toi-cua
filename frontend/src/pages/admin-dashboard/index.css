@@ -12,7 +12,7 @@
   min-height: 100vh;
   background: var(--dashboard-bg);
   color: var(--dashboard-text);
-  font-family: "Inter", Arial, sans-serif;
+  font-family: "Be Vietnam Pro", Arial, sans-serif;
 }
 
 .dashboard-topbar {
@@ -60,7 +60,7 @@
   border: 1px solid #bbcabf;
   border-radius: 12px;
   color: var(--dashboard-text);
-  font-family: "Inter", Arial, sans-serif;
+  font-family: "Be Vietnam Pro", Arial, sans-serif;
   font-size: 16px;
   outline: none;
 }

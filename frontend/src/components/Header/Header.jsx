@@ -1,26 +1,59 @@
-import React from 'react';
-import { FiSearch, FiBell, FiHelpCircle } from "react-icons/fi";
-import './Header.scss';
+import { FiBell, FiChevronDown, FiSearch } from "react-icons/fi";
+import "./Header.scss";
 
-// Thêm props searchTerm và onSearchChange
-const Header = ({ searchTerm, onSearchChange }) => {
+const Header = ({
+  searchTerm = "",
+  onSearchChange,
+  placeholder = "Tìm kiếm theo tên hoặc mã...",
+  categoryLabel = "Danh mục:",
+  categoryValue = "Tất cả danh mục",
+  categories = ["Tất cả danh mục"],
+  onCategoryChange,
+}) => {
   return (
     <header className="top-header">
-      <div className="search-bar">
-        <FiSearch className="search-icon" />
-        <input 
-          type="text" 
-          placeholder="Tìm theo Tên, Email, Số điện thoại, ID..." 
-          value={searchTerm}
-          onChange={(e) => onSearchChange(e.target.value)} // Bắt sự kiện khi gõ phím
-        />
+      <div className="header-left">
+        <div className="search-box">
+          <FiSearch className="icon-search" />
+          <input
+            type="text"
+            placeholder={placeholder}
+            value={searchTerm}
+            onChange={(event) => onSearchChange?.(event.target.value)}
+          />
+        </div>
+
+        <div className="category-filter">
+          <span>{categoryLabel}</span>
+          <div className="dropdown">
+            <select
+              value={categoryValue}
+              onChange={(event) => onCategoryChange?.(event.target.value)}
+            >
+              {categories.map((category) => (
+                <option key={category} value={category}>
+                  {category}
+                </option>
+              ))}
+            </select>
+            <FiChevronDown className="icon-chevron" />
+          </div>
+        </div>
       </div>
-      <div className="user-profile">
-        <FiBell className="icon notification-icon" />
-        <FiHelpCircle className="icon help-icon" />
+
+      <div className="header-right">
+        <div className="notification">
+          <FiBell className="icon-bell" />
+          <span className="dot-red"></span>
+        </div>
         <div className="divider"></div>
-        <img src="https://i.pravatar.cc/150?img=12" alt="Admin" className="admin-avatar" />
-        <span className="admin-name">Admin User</span>
+        <div className="user-profile">
+          <div className="user-info">
+            <span className="user-name">Admin</span>
+            <span className="user-role">Quản lý chợ</span>
+          </div>
+          <img src="https://i.pravatar.cc/150?img=11" alt="Avatar" className="avatar" />
+        </div>
       </div>
     </header>
   );

@@ -1,67 +1,194 @@
-import React from 'react';
+import { useMemo, useState } from 'react';
 import './index.css';
-import { Search, Bell, HelpCircle, Grid, Truck, MapPin, User, ChevronLeft, ChevronRight, RefreshCw } from 'lucide-react';
-export default function DeliveryManagement() {
-  const deliveries = [
+import { Search, Bell, ChevronDown, MapPin, User } from 'lucide-react';
+
+const STORE_SYSTEMS = [
+  'GO! Dĩ An',
+  'WinMart Lê Văn Việt',
+  'Bách Hóa Xanh Lê Văn Chí',
+];
+
+const DELIVERY_STATUSES = [
+  'Chờ xử lý',
+  'Đang lấy hàng',
+  'Đang giao',
+  'Đã hoàn thành',
+  'Đã hủy',
+];
+
+const DELIVERIES = [
     {
-      id: '#DEL-9821',
       orderId: '#ORD-9821',
       shopper: { name: 'Trần Thị B', phone: '0901234567' },
-      route: { from: 'Co.opmart Cống Quỳnh', to: '123 Nguyễn Trãi, Q.1' },
-      status: 'Đang giao',
-      statusClass: 'status-shipping',
+      route: { from: 'GO! Dĩ An', to: '123 Nguyễn Trãi, Q.1' },
+      status: 'Chờ xử lý',
+      statusClass: 'status-pending',
       time: '10:30, 24/10'
     },
     {
-      id: '#DEL-9822',
       orderId: '#ORD-9822',
+      shopper: { name: 'Nguyễn Văn E', phone: '0912345678' },
+      route: { from: 'WinMart Lê Văn Việt', to: '12 Lê Văn Việt, TP. Thủ Đức' },
+      status: 'Đang lấy hàng',
+      statusClass: 'status-picking',
+      time: '10:45, 24/10'
+    },
+    {
+      orderId: '#ORD-9823',
+      shopper: { name: 'Lê Thị G', phone: '0934567890' },
+      route: { from: 'Bách Hóa Xanh Lê Văn Chí', to: '45 Võ Văn Ngân, TP. Thủ Đức' },
+      status: 'Đang giao',
+      statusClass: 'status-shipping',
+      time: '11:00, 24/10'
+    },
+    {
+      orderId: '#ORD-9824',
       shopper: { name: 'Chưa phân công', phone: '-' },
       shopperStyle: 'shopper-unassigned',
-      route: { from: 'Lotte Mart Q7', to: '456 Huỳnh Tấn Phát, Q.7' },
-      status: 'Chờ nhận',
-      statusClass: 'status-waiting',
+      route: { from: 'GO! Dĩ An', to: '456 Huỳnh Tấn Phát, Q.7' },
+      status: 'Chờ xử lý',
+      statusClass: 'status-pending',
       time: '11:15, 24/10'
     },
     {
-      id: '#DEL-9820',
-      orderId: '#ORD-9820',
-      shopper: { name: 'Nguyễn Văn E', phone: '0912345678' },
-      route: { from: 'BigC Miền Đông', to: '789 Tô Hiến Thành, Q.10' },
+      orderId: '#ORD-9825',
+      shopper: { name: 'Phạm Quốc Huy', phone: '0908877665' },
+      route: { from: 'WinMart Lê Văn Việt', to: '789 Tô Hiến Thành, Q.10' },
       status: 'Đang lấy hàng',
       statusClass: 'status-picking',
-      time: '09:45, 24/10'
+      time: '11:30, 24/10'
     },
     {
-      id: '#DEL-9815',
-      orderId: '#ORD-9815',
-      shopper: { name: 'Lê Thị G', phone: '0934567890' },
-      route: { from: 'Co.opmart Cống Quỳnh', to: '321 Trần Hưng Đạo, Q.1' },
-      status: 'Đã xong',
+      orderId: '#ORD-9826',
+      shopper: { name: 'Đỗ Minh Khang', phone: '0977112233' },
+      route: { from: 'Bách Hóa Xanh Lê Văn Chí', to: '321 Trần Hưng Đạo, Q.1' },
+      status: 'Đang giao',
+      statusClass: 'status-shipping',
+      time: '12:00, 24/10'
+    },
+    {
+      orderId: '#ORD-9827',
+      shopper: { name: 'Mai Anh Thư', phone: '0922123456' },
+      route: { from: 'GO! Dĩ An', to: '22 Phạm Văn Đồng, TP. Thủ Đức' },
+      status: 'Đã hoàn thành',
       statusClass: 'status-completed',
-      time: '08:00, 24/10'
-    }
-  ];
+      time: '12:20, 24/10'
+    },
+    {
+      orderId: '#ORD-9828',
+      shopper: { name: 'Trần Đức Nam', phone: '0933001122' },
+      route: { from: 'WinMart Lê Văn Việt', to: '88 Xa Lộ Hà Nội, TP. Thủ Đức' },
+      status: 'Đã hủy',
+      statusClass: 'status-cancelled',
+      time: '12:45, 24/10'
+    },
+    {
+      orderId: '#ORD-9829',
+      shopper: { name: 'Vũ Hoàng Long', phone: '0911223344' },
+      route: { from: 'Bách Hóa Xanh Lê Văn Chí', to: '17 Man Thiện, TP. Thủ Đức' },
+      status: 'Đã hoàn thành',
+      statusClass: 'status-completed',
+      time: '13:00, 24/10'
+    },
+    {
+      orderId: '#ORD-9830',
+      shopper: { name: 'Chưa phân công', phone: '-' },
+      shopperStyle: 'shopper-unassigned',
+      route: { from: 'GO! Dĩ An', to: '9 Hoàng Diệu 2, TP. Thủ Đức' },
+      status: 'Chờ xử lý',
+      statusClass: 'status-pending',
+      time: '13:15, 24/10'
+    },
+];
+
+const PAGE_SIZE = 5;
+
+export default function DeliveryManagement() {
+  const [selectedStore, setSelectedStore] = useState('all');
+  const [selectedStatus, setSelectedStatus] = useState('all');
+  const [currentPage, setCurrentPage] = useState(1);
+  const filteredDeliveries = useMemo(() => {
+    return DELIVERIES.filter((delivery) => {
+      const matchesStore = selectedStore === 'all' || delivery.route.from === selectedStore;
+      const matchesStatus = selectedStatus === 'all' || delivery.status === selectedStatus;
+      return matchesStore && matchesStatus;
+    });
+  }, [selectedStatus, selectedStore]);
+  const totalPages = Math.max(1, Math.ceil(filteredDeliveries.length / PAGE_SIZE));
+  const safePage = Math.min(currentPage, totalPages);
+  const startIndex = (safePage - 1) * PAGE_SIZE;
+  const pagedDeliveries = filteredDeliveries.slice(startIndex, startIndex + PAGE_SIZE);
+  const visibleStart = filteredDeliveries.length ? startIndex + 1 : 0;
+  const visibleEnd = Math.min(startIndex + pagedDeliveries.length, filteredDeliveries.length);
+
+  function handleStatusChange(value) {
+    setSelectedStatus(value);
+    setCurrentPage(1);
+  }
+
+  function handleStoreChange(value) {
+    setSelectedStore(value);
+    setCurrentPage(1);
+  }
 
   return (
     <div className="ctc-admin-container">
       {/* Top Navigation Header */}
       <header className="ctc-top-header">
-        <div className="ctc-search-box">
-          <span className="ctc-search-icon"><Search size={16} /></span>
-          <input 
-            type="text" 
-            placeholder="Tìm kiếm chuyến xe, mã đơn, shopper..." 
-            className="ctc-search-input"
-          />
+        <div className="ctc-header-left">
+          <div className="ctc-search-box">
+            <span className="ctc-search-icon"><Search size={18} /></span>
+            <input
+              type="text"
+              placeholder="Tìm kiếm chuyến xe, mã đơn, shopper..."
+              className="ctc-search-input"
+            />
+          </div>
+
+          <div className="ctc-header-filter">
+            <span>Trạng thái:</span>
+            <div className="ctc-dropdown">
+              <select
+                className="ctc-filter-select"
+                value={selectedStatus}
+                onChange={(event) => handleStatusChange(event.target.value)}
+              >
+                <option value="all">Tất cả trạng thái</option>
+                {DELIVERY_STATUSES.map((status) => (
+                  <option key={status} value={status}>{status}</option>
+                ))}
+              </select>
+              <ChevronDown size={16} className="ctc-chevron" />
+            </div>
+          </div>
+
+          <div className="ctc-header-filter">
+            <span>Hệ thống:</span>
+            <div className="ctc-dropdown">
+              <select
+                className="ctc-filter-select"
+                value={selectedStore}
+                onChange={(event) => handleStoreChange(event.target.value)}
+              >
+                <option value="all">Tất cả siêu thị</option>
+                {STORE_SYSTEMS.map((store) => (
+                  <option key={store} value={store}>{store}</option>
+                ))}
+              </select>
+              <ChevronDown size={16} className="ctc-chevron" />
+            </div>
+          </div>
         </div>
 
         <div className="ctc-header-actions">
-          <button className="ctc-icon-btn"><Bell size={18} /></button>
-          <button className="ctc-icon-btn"><HelpCircle size={18} /></button>
-          <button className="ctc-icon-btn"><Grid size={18} /></button>
+          <button className="ctc-icon-btn" type="button"><Bell size={20} /></button>
           <div className="ctc-divider-v"></div>
+          <div className="ctc-user-info">
+            <span className="ctc-user-name">Admin</span>
+            <span className="ctc-user-role">Quản lý chợ</span>
+          </div>
           <img 
-            src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=100&auto=format&fit=crop&q=80" 
+            src="https://i.pravatar.cc/150?img=11"
             alt="Admin Profile" 
             className="ctc-admin-avatar"
           />
@@ -75,44 +202,6 @@ export default function DeliveryManagement() {
             <h1 className="ctc-page-title">Quản lý Vận chuyển</h1>
             <p className="ctc-page-subtitle">Theo dõi lộ trình di chuyển, định vị thời gian thực và quản lý tài xế điều phối.</p>
           </div>
-          <button className="ctc-btn-secondary">
-            <RefreshCw size={14} /> Tải lại bản đồ
-          </button>
-        </div>
-
-        {/* Filter Bar Layout */}
-        <div className="ctc-filter-toolbar">
-          <div className="ctc-filter-item">
-            <label className="ctc-filter-label">Trạng thái giao</label>
-            <select className="ctc-filter-select">
-              <option>Tất cả trạng thái</option>
-              <option>Chờ nhận</option>
-              <option>Đang lấy hàng</option>
-              <option>Đang giao</option>
-              <option>Đã xong</option>
-            </select>
-          </div>
-          <div className="ctc-filter-item">
-            <label className="ctc-filter-label">Thời gian</label>
-            <input 
-              type="text" 
-              placeholder="mm/dd/yyyy" 
-              className="ctc-filter-input"
-            />
-          </div>
-          <div className="ctc-filter-item">
-            <label className="ctc-filter-label">Khu vực / Hệ thống</label>
-            <select className="ctc-filter-select">
-              <option>Tất cả khu vực siêu thị</option>
-              <option>Co.opmart Cống Quỳnh</option>
-              <option>Lotte Mart Q7</option>
-              <option>BigC Miền Đông</option>
-            </select>
-          </div>
-          <div className="ctc-filter-buttons">
-            <button className="ctc-btn-reset">Đặt lại</button>
-            <button className="ctc-btn-submit">Lọc</button>
-          </div>
         </div>
 
         {/* Core Data Table Grid */}
@@ -121,19 +210,16 @@ export default function DeliveryManagement() {
             <table className="ctc-data-table">
               <thead>
                 <tr>
-                  <th>Mã vận chuyển</th>
                   <th>Mã đơn</th>
-                  <th>Shopper vận chuyển</th>
+                  <th>Shipper vận chuyển</th>
                   <th>Lộ trình (Từ - Đến)</th>
                   <th className="text-center">Trạng thái</th>
                   <th>Ngày tạo</th>
-                  <th className="text-center">Hành động</th>
                 </tr>
               </thead>
               <tbody>
-                {deliveries.map((delivery, index) => (
+                {pagedDeliveries.map((delivery, index) => (
                   <tr key={index}>
-                    <td className="font-bold text-slate-900">{delivery.id}</td>
                     <td className="font-bold text-emerald">{delivery.orderId}</td>
                     <td>
                       <div className="ctc-shopper-profile">
@@ -162,11 +248,6 @@ export default function DeliveryManagement() {
                       </span>
                     </td>
                     <td className="text-slate-500 font-medium">{delivery.time}</td>
-                    <td className="text-center">
-                      <button className="ctc-btn-track">
-                        <Truck size={14} /> Định vị
-                      </button>
-                    </td>
                   </tr>
                 ))}
               </tbody>
@@ -176,15 +257,36 @@ export default function DeliveryManagement() {
           {/* Pagination Toolbar */}
           <div className="ctc-table-pagination">
             <div className="ctc-pagination-info">
-              Hiển thị <span className="font-semibold text-slate-700">1 đến 4</span> của <span className="font-semibold text-slate-700">42</span> chuyến giao hàng
+              Hiển thị {visibleStart}-{visibleEnd} trong số {filteredDeliveries.length} chuyến giao hàng
             </div>
-            
+
             <div className="ctc-pagination-controls">
-              <button className="ctc-page-nav-btn"><ChevronLeft size={14} /></button>
-              <button className="ctc-page-num-btn active">1</button>
-              <button className="ctc-page-num-btn">2</button>
-              <button className="ctc-page-num-btn">3</button>
-              <button className="ctc-page-nav-btn"><ChevronRight size={14} /></button>
+              <button
+                className="ctc-page-nav-btn"
+                type="button"
+                disabled={safePage === 1}
+                onClick={() => setCurrentPage((page) => Math.max(1, page - 1))}
+              >
+                ‹ Trước
+              </button>
+              {Array.from({ length: totalPages }, (_, index) => index + 1).map((page) => (
+                <button
+                  key={page}
+                  className={`ctc-page-num-btn ${safePage === page ? 'active' : ''}`}
+                  type="button"
+                  onClick={() => setCurrentPage(page)}
+                >
+                  {page}
+                </button>
+              ))}
+              <button
+                className="ctc-page-nav-btn"
+                type="button"
+                disabled={safePage === totalPages}
+                onClick={() => setCurrentPage((page) => Math.min(totalPages, page + 1))}
+              >
+                Sau ›
+              </button>
             </div>
           </div>
         </div>

@@ -13,7 +13,8 @@
   --clr-primary-lt:  #d1fae5;
   /* Status colors */
   --clr-pending-bg:   #fef3c7; --clr-pending-fg:   #d97706;
-  --clr-shipping-bg:  #fff0d2; --clr-shipping-fg:  #b7791f;
+  --clr-preparing-bg: #dcfce7; --clr-preparing-fg: #15803d;
+  --clr-shipping-bg:  #d1fae5; --clr-shipping-fg:  #047857;
   --clr-completed-bg: #d9fbf3; --clr-completed-fg: #0d9488;
   --clr-cancelled-bg: #fee2e2; --clr-cancelled-fg: #ef4444;
 
@@ -192,6 +193,7 @@ button { cursor: pointer; font-family: inherit; }
   flex-shrink: 0;
 }
 .status-badge.pending   { background: var(--clr-pending-bg);   color: var(--clr-pending-fg); }
+.status-badge.preparing { background: var(--clr-preparing-bg); color: var(--clr-preparing-fg); }
 .status-badge.shipping  { background: var(--clr-shipping-bg);  color: var(--clr-shipping-fg); }
 .status-badge.completed { background: var(--clr-completed-bg); color: var(--clr-completed-fg); }
 .status-badge.cancelled { background: var(--clr-cancelled-bg); color: var(--clr-cancelled-fg); }
