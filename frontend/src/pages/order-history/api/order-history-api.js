@@ -2,11 +2,18 @@ import { addCartItem } from "../../../services/cartStorage";
 import { mapApiProduct } from "../../../services/productApi";
 
 const API_BASE_URL = "http://localhost:8000/api";
+const API_ORIGIN = API_BASE_URL.replace(/\/api$/, "");
 
 const normalizePageItems = (payload) => {
   if (Array.isArray(payload?.data?.data)) return payload.data.data;
   if (Array.isArray(payload?.data)) return payload.data;
   return [];
+};
+
+const resolveImageUrl = (imageUrl) => {
+  if (!imageUrl) return "";
+  if (imageUrl.startsWith("http")) return imageUrl;
+  return `${API_ORIGIN}${imageUrl.startsWith("/") ? imageUrl : `/${imageUrl}`}`;
 };
 
 const formatOrderDate = (value) => {
@@ -21,28 +28,58 @@ const formatOrderDate = (value) => {
   });
 };
 
-const formatProducts = (details = []) => {
-  const names = details
-    .filter((detail) => detail.product?.name && detail.product?.image_url)
-    .map((detail) => {
-    const productName = detail.product.name;
-    return `${productName}${Number(detail.quantity) > 1 ? ` x${detail.quantity}` : ""}`;
-  });
+const mapOrderItem = (detail) => {
+  const product = detail.product || {};
+  const unitPrice = Number(detail.unit_price || product.price || 0);
+  const quantity = Number(detail.quantity || 1);
+
+  return {
+    id: String(detail.id || product.id),
+    productId: String(product.id || detail.product_id),
+    name: product.name || "Sản phẩm",
+    category: product.category?.name || "",
+    image: resolveImageUrl(product.image_url),
+    quantity,
+    unitPrice,
+    originalPrice: Number(detail.original_price || product.original_price || product.price || 0),
+    lineTotal: unitPrice * quantity,
+  };
+};
+
+const formatProducts = (items = []) => {
+  const names = items.map((item) => `${item.name}${item.quantity > 1 ? ` x${item.quantity}` : ""}`);
 
   if (names.length <= 2) return names.join(", ");
 
   return `${names.slice(0, 2).join(", ")} (+${names.length - 2} sản phẩm)`;
 };
 
-const mapOrder = (order) => ({
-  id: String(order.id),
-  storeName: order.store?.name || "Siêu thị",
-  date: formatOrderDate(order.created_at),
-  products: formatProducts(order.details),
-  validProductCount: (order.details || []).filter((detail) => detail.product?.name && detail.product?.image_url).length,
-  total: Number(order.total_amount || 0),
-  status: order.status || "pending",
-});
+export const mapOrder = (order) => {
+  const items = (order.details || [])
+    .filter((detail) => detail.product?.name)
+    .map(mapOrderItem);
+
+  return {
+    id: String(order.id),
+    storeId: Number(order.store_id),
+    storeName: order.store?.name || "Siêu thị",
+    customerName: order.customer?.name || "Khách hàng",
+    customerPhone: order.customer?.phone || "",
+    shippingAddress: order.shipping_address || order.customer?.address || "",
+    paymentMethod: order.payment_method || "Thanh toán khi nhận hàng",
+    note: order.note || "",
+    shipper: order.shipper || null,
+    date: formatOrderDate(order.created_at),
+    createdAt: order.created_at,
+    products: formatProducts(items),
+    items,
+    itemCount: items.reduce((total, item) => total + item.quantity, 0),
+    total: Number(order.total_amount || 0),
+    subtotal: Number(order.subtotal || 0),
+    shippingFee: Number(order.shipping_fee || 0),
+    status: order.status || "pending",
+  };
+};
 
 export async function fetchOrders(status = "all") {
   const params = new URLSearchParams({ per_page: "100" });
@@ -60,10 +97,10 @@ export async function fetchOrders(status = "all") {
   const payload = await response.json();
   return normalizePageItems(payload)
     .map(mapOrder)
-    .filter((order) => order.validProductCount > 0);
+    .filter((order) => order.items.length > 0);
 }
 
-export async function reorder(orderId) {
+export async function fetchOrderById(orderId) {
   const response = await fetch(`${API_BASE_URL}/orders/${orderId}`);
 
   if (!response.ok) {
@@ -71,17 +108,45 @@ export async function reorder(orderId) {
   }
 
   const payload = await response.json();
-  const details = payload?.data?.details || [];
+  return mapOrder(payload.data);
+}
 
-  details.forEach((detail) => {
-    if (!detail.product) return;
+export async function cancelOrder(orderId) {
+  const response = await fetch(`${API_BASE_URL}/orders/${orderId}/cancel`, {
+    method: "PATCH",
+    headers: { "Content-Type": "application/json" },
+    body: "{}",
+  });
 
-    const product = mapApiProduct({
-      ...detail.product,
-      store: payload.data.store,
-    });
+  const payload = await response.json().catch(() => ({}));
 
-    for (let index = 0; index < Number(detail.quantity || 1); index += 1) {
+  if (!response.ok) {
+    throw new Error(payload.message || "Không thể hủy đơn hàng.");
+  }
+
+  return mapOrder(payload.data);
+}
+
+export async function reorder(orderId) {
+  const order = await fetchOrderById(orderId);
+
+  order.items.forEach((item) => {
+    const apiProduct = {
+      id: item.productId,
+      store_id: order.storeId,
+      name: item.name,
+      price: item.unitPrice,
+      original_price: item.originalPrice,
+      image_url: item.image,
+      category: { name: item.category },
+      category_id: 0,
+      stock: 1,
+      store: { name: order.storeName },
+    };
+
+    const product = mapApiProduct(apiProduct);
+
+    for (let index = 0; index < item.quantity; index += 1) {
       addCartItem(product);
     }
   });

@@ -19,6 +19,7 @@ public function rules(): array
         'shipping_voucher_id' => ['nullable', 'exists:vouchers,id'],
         'shipping_address' => ['required', 'string', 'max:500'],
         'payment_method' => ['required', 'string', 'in:cod,bank_transfer,momo'],
+        'note' => ['nullable', 'string', 'max:1000'],
 
         'items' => ['required', 'array', 'min:1'],
         'items.*.product_id' => ['required', 'exists:products,id'],

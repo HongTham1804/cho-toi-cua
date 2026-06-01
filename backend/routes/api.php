@@ -53,4 +53,6 @@ Route::get('/user-vouchers', [VoucherController::class, 'userVouchers']);
 Route::get('/flash-sales', [FlashSaleController::class, 'index']);
 
 Route::get('/shippers', [ShipperSimulationController::class, 'index']);
+Route::match(['post', 'patch'], '/orders/{id}/prepare', [ShipperSimulationController::class, 'prepareOrder']);
 Route::match(['post', 'patch'], '/orders/{id}/assign-shipper', [ShipperSimulationController::class, 'assignShipper']);
+Route::match(['post', 'patch'], '/orders/{id}/start-delivery', [ShipperSimulationController::class, 'startDelivery']);

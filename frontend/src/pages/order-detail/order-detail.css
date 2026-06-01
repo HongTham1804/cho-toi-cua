@@ -254,6 +254,17 @@
   line-height: 1.6;
 }
 
+.order-note-text {
+  color: #9a3412;
+  font-size: 17px;
+  font-weight: 650;
+  line-height: 1.6;
+  padding: 12px 14px;
+  border-radius: 8px;
+  background: #fff7ed;
+  border: 1px solid #fed7aa;
+}
+
 .product-card {
   padding: 0;
   overflow: hidden;
@@ -509,6 +520,24 @@
 
 .od-btn-primary:hover {
   background: #065f46;
+}
+
+.od-btn-danger {
+  background: #ef4444;
+  color: #ffffff;
+  box-shadow: 0 8px 18px rgba(239, 68, 68, 0.16);
+}
+
+.od-btn-danger:hover:not(:disabled) {
+  background: #dc2626;
+}
+
+.od-btn-disabled {
+  background: #f1f5f9;
+  color: #94a3b8;
+  border-color: #d8e2ef;
+  box-shadow: none;
+  cursor: not-allowed;
 }
 
 .order-detail-toast {
