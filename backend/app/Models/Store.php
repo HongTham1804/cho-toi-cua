@@ -14,6 +14,7 @@ class Store extends Model
         'partner_id',
         'name',
         'address',
+        'business_type',
         'logo_url',
         'status',
     ];

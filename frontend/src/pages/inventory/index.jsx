@@ -53,8 +53,7 @@ const FILTERS = [
 const NAV_ITEMS = [
   { id: "orders", label: "Đơn hàng", icon: "fa-solid fa-clipboard-list", path: "/order-management" },
   { id: "categories", label: "Quản lý kho", icon: "fa-solid fa-tags", path: "/inventory" },
-  { id: "store", label: "Cửa hàng", icon: "fa-solid fa-store", path: null },
-  { id: "stats", label: "Thống kê", icon: "fa-solid fa-chart-bar", path: null },
+
 ];
 
 function formatCurrency(value) {

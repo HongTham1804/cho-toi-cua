@@ -3,7 +3,15 @@ import { useLocation, useNavigate, useSearchParams } from 'react-router-dom';
 import './supermarket-details.css';
 import '@fortawesome/fontawesome-free/css/all.min.css';
 import { addCartItem } from '../../services/cartStorage';
-import { fetchCategories, fetchProducts, fetchStores } from '../../services/productApi';
+import {
+  fetchCategories,
+  fetchFlashSales,
+  fetchProducts,
+  fetchStores,
+  fetchVouchers,
+  mapApiProduct,
+  saveVoucher,
+} from '../../services/productApi';
 import winmartBanner from '../../assets/bannerwinmart.webp';
 import bachHoaXanhBanner from '../../assets/bachhoaxanhbia.png';
 import goBanner from '../../assets/gobia.jpeg';
@@ -12,6 +20,16 @@ import winmartLogo from '../../assets/logos/Winmart.jpg';
 import goLogo from '../../assets/logos/GO.png';
 
 const DEFAULT_CATEGORY = 'Tất cả sản phẩm';
+const DEFAULT_CUSTOMER_ID = 4;
+
+const getCurrentCustomerId = () => {
+  try {
+    const user = JSON.parse(window.localStorage.getItem('auth_user')) || {};
+    return Number(user.id || DEFAULT_CUSTOMER_ID);
+  } catch {
+    return DEFAULT_CUSTOMER_ID;
+  }
+};
 
 const getStoreLogo = (store) => {
   if (store?.logo_url?.includes('Winmart') || store?.name?.includes('WinMart')) return winmartLogo;
@@ -35,13 +53,24 @@ const isStoreOpenNow = (date = new Date()) => {
   return hour >= 7 && hour < 22;
 };
 
-const coupons = [
-  { discount: '-10%', title: 'Giảm 10% tối đa 50k', sub: 'HSD: 30/11' },
-  { discount: '-30%', title: 'Giảm 30% cho đơn rau củ', sub: 'HSD: 30/11' },
-  { discount: '-25%', title: 'Giảm 25% cho đơn từ 300k', sub: 'HSD: 30/11' },
-];
-
 const formatPrice = (price) => `${Number(price).toLocaleString('vi-VN')}đ`;
+
+const formatShortMoney = (value) => `${Math.round(Number(value) / 1000)}K`;
+
+const formatVoucherLabel = (voucher) => {
+  if (voucher.discount_type === 'freeship') return 'Free ship';
+  if (voucher.discount_type === 'percentage') return `-${Number(voucher.discount_amount)}%`;
+  return `-${formatShortMoney(voucher.discount_amount)}`;
+};
+
+const formatVoucherSub = (voucher) => {
+  const date = new Date(voucher.end_date);
+  const endDate = Number.isNaN(date.getTime())
+    ? ''
+    : date.toLocaleDateString('vi-VN', { day: '2-digit', month: '2-digit' });
+
+  return `HSD: ${endDate}`;
+};
 
 const formatCountdown = (totalSeconds) => {
   const hours = Math.floor(totalSeconds / 3600);
@@ -75,6 +104,11 @@ export default function SupermarketDetails() {
   const [productVisibleCount, setProductVisibleCount] = useState(8);
   const [countdownSeconds, setCountdownSeconds] = useState(2 * 3600 + 15 * 60 + 30);
   const [products, setProducts] = useState([]);
+  const [flashSaleProducts, setFlashSaleProducts] = useState([]);
+  const [vouchers, setVouchers] = useState([]);
+  const [voucherNotice, setVoucherNotice] = useState('');
+  const [savingVoucherIds, setSavingVoucherIds] = useState([]);
+  const [recentlySavedVoucherIds, setRecentlySavedVoucherIds] = useState([]);
   const [store, setStore] = useState(null);
   const [categories, setCategories] = useState([DEFAULT_CATEGORY]);
   const [isLoadingProducts, setIsLoadingProducts] = useState(false);
@@ -111,6 +145,7 @@ export default function SupermarketDetails() {
 
     setIsLoadingProducts(true);
     setProductError('');
+    setProducts([]);
     fetchProducts({ storeId })
       .then((apiProducts) => {
         if (!isMounted) return;
@@ -123,6 +158,64 @@ export default function SupermarketDetails() {
       })
       .finally(() => {
         if (isMounted) setIsLoadingProducts(false);
+      });
+
+    return () => {
+      isMounted = false;
+    };
+  }, [storeId]);
+
+  useEffect(() => {
+    let isMounted = true;
+
+    setFlashSaleProducts([]);
+    fetchFlashSales({ storeId })
+      .then((apiFlashSales) => {
+        if (!isMounted) return;
+
+        const flashItems = apiFlashSales[0]?.products || [];
+        setFlashSaleProducts(flashItems.map((item) => ({
+          ...mapApiProduct({
+            ...item.product,
+            is_flash_sale: true,
+            flash_sale_price: item.flash_sale_price,
+            original_price: item.original_price,
+            flash_sale_sold_percent: item.sold_percent,
+            flash_sale_remaining: item.remaining,
+            flash_sale_end_time: apiFlashSales[0]?.end_time,
+          }),
+          flashSaleProductId: item.id,
+          soldPercent: item.sold_percent,
+          remaining: item.remaining,
+        })));
+
+        if (apiFlashSales[0]?.end_time) {
+          const secondsLeft = Math.max(
+            0,
+            Math.floor((new Date(apiFlashSales[0].end_time).getTime() - Date.now()) / 1000)
+          );
+          setCountdownSeconds(secondsLeft);
+        }
+      })
+      .catch(() => {
+        if (isMounted) setFlashSaleProducts([]);
+      });
+
+    return () => {
+      isMounted = false;
+    };
+  }, [storeId]);
+
+  useEffect(() => {
+    let isMounted = true;
+
+    setVouchers([]);
+    fetchVouchers({ storeId, userId: getCurrentCustomerId() })
+      .then((apiVouchers) => {
+        if (isMounted) setVouchers(apiVouchers);
+      })
+      .catch(() => {
+        if (isMounted) setVouchers([]);
       });
 
     return () => {
@@ -152,10 +245,7 @@ export default function SupermarketDetails() {
     return () => window.clearInterval(timer);
   }, []);
 
-  const flashProducts = useMemo(
-    () => products.filter((product) => product.flashSale),
-    [products]
-  );
+  const flashProducts = flashSaleProducts;
 
   const sortedProducts = useMemo(() => {
     const productsByCategory =
@@ -201,6 +291,38 @@ export default function SupermarketDetails() {
     }
   };
 
+  const handleSaveVoucher = async (voucher) => {
+    const voucherId = Number(voucher.id);
+    setSavingVoucherIds((ids) => [...ids, voucherId]);
+
+    try {
+      const savedVoucher = await saveVoucher({ voucherId: voucher.id, userId: getCurrentCustomerId() });
+
+      setVouchers((items) =>
+        items.map((item) => {
+          if (Number(item.id) !== voucherId) return item;
+
+          return {
+            ...item,
+            ...savedVoucher,
+            is_saved: true,
+          };
+        })
+      );
+      setRecentlySavedVoucherIds((ids) => [...new Set([...ids, voucherId])]);
+      window.setTimeout(() => {
+        setRecentlySavedVoucherIds((ids) => ids.filter((id) => id !== voucherId));
+      }, 1300);
+      setVoucherNotice(`Đã lưu mã ${voucher.code}.`);
+    } catch (error) {
+      setVoucherNotice(error.message || 'Không lưu được voucher.');
+    } finally {
+      setSavingVoucherIds((ids) => ids.filter((id) => id !== voucherId));
+    }
+
+    window.setTimeout(() => setVoucherNotice(''), 2600);
+  };
+
   useEffect(() => {
     setProductVisibleCount(8);
   }, [activeCategory, products, sortMode]);
@@ -237,25 +359,41 @@ export default function SupermarketDetails() {
         <section className="section-container">
           <h2>Mã giảm giá của Shop</h2>
           <div className="coupon-scroll-wrapper">
-            <div className="coupon-card-custom freeship">
-              <div className="coupon-left">Free ship</div>
-              <div className="coupon-right">
-                <p className="cp-title">Giảm 15k phí ship</p>
-                <p className="cp-sub">Đơn tối thiểu 150k</p>
-                <button className="btn-save-cp">Lưu</button>
-              </div>
-            </div>
-            {coupons.map((coupon) => (
-              <div key={coupon.title} className="coupon-card-custom discount">
-                <div className="coupon-left">{coupon.discount}</div>
+            {vouchers.map((voucher) => (
+              <div
+                key={voucher.id}
+                className={`coupon-card-custom ${voucher.discount_type === 'freeship' ? 'freeship' : 'discount'}`}
+              >
+                <div className="coupon-left">{formatVoucherLabel(voucher)}</div>
                 <div className="coupon-right">
-                  <p className="cp-title">{coupon.title}</p>
-                  <p className="cp-sub">{coupon.sub}</p>
-                  <button className="btn-save-cp">Lưu</button>
+                  <p className="cp-title">{voucher.title}</p>
+                  <p className="cp-sub">
+                    Đơn tối thiểu {formatPrice(voucher.min_order_value)}
+                  </p>
+                  <p className="cp-sub">{formatVoucherSub(voucher)}</p>
+                  <button
+                    className={`btn-save-cp ${recentlySavedVoucherIds.includes(Number(voucher.id)) ? 'saved-feedback' : ''}`}
+                    type="button"
+                    disabled={
+                      voucher.is_used ||
+                      savingVoucherIds.includes(Number(voucher.id)) ||
+                      recentlySavedVoucherIds.includes(Number(voucher.id))
+                    }
+                    onClick={() => handleSaveVoucher(voucher)}
+                  >
+                    {voucher.is_used
+                      ? 'Đã dùng'
+                      : savingVoucherIds.includes(Number(voucher.id))
+                        ? 'Đang lưu...'
+                        : recentlySavedVoucherIds.includes(Number(voucher.id))
+                          ? 'Đã lưu'
+                        : 'Lưu'}
+                  </button>
                 </div>
               </div>
             ))}
           </div>
+          {voucherNotice && <p className="voucher-notice">{voucherNotice}</p>}
         </section>
 
         <div className="supermarket-content-layout">
@@ -305,13 +443,17 @@ export default function SupermarketDetails() {
                         <span className="p-original">{formatPrice(product.originalPrice)}</span>
                       </div>
                       <div className="progress-bar-container">
-                        <div className="progress-bar" style={{ width: '60%' }}></div>
-                        <span className="progress-text">Đã bán 60%</span>
+                        <div className="progress-bar" style={{ width: `${product.soldPercent || 0}%` }}></div>
+                        <span className="progress-text">Đã bán {product.soldPercent || 0}%</span>
                       </div>
                     </div>
                   </div>
                 ))}
               </div>
+
+              {!isLoadingProducts && visibleFlashProducts.length === 0 && (
+                <p className="products-end-note">Chưa có sản phẩm flash sale đang chạy.</p>
+              )}
 
               {hasMoreFlashProducts && (
                 <div className="load-more-container">
@@ -355,7 +497,9 @@ export default function SupermarketDetails() {
                     <div className="p-info">
                       <h3>{product.name}</h3>
                       <div className="product-price-stack">
-                        <p className="p-price">{formatPrice(product.price)}</p>
+                        <p className={`p-price ${product.isFlashSale ? 'p-price--flash' : ''}`}>
+                          {formatPrice(product.price)}
+                        </p>
                         {product.originalPrice && (
                           <p className="p-original">{formatPrice(product.originalPrice)}</p>
                         )}

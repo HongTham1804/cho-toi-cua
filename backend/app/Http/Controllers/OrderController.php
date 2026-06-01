@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Http\Requests\StoreOrderRequest;
 use App\Models\Order;
 use App\Models\Product;
+use App\Models\Voucher;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -66,13 +67,27 @@ class OrderController extends Controller
                 }
 
                 $shippingFee = (float) ($data['shipping_fee'] ?? 0);
-                $totalAmount = $subtotal + $shippingFee;
+                $discountVoucher = isset($data['voucher_id'])
+                    ? $this->resolveVoucher((int) $data['voucher_id'], (int) $data['customer_id'], (int) $data['store_id'], $subtotal, ['fixed', 'percentage'])
+                    : null;
+                $shippingVoucher = isset($data['shipping_voucher_id'])
+                    ? $this->resolveVoucher((int) $data['shipping_voucher_id'], (int) $data['customer_id'], (int) $data['store_id'], $subtotal, ['freeship'])
+                    : null;
+
+                $orderDiscount = $discountVoucher
+                    ? $this->calculateVoucherDiscount($discountVoucher, $subtotal, $shippingFee)
+                    : 0;
+                $shippingDiscount = $shippingVoucher
+                    ? $this->calculateVoucherDiscount($shippingVoucher, $subtotal, $shippingFee)
+                    : 0;
+                $finalShippingFee = max(0, $shippingFee - $shippingDiscount);
+                $totalAmount = max(0, $subtotal + $finalShippingFee - $orderDiscount);
 
                 $order = Order::create([
                     'customer_id' => $data['customer_id'],
                     'store_id' => $data['store_id'],
-                    'voucher_id' => $data['voucher_id'] ?? null,
-                    'shipping_fee' => $shippingFee,
+                    'voucher_id' => $discountVoucher?->id ?? $shippingVoucher?->id,
+                    'shipping_fee' => $finalShippingFee,
                     'subtotal' => $subtotal,
                     'total_amount' => $totalAmount,
                     'shipping_address' => $data['shipping_address'],
@@ -93,6 +108,13 @@ class OrderController extends Controller
                     $it['product']->decrement('stock', $it['quantity']);
                 }
 
+                foreach (array_filter([$discountVoucher, $shippingVoucher]) as $voucher) {
+                    $voucher->increment('used_count');
+                    $voucher->users()->updateExistingPivot($data['customer_id'], [
+                        'is_used' => true,
+                    ]);
+                }
+
                 return $order->load(['customer', 'store', 'shipper', 'details.product']);
             });
 
@@ -105,6 +127,49 @@ class OrderController extends Controller
                 'message' => 'Không thể tạo đơn hàng: ' . $e->getMessage(),
             ], 400);
         }
+    }
+
+    private function resolveVoucher(int $voucherId, int $customerId, int $storeId, float $subtotal, array $allowedTypes): Voucher
+    {
+        $voucher = Voucher::where('store_id', $storeId)->findOrFail($voucherId);
+
+        if (! in_array($voucher->discount_type, $allowedTypes, true)) {
+            throw new \Exception("Voucher {$voucher->code} không đúng loại áp dụng.");
+        }
+
+        if (! $voucher->isActive()) {
+            throw new \Exception("Voucher {$voucher->code} đã hết hạn hoặc hết lượt.");
+        }
+
+        if ($subtotal < (float) $voucher->min_order_value) {
+            throw new \Exception("Đơn hàng chưa đủ điều kiện dùng voucher {$voucher->code}.");
+        }
+
+        $savedVoucher = $voucher->users()
+            ->where('users.id', $customerId)
+            ->wherePivot('is_used', false)
+            ->exists();
+
+        if (! $savedVoucher) {
+            throw new \Exception("Bạn chưa lưu hoặc đã dùng voucher {$voucher->code}.");
+        }
+
+        return $voucher;
+    }
+
+    private function calculateVoucherDiscount(Voucher $voucher, float $subtotal, float $shippingFee): float
+    {
+        if ($voucher->discount_type === 'freeship') {
+            return min($shippingFee, (float) $voucher->discount_amount);
+        }
+
+        if ($voucher->discount_type === 'percentage') {
+            $discount = $subtotal * ((float) $voucher->discount_amount / 100);
+
+            return min($discount, (float) ($voucher->max_discount_amount ?? $discount));
+        }
+
+        return min($subtotal, (float) $voucher->discount_amount);
     }
 
     public function show(int $id): JsonResponse

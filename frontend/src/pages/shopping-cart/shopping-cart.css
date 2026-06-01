@@ -355,19 +355,26 @@ body {
 .summary-rows {
   display: flex;
   flex-direction: column;
-  gap: 8px;
-  margin-bottom: 12px;
+  gap: 14px;
+  margin-bottom: 14px;
 }
 
 .summary-row {
   display: flex;
   justify-content: space-between;
-  font-size: 12px;
-  color: var(--text-dark);
+  gap: 16px;
+  font-size: 15px;
+  color: #5f6368;
 }
 
 .summary-row .amount {
   font-weight: 500;
+  color: #4b5563;
+  white-space: nowrap;
+}
+
+.summary-row.discount-row {
+  color: #5f6368;
 }
 
 .summary-divider {
@@ -378,20 +385,21 @@ body {
 
 .summary-total {
   display: flex;
-  justify-content: space-between;
+  justify-content: flex-end;
   align-items: center;
+  gap: 8px;
   margin-bottom: 16px;
   padding: 8px 0;
 }
 
 .summary-total span:first-child {
-  font-size: 13px;
+  font-size: 18px;
   font-weight: 600;
   color: var(--text-black);
 }
 
 .total-amount {
-  font-size: 18px;
+  font-size: 22px;
   font-weight: 700;
   color: var(--green-primary);
 }
@@ -770,6 +778,21 @@ body {
   max-height: 350px;
   overflow-y: auto;
   padding-right: 5px;
+}
+
+.promo-error-text,
+.promo-empty-text {
+  font-size: 13px;
+  color: #64748b;
+  padding: 12px;
+  border: 1px dashed var(--border-light);
+  border-radius: 8px;
+}
+
+.promo-error-text {
+  color: #b91c1c;
+  background-color: #fee2e2;
+  border-color: #fecaca;
 }
 
 /* Làm đẹp thanh cuộn */

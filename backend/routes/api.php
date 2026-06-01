@@ -3,17 +3,23 @@
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\CategoryController;
 use App\Http\Controllers\FavoriteProductController;
+use App\Http\Controllers\FlashSaleController;
 use App\Http\Controllers\OrderController;
 use App\Http\Controllers\ProductController;
 use App\Http\Controllers\ProductImageController;
 use App\Http\Controllers\ShipperSimulationController;
 use App\Http\Controllers\StoreController;
+use App\Http\Controllers\VoucherController;
 use Illuminate\Support\Facades\Route;
 
 Route::prefix('auth')->group(function () {
     Route::post('/register/send-otp', [AuthController::class, 'sendRegisterOtp']);
     Route::post('/register/verify-otp', [AuthController::class, 'verifyRegisterOtp']);
+    Route::post('/partner/register/send-otp', [AuthController::class, 'sendPartnerRegisterOtp']);
+    Route::post('/partner/register/verify-otp', [AuthController::class, 'verifyPartnerRegisterOtp']);
+    Route::post('/partner/login', [AuthController::class, 'partnerLogin']);
     Route::post('/forgot-password/send-otp', [AuthController::class, 'sendForgotPasswordOtp']);
+    Route::post('/partner/forgot-password/send-otp', [AuthController::class, 'sendPartnerForgotPasswordOtp']);
     Route::post('/forgot-password/verify-otp', [AuthController::class, 'verifyForgotPasswordOtp']);
     Route::post('/forgot-password/reset', [AuthController::class, 'resetForgotPassword']);
     Route::post('/login', [AuthController::class, 'login']);
@@ -35,6 +41,11 @@ Route::middleware('auth:sanctum')->prefix('favorites')->group(function () {
     Route::post('/', [FavoriteProductController::class, 'store']);
     Route::delete('/{product}', [FavoriteProductController::class, 'destroy']);
 });
+Route::get('/vouchers', [VoucherController::class, 'index']);
+Route::post('/vouchers/{voucher}/save', [VoucherController::class, 'save']);
+Route::delete('/vouchers/{voucher}/save', [VoucherController::class, 'unsave']);
+Route::get('/user-vouchers', [VoucherController::class, 'userVouchers']);
+Route::get('/flash-sales', [FlashSaleController::class, 'index']);
 
 Route::get('/shippers', [ShipperSimulationController::class, 'index']);
 Route::match(['post', 'patch'], '/orders/{id}/assign-shipper', [ShipperSimulationController::class, 'assignShipper']);

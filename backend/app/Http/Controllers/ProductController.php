@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\FlashSaleProduct;
 use App\Models\Product;
 use App\Http\Requests\StoreProductRequest;
 use App\Http\Requests\UpdateProductRequest;
@@ -63,9 +64,36 @@ class ProductController extends Controller
         $perPage = (int) $request->query('per_page', 25);
         $perPage = min(max($perPage, 1), 100);
 
+        $products = $query->paginate($perPage);
+        $productIds = $products->getCollection()->pluck('id');
+        $activeFlashItems = FlashSaleProduct::query()
+            ->with('flashSale')
+            ->whereIn('product_id', $productIds)
+            ->whereHas('flashSale', function ($query) {
+                $query->where('status', 'active')
+                    ->where('start_time', '<=', now())
+                    ->where('end_time', '>=', now());
+            })
+            ->get()
+            ->keyBy('product_id');
+
+        $products->getCollection()->transform(function (Product $product) use ($activeFlashItems) {
+            $flashItem = $activeFlashItems->get($product->id);
+
+            $product->setAttribute('is_flash_sale', (bool) $flashItem);
+            $product->setAttribute('flash_sale_price', $flashItem ? (float) $flashItem->flash_sale_price : null);
+            $product->setAttribute('flash_sale_quantity', $flashItem ? (int) $flashItem->quantity : null);
+            $product->setAttribute('flash_sale_sold', $flashItem ? (int) $flashItem->sold : null);
+            $product->setAttribute('flash_sale_remaining', $flashItem ? $flashItem->remaining : null);
+            $product->setAttribute('flash_sale_sold_percent', $flashItem ? $flashItem->sold_percent : null);
+            $product->setAttribute('flash_sale_end_time', $flashItem ? $flashItem->flashSale?->end_time : null);
+
+            return $product;
+        });
+
         return response()->json([
             'success' => true,
-            'data' => $query->paginate($perPage)
+            'data' => $products
         ]);
     }
 

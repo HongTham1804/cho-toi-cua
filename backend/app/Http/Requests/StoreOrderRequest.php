@@ -15,7 +15,8 @@ public function rules(): array
     return [
         'customer_id' => ['required', 'exists:users,id'],
         'store_id' => ['required', 'exists:stores,id'],
-        'voucher_id' => ['nullable', 'integer'],
+        'voucher_id' => ['nullable', 'exists:vouchers,id'],
+        'shipping_voucher_id' => ['nullable', 'exists:vouchers,id'],
         'shipping_address' => ['required', 'string', 'max:500'],
         'payment_method' => ['required', 'string', 'in:cod,bank_transfer,momo'],
 

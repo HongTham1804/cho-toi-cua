@@ -3,7 +3,7 @@ import './shopping-cart.css';
 import '@fortawesome/fontawesome-free/css/all.min.css';
 import { Link, useNavigate } from 'react-router-dom';
 import { addCartItem, readCartItems, writeCartItems } from '../../services/cartStorage';
-import { fetchProducts } from '../../services/productApi';
+import { clearVoucherCache, fetchProducts, fetchUserVouchers, fetchVouchers } from '../../services/productApi';
 
 const API_BASE_URL = 'http://localhost:8000/api';
 const DEFAULT_CUSTOMER_ID = 4;
@@ -16,6 +16,25 @@ const getCurrentCustomer = () => {
   }
 };
 
+const formatCurrency = (value) => `${Number(value).toLocaleString('vi-VN')}₫`;
+
+const isFreeshipVoucher = (voucher) => voucher.discount_type === 'freeship';
+
+const calculateVoucherDiscount = (voucher, subtotal, shippingFee) => {
+  if (!voucher || subtotal < Number(voucher.min_order_value || 0)) return 0;
+
+  if (voucher.discount_type === 'freeship') {
+    return Math.min(shippingFee, Number(voucher.discount_amount || shippingFee));
+  }
+
+  if (voucher.discount_type === 'percentage') {
+    const rawDiscount = subtotal * (Number(voucher.discount_amount || 0) / 100);
+    return Math.min(rawDiscount, Number(voucher.max_discount_amount || rawDiscount));
+  }
+
+  return Math.min(subtotal, Number(voucher.discount_amount || 0));
+};
+
 export default function ShoppingCart() {
   const navigate = useNavigate();
   const [isPromoOpen, setIsPromoOpen] = useState(false);
@@ -23,6 +42,11 @@ export default function ShoppingCart() {
   const [recommendedPool, setRecommendedPool] = useState([]);
   const [isCheckingOut, setIsCheckingOut] = useState(false);
   const [checkoutError, setCheckoutError] = useState('');
+  const [savedVouchers, setSavedVouchers] = useState([]);
+  const [selectedFreeshipVoucher, setSelectedFreeshipVoucher] = useState(null);
+  const [selectedDiscountVoucher, setSelectedDiscountVoucher] = useState(null);
+  const [promoError, setPromoError] = useState('');
+  const [promoCode, setPromoCode] = useState('');
   const primaryStoreId = cartItems[0]?.store_id || 1;
 
   useEffect(() => {
@@ -75,6 +99,63 @@ export default function ShoppingCart() {
     setCartItems(addCartItem(product));
   };
 
+  const loadSavedVouchers = async () => {
+    try {
+      setPromoError('');
+      const userId = Number(getCurrentCustomer().id || DEFAULT_CUSTOMER_ID);
+      let vouchers = await fetchUserVouchers({ userId, storeId: primaryStoreId });
+
+      if (vouchers.length === 0) {
+        const allStoreVouchers = await fetchVouchers({ storeId: primaryStoreId, userId });
+        vouchers = allStoreVouchers.filter((voucher) => voucher.is_saved && !voucher.is_used);
+      }
+      setSavedVouchers(vouchers);
+    } catch {
+      setSavedVouchers([]);
+      setPromoError('Không lấy được ví voucher. Bạn hãy kiểm tra backend/API.');
+    }
+  };
+
+  const openPromoModal = () => {
+    setIsPromoOpen(true);
+    loadSavedVouchers();
+  };
+
+  const toggleVoucher = (voucher) => {
+    if (subtotal < Number(voucher.min_order_value || 0)) return;
+
+    if (isFreeshipVoucher(voucher)) {
+      setSelectedFreeshipVoucher((current) =>
+        current?.id === voucher.id ? null : voucher
+      );
+      return;
+    }
+
+    setSelectedDiscountVoucher((current) =>
+      current?.id === voucher.id ? null : voucher
+    );
+  };
+
+  const handleApplyPromoCode = () => {
+    const code = promoCode.trim().toUpperCase();
+    if (!code) return;
+
+    const voucher = savedVouchers.find((item) => String(item.code).toUpperCase() === code);
+
+    if (!voucher) {
+      setPromoError('Mã này chưa có trong ví voucher đã lưu.');
+      return;
+    }
+
+    if (subtotal < Number(voucher.min_order_value || 0)) {
+      setPromoError('Đơn hàng chưa đủ điều kiện để dùng mã này.');
+      return;
+    }
+
+    setPromoError('');
+    toggleVoucher(voucher);
+  };
+
   const handleCheckout = async () => {
     if (cartItems.length === 0 || isCheckingOut) return;
 
@@ -82,6 +163,8 @@ export default function ShoppingCart() {
     const payload = {
       customer_id: Number(currentCustomer.id || DEFAULT_CUSTOMER_ID),
       store_id: Number(primaryStoreId),
+      voucher_id: selectedDiscountVoucher?.id,
+      shipping_voucher_id: selectedFreeshipVoucher?.id,
       shipping_address:
         currentCustomer.address || 'Thu Duc, TP.HCM',
       payment_method: 'cod',
@@ -112,7 +195,11 @@ export default function ShoppingCart() {
       }
 
       writeCartItems([]);
+      clearVoucherCache();
       setCartItems([]);
+      setSavedVouchers([]);
+      setSelectedDiscountVoucher(null);
+      setSelectedFreeshipVoucher(null);
       navigate('/order-history?status=pending');
     } catch (error) {
       setCheckoutError(error.message || 'Không thể tạo đơn hàng. Bạn kiểm tra backend/API rồi thử lại.');
@@ -124,8 +211,11 @@ export default function ShoppingCart() {
   // Calculate totals
   const totalItems = cartItems.reduce((sum, item) => sum + item.quantity, 0);
   const subtotal = cartItems.reduce((sum, item) => sum + item.price * item.quantity, 0);
-  const shippingFee = 15000;
-  const total = subtotal + shippingFee;
+  const shippingFee = 30000;
+  const shippingDiscount = calculateVoucherDiscount(selectedFreeshipVoucher, subtotal, shippingFee);
+  const orderDiscount = calculateVoucherDiscount(selectedDiscountVoucher, subtotal, shippingFee);
+  const finalShippingFee = Math.max(0, shippingFee - shippingDiscount);
+  const total = Math.max(0, subtotal + finalShippingFee - orderDiscount);
 
   return (
     <div className="shopping-cart-wrapper">
@@ -242,24 +332,36 @@ export default function ShoppingCart() {
 
               <div className="summary-rows">
                 <div className="summary-row">
-                  <span>Tạm tính ({totalItems} sản phẩm)</span>
-                  <span className="amount">{subtotal.toLocaleString('vi-VN')}₫</span>
+                  <span>Tổng tiền hàng</span>
+                  <span className="amount">{formatCurrency(subtotal)}</span>
                 </div>
                 <div className="summary-row">
-                  <span>Phí giao hàng</span>
-                  <span className="amount">{shippingFee.toLocaleString('vi-VN')}₫</span>
+                  <span>Phí vận chuyển</span>
+                  <span className="amount">{formatCurrency(shippingFee)}</span>
                 </div>
+                {shippingDiscount > 0 && (
+                  <div className="summary-row discount-row">
+                    <span>Ưu đãi phí vận chuyển</span>
+                    <span className="amount">-{formatCurrency(shippingDiscount)}</span>
+                  </div>
+                )}
+                {orderDiscount > 0 && (
+                  <div className="summary-row discount-row">
+                    <span>Chợ Tới Cửa Voucher</span>
+                    <span className="amount">-{formatCurrency(orderDiscount)}</span>
+                  </div>
+                )}
               </div>
 
               <div className="summary-divider"></div>
 
               <div className="summary-total">
-                <span>Tổng cộng</span>
-                <span className="total-amount">{total.toLocaleString('vi-VN')}₫</span>
+                <span>Thành tiền:</span>
+                <span className="total-amount">{formatCurrency(total)}</span>
               </div>
 
               {/* Nút bấm mở Popup Khuyến Mãi */}
-              <div className="promo-trigger-core" onClick={() => setIsPromoOpen(true)}>
+              <div className="promo-trigger-core" onClick={openPromoModal}>
                 <div className="promo-trigger-left">
                   <i className="fa-solid fa-tag"></i>
                   <span>Thêm mã khuyến mãi</span>
@@ -284,55 +386,65 @@ export default function ShoppingCart() {
                     <div className="promo-body-core">
                       {/* Ô nhập mã thủ công */}
                       <div className="promo-input-group-core">
-                        <input type="text" placeholder="Nhập mã khuyến mãi..." />
-                        <button className="btn-apply-core">Áp dụng</button>
+                        <input
+                          type="text"
+                          placeholder="Nhập mã khuyến mãi..."
+                          value={promoCode}
+                          onChange={(event) => setPromoCode(event.target.value)}
+                        />
+                        <button className="btn-apply-core" type="button" onClick={handleApplyPromoCode}>
+                          Áp dụng
+                        </button>
                       </div>
 
-                      {/* Danh sách Voucher cuộn */}
                       <div className="promo-list-core">
-                        
-                        {/* Thẻ Voucher 1: Đủ điều kiện (Màu sáng, có nút chọn) */}
-                        <label className="promo-card-core active">
-                          <div className="promo-card-left">
-                            <span className="discount-amount">GIẢM 20K</span>
-                          </div>
-                          <div className="promo-card-right">
-                            <div className="promo-info">
-                              <h4>Giảm 20k cho đơn từ 500k</h4>
-                              <p>HSD: 30/05/2026</p>
-                            </div>
-                            <input type="radio" name="selectedPromo" className="promo-radio" />
-                          </div>
-                        </label>
+                        {promoError && <p className="promo-error-text">{promoError}</p>}
+                        {!promoError && savedVouchers.length === 0 && (
+                          <p className="promo-empty-text">Bạn chưa lưu mã nào của siêu thị này.</p>
+                        )}
 
-                        {/* Thẻ Voucher 2: Đủ điều kiện */}
-                        <label className="promo-card-core active freeship">
-                          <div className="promo-card-left">
-                            <span className="discount-amount">FREESHIP</span>
-                          </div>
-                          <div className="promo-card-right">
-                            <div className="promo-info">
-                              <h4>Miễn phí vận chuyển</h4>
-                              <p>HSD: 15/06/2026</p>
-                            </div>
-                            <input type="radio" name="selectedPromo" className="promo-radio" />
-                          </div>
-                        </label>
+                        {savedVouchers.map((voucher) => {
+                          const isDisabled = subtotal < Number(voucher.min_order_value || 0);
+                          const isSelected = isFreeshipVoucher(voucher)
+                            ? selectedFreeshipVoucher?.id === voucher.id
+                            : selectedDiscountVoucher?.id === voucher.id;
+                          const endDate = new Date(voucher.end_date).toLocaleDateString('vi-VN');
+                          const label = isFreeshipVoucher(voucher)
+                            ? 'FREESHIP'
+                            : voucher.discount_type === 'percentage'
+                              ? `GIẢM ${Number(voucher.discount_amount)}%`
+                              : `GIẢM ${Math.round(Number(voucher.discount_amount) / 1000)}K`;
 
-                        {/* Thẻ Voucher 3: KHÔNG đủ điều kiện (Làm mờ, báo lỗi đỏ) */}
-                        <div className="promo-card-core disabled">
-                          <div className="promo-card-left">
-                            <span className="discount-amount">GIẢM 50K</span>
-                          </div>
-                          <div className="promo-card-right">
-                            <div className="promo-info">
-                              <h4>Giảm 50k cho đơn từ 1 Triệu</h4>
-                              <p>HSD: 30/05/2026</p>
-                              <span className="error-msg">Mua thêm 450.000đ để sử dụng</span>
-                            </div>
-                          </div>
-                        </div>
-
+                          return (
+                            <label
+                              key={voucher.id}
+                              className={`promo-card-core ${isDisabled ? 'disabled' : 'active'} ${isFreeshipVoucher(voucher) ? 'freeship' : ''}`}
+                            >
+                              <div className="promo-card-left">
+                                <span className="discount-amount">{label}</span>
+                              </div>
+                              <div className="promo-card-right">
+                                <div className="promo-info">
+                                  <h4>{voucher.title}</h4>
+                                  <p>HSD: {endDate}</p>
+                                  {isDisabled && (
+                                    <span className="error-msg">
+                                      Mua thêm {formatCurrency(Number(voucher.min_order_value) - subtotal)} để sử dụng
+                                    </span>
+                                  )}
+                                </div>
+                                {!isDisabled && (
+                                  <input
+                                    type="checkbox"
+                                    checked={isSelected}
+                                    onChange={() => toggleVoucher(voucher)}
+                                    className="promo-radio"
+                                  />
+                                )}
+                              </div>
+                            </label>
+                          );
+                        })}
                       </div>
                     </div>
 

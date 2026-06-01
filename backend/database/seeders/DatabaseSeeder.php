@@ -14,6 +14,7 @@ class DatabaseSeeder extends Seeder
             ShipperSeeder::class,
             CategorySeeder::class,
             ProductCatalogSeeder::class,
+            PromotionSeeder::class,
             OrderSeeder::class,
         ]);
     }
