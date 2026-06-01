@@ -1,4 +1,4 @@
-import React, { Suspense, useState } from "react";
+import React, { Suspense, useEffect, useState } from "react";
 import { Navigate, Outlet, Route, Routes, Link, useNavigate, useParams } from "react-router-dom";
 import "./App.css";
 
@@ -24,6 +24,7 @@ import ShoppingCart from "./pages/shopping-cart";
 import SelectRole from "./pages/select-role";
 import UserDetail from "./pages/UserDetail/UserDetail";
 import AccountSettings from './pages/account-settings';
+import { clearAuthSession, fetchCurrentUser, getStoredAuthUser } from "./services/authApi";
 
 const AdminDashboard = React.lazy(() => import("./pages/admin-dashboard"));
 const DeliveryManagement = React.lazy(() => import("./pages/quanlyvanchuyen"));
@@ -41,30 +42,20 @@ function ProductDetailRedirect() {
   return <Navigate to={`/product-detail/${id}`} replace />;
 }
 
-function App() {
-  const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const navigate = useNavigate();
-  const handleLogout = (e) => {
-    e.preventDefault(); // Ngăn trình duyệt load lại trang
-    
-    const isConfirmed = window.confirm("Bạn có chắc chắn muốn đăng xuất không?");
-    
-    if (isConfirmed) {
-      setIsMenuOpen(false); // Đóng sidebar lại
-      navigate('/select-role', { replace: true }); //Có giao diện tran chủ chưa đăng nhập thì đổi lại 
-    }
-  };
-  const CustomerLayout = () => (
+function CustomerLayout({ onMenuClick }) {
+  return (
     <div className="customer-layout">
-      <CustomerHeader onMenuClick={() => setIsMenuOpen(true)} />
+      <CustomerHeader onMenuClick={onMenuClick} />
       <div className="main-content">
         <Outlet />
       </div>
       <Footer />
     </div>
   );
+}
 
-  const AdminLayout = () => (
+function AdminLayout() {
+  return (
     <div className="admin-layout">
       <Sidebar />
       <div className="admin-layout__content">
@@ -72,6 +63,56 @@ function App() {
       </div>
     </div>
   );
+}
+
+function App() {
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [currentUser, setCurrentUser] = useState(() => getStoredAuthUser());
+  const navigate = useNavigate();
+
+  const openCustomerMenu = () => {
+    setCurrentUser(getStoredAuthUser());
+    setIsMenuOpen(true);
+  };
+
+  useEffect(() => {
+    if (!isMenuOpen) {
+      return undefined;
+    }
+
+    let isMounted = true;
+
+    fetchCurrentUser()
+      .then((user) => {
+        if (isMounted) {
+          setCurrentUser(user);
+        }
+      })
+      .catch(() => {
+        if (isMounted) {
+          setCurrentUser(getStoredAuthUser());
+        }
+      });
+
+    return () => {
+      isMounted = false;
+    };
+  }, [isMenuOpen]);
+
+  const handleLogout = (e) => {
+    e.preventDefault(); // Ngăn trình duyệt load lại trang
+    
+    const isConfirmed = window.confirm("Bạn có chắc chắn muốn đăng xuất không?");
+    
+    if (isConfirmed) {
+      clearAuthSession();
+      setCurrentUser(null);
+      setIsMenuOpen(false); // Đóng sidebar lại
+      navigate('/select-role', { replace: true }); //Có giao diện tran chủ chưa đăng nhập thì đổi lại 
+    }
+  };
+
+  const customerGreetingName = currentUser?.name || "Khách hàng";
 
   return (
     <div className="App">
@@ -80,7 +121,7 @@ function App() {
           <div className="sidebar-modal-core" onClick={(event) => event.stopPropagation()}>
             <div className="user-profile-core">
               <i className="fa-solid fa-user-circle"></i>
-              <h3>Chào, Khách hàng</h3>
+              <h3>Chào, {customerGreetingName}</h3>
             </div>
             <nav className="menu-links-core">
               <Link to="/logged-in-homepage" onClick={() => setIsMenuOpen(false)}>
@@ -105,10 +146,10 @@ function App() {
         <Route path="/guest-homepage" element={<GuestHomepage />} />
         <Route path="/select-role" element={<SelectRole />} />
 
-        <Route element={<CustomerLayout />}>
+        <Route element={<CustomerLayout onMenuClick={openCustomerMenu} />}>
           <Route path="/shopping-cart" element={<ShoppingCart />} />
           <Route path="/supermarket-details" element={<SupermarketDetails />} />
-          <Route path="/logged-in-homepage" element={<LoggedInHomepage />} />
+          <Route path="/logged-in-homepage" element={<LoggedInHomepage onAccountClick={openCustomerMenu} />} />
           <Route path="/order-history" element={<OrderHistory />} />
           <Route path="/order-history/:orderId" element={<OrderDetail />} />
           <Route path="/order-detail" element={<OrderDetail />} />

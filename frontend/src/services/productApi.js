@@ -7,7 +7,7 @@ const CATEGORY_NAME_MAP = {
   'Hóa Phẩm - Tẩy rửa': 'Hóa phẩm, tẩy rửa',
   'Chăm Sóc Cá Nhân': 'Chăm sóc cá nhân',
   'Thịt - Hải Sản Tươi': 'Thịt, Cá, Hải sản',
-  'Bánh Kẹo': 'Bánh kẹo, đồ ăn vặt',
+  'Bánh Kẹo': 'Bánh kẹo, thực phẩm khô',
 };
 
 const normalizePageItems = (payload) => {

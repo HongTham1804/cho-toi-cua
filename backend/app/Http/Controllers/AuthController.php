@@ -10,11 +10,46 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Str;
+use Illuminate\Validation\Rule;
 use Illuminate\Validation\ValidationException;
 use Throwable;
 
 class AuthController extends Controller
 {
+    public function me(Request $request): JsonResponse
+    {
+        return response()->json([
+            'user' => $request->user(),
+        ]);
+    }
+
+    public function updateProfile(Request $request): JsonResponse
+    {
+        $user = $request->user();
+
+        $validated = $request->validate([
+            'name' => ['required', 'string', 'max:255'],
+            'phone' => [
+                'required',
+                'string',
+                'regex:/^[0-9]{10}$/',
+                Rule::unique('users', 'phone')->ignore($user->id),
+            ],
+        ], [
+            'name.required' => 'Vui lòng nhập họ và tên.',
+            'phone.required' => 'Vui lòng nhập số điện thoại.',
+            'phone.regex' => 'Số điện thoại phải nhập đúng 10 chữ số.',
+            'phone.unique' => 'Số điện thoại này đã được đăng ký.',
+        ]);
+
+        $user->forceFill($validated)->save();
+
+        return response()->json([
+            'message' => 'Cập nhật tài khoản thành công.',
+            'user' => $user->fresh(),
+        ]);
+    }
+
     public function sendRegisterOtp(Request $request): JsonResponse
     {
         $validated = $request->validate([

@@ -24,7 +24,7 @@ const getShortStoreName = (storeName = '') => {
 };
 
 
-export default function LoggedInHomepage() {
+export default function LoggedInHomepage({ onAccountClick }) {
   const [activeTab, setActiveTab] = useState('Trang chủ');
   const [stores, setStores] = useState([]);
   const navigate = useNavigate();
@@ -91,7 +91,10 @@ export default function LoggedInHomepage() {
             </li>
             <li 
               className={`nav-item-core ${activeTab === 'Tài khoản' ? 'active' : ''}`}
-              onClick={() => setActiveTab('Tài khoản')}
+              onClick={() => {
+                setActiveTab('Tài khoản');
+                onAccountClick?.();
+              }}
             >
               <i className="fa-regular fa-user"></i> Tài khoản
             </li>

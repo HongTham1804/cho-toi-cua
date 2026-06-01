@@ -16,6 +16,8 @@ Route::prefix('auth')->group(function () {
     Route::post('/forgot-password/verify-otp', [AuthController::class, 'verifyForgotPasswordOtp']);
     Route::post('/forgot-password/reset', [AuthController::class, 'resetForgotPassword']);
     Route::post('/login', [AuthController::class, 'login']);
+    Route::middleware('auth:sanctum')->get('/me', [AuthController::class, 'me']);
+    Route::middleware('auth:sanctum')->patch('/profile', [AuthController::class, 'updateProfile']);
 });
 
 Route::get('/orders', [OrderController::class, 'index']);
