@@ -254,6 +254,17 @@
   line-height: 1.6;
 }
 
+.order-note-text {
+  color: #9a3412;
+  font-size: 17px;
+  font-weight: 650;
+  line-height: 1.6;
+  padding: 12px 14px;
+  border-radius: 8px;
+  background: #fff7ed;
+  border: 1px solid #fed7aa;
+}
+
 .product-card {
   padding: 0;
   overflow: hidden;

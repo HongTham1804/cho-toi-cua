@@ -67,6 +67,7 @@ export const mapOrder = (order) => {
     customerPhone: order.customer?.phone || "",
     shippingAddress: order.shipping_address || order.customer?.address || "",
     paymentMethod: order.payment_method || "Thanh toán khi nhận hàng",
+    note: order.note || "",
     shipper: order.shipper || null,
     date: formatOrderDate(order.created_at),
     createdAt: order.created_at,

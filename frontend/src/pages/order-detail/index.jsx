@@ -226,6 +226,12 @@ export default function OrderDetail() {
               </div>
             </InfoCard>
 
+            {order.note && (
+              <InfoCard title="Ghi chú cho cửa hàng" icon="fa-note-sticky">
+                <p className="order-note-text">{order.note}</p>
+              </InfoCard>
+            )}
+
             <ProductCard order={order} />
             <MetaCard detail={detail} completed={isCompleted} onCopy={handleCopy} />
           </div>

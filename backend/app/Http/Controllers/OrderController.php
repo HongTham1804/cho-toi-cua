@@ -92,6 +92,7 @@ class OrderController extends Controller
                     'total_amount' => $totalAmount,
                     'shipping_address' => $data['shipping_address'],
                     'payment_method' => $data['payment_method'],
+                    'note' => $data['note'] ?? null,
                     'status' => 'pending',
                 ]);
 

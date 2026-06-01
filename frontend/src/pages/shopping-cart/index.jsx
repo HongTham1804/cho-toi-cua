@@ -47,6 +47,7 @@ export default function ShoppingCart() {
   const [selectedDiscountVoucher, setSelectedDiscountVoucher] = useState(null);
   const [promoError, setPromoError] = useState('');
   const [promoCode, setPromoCode] = useState('');
+  const [orderNote, setOrderNote] = useState('');
   const primaryStoreId = cartItems[0]?.store_id || 1;
 
   useEffect(() => {
@@ -168,6 +169,7 @@ export default function ShoppingCart() {
       shipping_address:
         currentCustomer.address || 'Thu Duc, TP.HCM',
       payment_method: 'cod',
+      note: orderNote.trim() || null,
       shipping_fee: shippingFee,
       items: cartItems.map((item) => ({
         product_id: Number(item.id),
@@ -200,6 +202,7 @@ export default function ShoppingCart() {
       setSavedVouchers([]);
       setSelectedDiscountVoucher(null);
       setSelectedFreeshipVoucher(null);
+      setOrderNote('');
       navigate('/order-history?status=pending');
     } catch (error) {
       setCheckoutError(error.message || 'Không thể tạo đơn hàng. Bạn kiểm tra backend/API rồi thử lại.');
@@ -320,6 +323,8 @@ export default function ShoppingCart() {
                 <textarea
                   className="gift-note-input"
                   placeholder="Vd: Chọn giúp mình rau ghi lại xin ghi chú nhé..."
+                  value={orderNote}
+                  onChange={(event) => setOrderNote(event.target.value)}
                 ></textarea>
               </div>
             )}
@@ -472,15 +477,6 @@ export default function ShoppingCart() {
                 <i className="fa-solid fa-arrow-right"></i>
               </button>
 
-              {/* Support Icons */}
-              <div className="support-icons">
-                <div className="support-icon">
-                  <i className="fa-solid fa-phone"></i>
-                </div>
-                <div className="support-icon">
-                  <i className="fa-solid fa-comment"></i>
-                </div>
-              </div>
             </div>
           </div>
         </div>

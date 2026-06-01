@@ -65,6 +65,7 @@ function mapApiOrder(order) {
     customer: order.customer?.name || "Khách hàng",
     phone: order.customer?.phone || "",
     address: order.shipping_address || order.customer?.address || "Đang cập nhật địa chỉ",
+    note: order.note || "",
     storeName: order.store?.name || "Siêu thị",
     shipper: order.shipper || null,
     itemCount: items.reduce((total, item) => total + item.qty, 0),
@@ -394,6 +395,11 @@ function NewOrderCard({ order, isProcessing, onReady }) {
         <p className="om-order-meta">
           {order.time} • {order.itemCount} món
         </p>
+        {order.note && (
+          <p className="om-order-note">
+            <i className="fa-solid fa-note-sticky" /> Ghi chú: {order.note}
+          </p>
+        )}
       </div>
 
       <div className="om-card-divider" />
@@ -530,6 +536,11 @@ function ShipperCard({ order, isProcessing, onStartDelivery }) {
         <p className="om-pc-items">
           <i className="fa-solid fa-motorcycle" /> Shipper: {order.shipper?.name || "Đang cập nhật"} {order.shipper?.phone ? `• ${order.shipper.phone}` : ""}
         </p>
+        {order.note && (
+          <p className="om-pc-note">
+            <i className="fa-solid fa-note-sticky" /> Ghi chú: {order.note}
+          </p>
+        )}
       </div>
       <div className="om-priority-card-right">
         <div className="om-qr-wrap">
@@ -564,6 +575,7 @@ function HistoryTab({ orders, isLoading }) {
               <th>Thời gian</th>
               <th>Khách hàng</th>
               <th>Shipper</th>
+              <th>Ghi chú</th>
               <th>Trạng thái</th>
             </tr>
           </thead>
@@ -575,6 +587,7 @@ function HistoryTab({ orders, isLoading }) {
                   <td className="om-ht-time">{order.time}</td>
                   <td>{order.customer}</td>
                   <td className="om-ht-shipper">{order.shipper?.name || "Đang cập nhật"}</td>
+                  <td>{order.note || "Không có"}</td>
                   <td>
                     <span className="om-badge ready">
                       <i className="fa-solid fa-check" /> {ORDER_STATUS_LABELS[order.status] || order.status}
@@ -584,7 +597,7 @@ function HistoryTab({ orders, isLoading }) {
               ))
             ) : (
               <tr>
-                <td colSpan="5">
+                <td colSpan="6">
                   <div className="om-recent-empty">Chưa có đơn trong lịch sử.</div>
                 </td>
               </tr>
@@ -615,6 +628,11 @@ function CancelledTab({ orders, isLoading }) {
                 <p className="om-order-meta">
                   {order.time} • {order.itemCount} món • {order.customer}
                 </p>
+                {order.note && (
+                  <p className="om-order-note">
+                    <i className="fa-solid fa-note-sticky" /> Ghi chú: {order.note}
+                  </p>
+                )}
               </div>
 
               <div className="om-card-divider" />

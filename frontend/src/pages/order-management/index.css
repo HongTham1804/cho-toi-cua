@@ -361,6 +361,23 @@ a { text-decoration: none; color: inherit; }
   margin-top: 2px;
 }
 
+.om-order-note,
+.om-pc-note {
+  margin-top: 8px;
+  padding: 8px 10px;
+  border-radius: var(--om-radius-sm);
+  background: #fff7ed;
+  color: #9a3412;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  line-height: 1.45;
+}
+
+.om-order-note i,
+.om-pc-note i {
+  margin-right: 6px;
+}
+
 .om-card-divider {
   height: 1px;
   background: var(--om-border);
