@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\CategoryController;
+use App\Http\Controllers\FavoriteProductController;
 use App\Http\Controllers\OrderController;
 use App\Http\Controllers\ProductController;
 use App\Http\Controllers\ProductImageController;
@@ -29,6 +30,11 @@ Route::apiResource('categories', CategoryController::class)->only(['index', 'sho
 Route::apiResource('stores', StoreController::class)->only(['index', 'show']);
 Route::get('/product-images/{slug}.svg', [ProductImageController::class, 'show']);
 Route::apiResource('products', ProductController::class);
+Route::middleware('auth:sanctum')->prefix('favorites')->group(function () {
+    Route::get('/', [FavoriteProductController::class, 'index']);
+    Route::post('/', [FavoriteProductController::class, 'store']);
+    Route::delete('/{product}', [FavoriteProductController::class, 'destroy']);
+});
 
 Route::get('/shippers', [ShipperSimulationController::class, 'index']);
 Route::match(['post', 'patch'], '/orders/{id}/assign-shipper', [ShipperSimulationController::class, 'assignShipper']);

@@ -101,13 +101,71 @@ class ProductCatalogSeeder extends Seeder
                         'price' => $price,
                         'discount_price' => $discountPrice,
                         'stock' => 80 + (($index + $storeId) % 40),
+                        'unit' => $this->productUnit($name),
                         'image_url' => $this->productImageUrl($name, $categoryKey),
-                        'description' => 'Sản phẩm đang bán tại hệ thống Chợ Tới Cửa.',
+                        'description' => $this->productDescription($name, $categoryKey),
                         'is_active' => true,
                     ]
                 );
             }
         }
+    }
+
+    private function productUnit(string $name): string
+    {
+        if (preg_match('/lốc\s+\d+\s+(lon|hộp)/iu', $name, $matches)) {
+            return $matches[0];
+        }
+
+        if (preg_match('/(túi|hộp|chai|gói|bó)\s+[\d.]+\s?(kg|g|l|ml)/iu', $name, $matches)) {
+            return $matches[0];
+        }
+
+        if (preg_match('/\d+\s+(gói|lon|hộp|cái)/iu', $name, $matches)) {
+            return $matches[0];
+        }
+
+        if (preg_match('/hộp\s+\d+\s+cái/iu', $name, $matches)) {
+            return $matches[0];
+        }
+
+        if (preg_match('/[\d.]+\s?(kg|g|l|ml)/iu', $name, $matches)) {
+            return $matches[0];
+        }
+
+        return '1 sản phẩm';
+    }
+
+    private function productDescription(string $name, string $categoryKey): string
+    {
+        $customDescriptions = [
+            'Rau cải xanh VietGAP 500g' => "Cải bẹ xanh hay còn gọi là cải cay, cải canh,... có tên khoa học là Brassica juncea (L.). Tuy cùng họ cải và khá gần với nhau nhưng cải bẹ xanh có \"ngoại hình\" hoàn toàn khác với cải ngọt với phần lá có răng cưa ở viền, mặt lá nhám và trải dọc đến tận cuốn. Cũng như nhiều loại rau khác, cải bẹ xanh chứa hàm lượng calories rất thấp nhưng lại có nhiều chất dinh dưỡng cần thiết cho cơ thể như Vitamin A, B, C, K, Axit nicotic, Abumin, Catoten…",
+            'Rau muống sạch bó 400g' => 'Rau muống nước được trồng và đóng gói theo những tiêu chuẩn nghiêm ngặt, bảo đảm các tiêu chuẩn xanh - sạch, chất lượng và an toàn với người dùng. Rau muống nước giòn, ngọt, chứa nhiều dinh dưỡng đặc biệt là sắt nên thường được sử dụng cho các món xào, luộc hoặc nhúng lẩu.',
+            'Súp lơ xanh Đà Lạt 500g' => 'Bông cải xanh là một loại rau rất giàu dinh dưỡng có đầy đủ vitamin, khoáng chất, chất xơ và chất chống oxy hóa. Trong thành phần dinh dưỡng của bông cải xanh có 90% là nước, 7% carbohydrates, 3% protein và hầu như là không có chất béo.',
+            'Cà chua Mộc Châu hộp 500g' => 'Cà chua là loại thực phẩm bổ dưỡng, thường được sử dụng để chế biến với nhiều món ăn ngon. Ngoài ra, với giá trị dinh dưỡng của mình, cà chua cũng được dùng để ăn sống hay áp dụng như một liệu pháp làm đẹp từ thiên nhiên.',
+            'Táo Gala nhập khẩu túi 1kg' => 'Táo Gala là giống táo vỏ mỏng, nổi bật với màu đỏ tươi xen lẫn các đường sọc vàng. Có nguồn gốc từ New Zealand, loại quả này được yêu thích nhờ phần thịt màu vàng kem, giòn, nhiều nước và vị ngọt thanh.',
+            'Mận hậu Sơn La hộp 500g' => 'Mận hậu Sơn La quả to giòn, có lớp da căng bóng. Bên ngoài quả mận có phủ một lớp phấn trắng đặc trưng. Khi bóp nhẹ có cảm giác hơi cứng chứ không bị dập nát. Vỏ quả mận có màu xanh khi còn non và chuyển sang đỏ tía như quả Cherry lúc chín. Hương vị chua thanh pha chút ngọt mát, chát nhẹ và có nhiều nước.',
+            'Dưa leo baby túi 500g' => 'Dưa leo baby được trồng ứng dụng công nghệ cao, đảm bảo sản phẩm an toàn chất lượng, có vị đậm, giòn, ngọt. Dưa leo baby có kích thước nhỏ hơn các loại dưa leo khác, chỉ khoảng bằng ngón tay, màu xanh đậm, trái đều nhau, ăn có vị mát, ngọt đặc trưng. Dưa leo baby chứa nhiều vitamin và khoáng chất có tác dụng hỗ trợ giảm cân, ổn định huyết áp, cho hơi thở thơm mát và làm đẹp da.',
+            'Cà rốt Đà Lạt 500g' => 'Cà rốt là một loại cây có củ, chứa nhiều vitamin A tốt cho mắt, giúp mắt sáng khỏe. Cà rốt có chứa một lượng phytochemical có đặc tính chống oxy hóa cùng beta-carotene và các carotenoid giúp thúc đẩy hệ miễn dịch. Nước ép cà rốt có thể hỗ trợ sức khỏe, tuy nhiên nên sử dụng ở mức vừa phải do có thể gây vàng da.',
+            'Thịt bò Úc thái lát 300g' => 'Thịt bò Úc thái lát 300g là sản phẩm thịt bò nhập khẩu cao cấp được cắt lát mỏng bằng máy chuyên dụng, phổ biến nhất là phần ba chỉ, gầu bò hoặc vai bò chuyên dùng cho các món lẩu, nướng và xào. Sản phẩm được đóng khay 300g tiện lợi, hút chân không và cấp đông tiêu chuẩn để giữ nguyên độ tươi.',
+            'Thịt thăn bò tươi 300g' => 'Thịt thăn bò tươi 300g là phần thịt cao cấp được cắt thái sẵn thành khẩu phần lý tưởng cho bữa ăn từ 1-2 người. Với cấu trúc thớ thịt nhỏ mềm mại đan xen vân mỡ nhẹ, sản phẩm mang lại vị ngọt đậm đà tự nhiên và độ mọng nước hoàn hảo khi chế biến. Đây là lựa chọn tuyệt vời cho các món áp chảo, làm steak sang trọng hay xào nhanh cho bữa cơm gia đình giàu dinh dưỡng.',
+            'Snack khoai tây vị tự nhiên 160g' => "Snack khoai tây vị tự nhiên Classic Lay's gói 160g là một sản phẩm snack nổi bật hàng đầu của thương hiệu Lay's, mang một hương vị cổ điển bởi đơn giản chỉ là sự kết hợp giữa khoai tây và gia vị đơn thuần, thơm ngon độc đáo. Snack Lay's được rất nhiều bạn trẻ đón nhận và sử dụng cho nhiều hoạt động.",
+        ];
+
+        if (isset($customDescriptions[$name])) {
+            return $customDescriptions[$name];
+        }
+
+        $descriptions = [
+            'milk' => "{$name} được chọn lọc cho nhu cầu sử dụng hằng ngày, đóng gói tiện lợi và phù hợp bảo quản ở nhiệt độ phòng theo khuyến nghị.",
+            'produce' => "{$name} tươi mới, được chọn từ nguồn cung ổn định, phù hợp cho bữa ăn gia đình và nên dùng sớm sau khi nhận hàng.",
+            'cleaning' => "{$name} hỗ trợ vệ sinh nhà cửa hiệu quả, bao bì nguyên vẹn và cần để xa tầm tay trẻ em.",
+            'personal' => "{$name} phù hợp chăm sóc cá nhân hằng ngày, được đóng gói tiện lợi và bảo quản nơi khô ráo.",
+            'meat' => "{$name} được bảo quản lạnh, giao nhanh để giữ độ tươi ngon và nên chế biến trong thời gian khuyến nghị.",
+            'snack' => "{$name} đóng gói tiện lợi, phù hợp dùng trong gia đình hoặc mang theo khi di chuyển.",
+        ];
+
+        return $descriptions[$categoryKey] ?? "{$name} đang bán tại hệ thống Chợ Tới Cửa.";
     }
 
     private function productImageUrl(string $name, string $categoryKey): string

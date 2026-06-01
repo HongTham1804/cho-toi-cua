@@ -49,4 +49,16 @@ class User extends Authenticatable
             'email_verified_at' => 'datetime',
         ];
     }
+
+    public function favoriteProducts()
+    {
+        return $this->hasMany(FavoriteProduct::class);
+    }
+
+    public function favoriteProductItems()
+    {
+        return $this->belongsToMany(Product::class, 'favorite_products')
+            ->withPivot('added_at')
+            ->withTimestamps();
+    }
 }

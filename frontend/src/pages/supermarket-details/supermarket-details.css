@@ -274,13 +274,21 @@ body {
   border-radius: 10px;
   overflow: hidden;
   border: 1px solid #f0f0f0;
-  transition: box-shadow 0.2s;
+  cursor: pointer;
+  transition: box-shadow 0.2s, transform 0.2s;
   display: flex;
   flex-direction: column;
 }
 
 .product-card-v2:hover {
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  transform: translateY(-2px);
+}
+
+.product-card-v2:focus-visible,
+.flash-product-card:focus-visible {
+  outline: 3px solid rgba(0, 108, 73, 0.2);
+  outline-offset: 3px;
 }
 
 .p-img {
@@ -486,8 +494,15 @@ body {
   border-radius: 8px;
   padding: 12px;
   position: relative;
+  cursor: pointer;
   display: flex;
   flex-direction: column;
+  transition: box-shadow 0.2s, transform 0.2s;
+}
+
+.flash-product-card:hover {
+  box-shadow: 0 4px 12px rgba(255, 105, 105, 0.18);
+  transform: translateY(-2px);
 }
 
 .discount-badge {

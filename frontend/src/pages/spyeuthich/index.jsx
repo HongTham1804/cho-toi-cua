@@ -1,82 +1,100 @@
-import React, { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 import { Grid3X3, List, Plus, SlidersHorizontal, Trash2 } from "lucide-react";
+import { addCartItem } from "../../services/cartStorage";
+import {
+  fetchFavoriteProducts,
+  removeFavoriteProduct,
+} from "../../services/favoriteApi";
 import "./index.css";
 
-const initialFavoriteItems = [
-  {
-    id: 1,
-    name: "Bó rau cải xanh Đà Lạt (500g)",
-    price: "15.000đ",
-    image:
-      "https://images.unsplash.com/photo-1515543904379-3d757afe72e4?w=500&auto=format&fit=crop&q=80",
-    category: "Rau củ",
-    savedAt: "Mua 2 ngày trước",
-    sortOrder: 2,
-  },
-  {
-    id: 2,
-    name: "Thịt ba rọi heo VietGAP (300g)",
-    price: "85.000đ",
-    image:
-      "https://images.unsplash.com/photo-1607623814075-e51df1bdc82f?w=500&auto=format&fit=crop&q=80",
-    category: "Thịt cá",
-    savedAt: "Mua 1 tuần trước",
-    sortOrder: 7,
-  },
-  {
-    id: 3,
-    name: "Thùng 48 hộp Sữa tươi tiệt trùng TH true MILK",
-    price: "380.000đ",
-    image:
-      "https://images.unsplash.com/photo-1563636619-e9143da7973b?w=500&auto=format&fit=crop&q=80",
-    category: "Sữa & Bơ",
-    savedAt: "Mua 12 ngày trước",
-    sortOrder: 12,
-  },
-  {
-    id: 4,
-    name: "Táo Envy Mỹ size lớn (Gói 1kg)",
-    price: "199.000đ",
-    image:
-      "https://images.unsplash.com/photo-1567306226416-28f0efdc88ce?w=500&auto=format&fit=crop&q=80",
-    category: "Trái cây",
-    savedAt: "Mua 4 ngày trước",
-    sortOrder: 4,
-  },
-  {
-    id: 5,
-    name: "Gạo ST25 Ông Cua (Túi 5kg)",
-    price: "165.000đ",
-    image:
-      "https://images.unsplash.com/photo-1586201375761-83865001e31c?w=500&auto=format&fit=crop&q=80",
-    category: "Đồ khô",
-    savedAt: "Mua 1 tháng trước",
-    sortOrder: 30,
-  },
-];
+const ALL_CATEGORIES = "Tất cả";
 
-const categories = ["Tất cả", "Rau củ", "Thịt cá", "Trái cây", "Đồ khô", "Sữa & Bơ"];
+const formatCurrency = (value) => `${Number(value || 0).toLocaleString("vi-VN")}đ`;
+
+const formatAddedDate = (value) => {
+  if (!value) {
+    return "Chưa có ngày thêm";
+  }
+
+  const date = new Date(value);
+
+  if (Number.isNaN(date.getTime())) {
+    return "Chưa có ngày thêm";
+  }
+
+  return `Đã thêm ngày ${date.toLocaleDateString("vi-VN")}`;
+};
 
 export default function FavoriteProducts() {
-  const [favoriteItems, setFavoriteItems] = useState(initialFavoriteItems);
-  const [activeCategory, setActiveCategory] = useState("Tất cả");
+  const [favoriteItems, setFavoriteItems] = useState([]);
+  const [activeCategory, setActiveCategory] = useState(ALL_CATEGORIES);
   const [viewMode, setViewMode] = useState("grid");
   const [sortMode, setSortMode] = useState("recent");
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState("");
+
+  useEffect(() => {
+    let isMounted = true;
+
+    fetchFavoriteProducts()
+      .then((items) => {
+        if (!isMounted) return;
+        setFavoriteItems(items);
+      })
+      .catch((favoriteError) => {
+        if (!isMounted) return;
+        setFavoriteItems([]);
+        setError(favoriteError.message || "Không lấy được danh sách sản phẩm yêu thích.");
+      })
+      .finally(() => {
+        if (isMounted) {
+          setIsLoading(false);
+        }
+      });
+
+    return () => {
+      isMounted = false;
+    };
+  }, []);
+
+  const categories = useMemo(() => {
+    const categorySet = new Set(
+      favoriteItems
+        .map((item) => item.category)
+        .filter(Boolean)
+    );
+
+    return [ALL_CATEGORIES, ...Array.from(categorySet)];
+  }, [favoriteItems]);
 
   const visibleItems = useMemo(() => {
     const filteredItems =
-      activeCategory === "Tất cả"
+      activeCategory === ALL_CATEGORIES
         ? favoriteItems
         : favoriteItems.filter((item) => item.category === activeCategory);
 
-    return [...filteredItems].sort((a, b) =>
-      sortMode === "recent" ? a.sortOrder - b.sortOrder : b.sortOrder - a.sortOrder
-    );
+    return [...filteredItems].sort((a, b) => {
+      const firstTime = new Date(a.addedAt || 0).getTime();
+      const secondTime = new Date(b.addedAt || 0).getTime();
+
+      return sortMode === "recent" ? secondTime - firstTime : firstTime - secondTime;
+    });
   }, [activeCategory, favoriteItems, sortMode]);
 
-  const handleRemove = (itemId) => {
-    setFavoriteItems((items) => items.filter((item) => item.id !== itemId));
+  const handleRemove = async (itemId) => {
+    setError("");
+
+    try {
+      await removeFavoriteProduct(itemId);
+      setFavoriteItems((items) => items.filter((item) => String(item.id) !== String(itemId)));
+    } catch (removeError) {
+      setError(removeError.message || "Không xóa được sản phẩm yêu thích.");
+    }
+  };
+
+  const handleAddToCart = (item) => {
+    addCartItem(item);
   };
 
   const toggleSortMode = () => {
@@ -94,7 +112,7 @@ export default function FavoriteProducts() {
 
         <header className="favorite-page-heading">
           <h1>Sản phẩm yêu thích</h1>
-          <p>Xem lại và mua nhanh các món đồ yêu thích bạn đã từng chọn tại các siêu thị.</p>
+          <p>Xem lại và mua nhanh các sản phẩm bạn đã lưu khi xem chi tiết sản phẩm.</p>
         </header>
 
         <div className="favorite-toolbar">
@@ -141,43 +159,51 @@ export default function FavoriteProducts() {
           </div>
         </div>
 
-        <div className={`favorite-product-grid favorite-product-grid--${viewMode}`}>
-          {visibleItems.map((item) => (
-            <article className="favorite-product-card" key={item.id}>
-              <div className="favorite-product-image-wrap">
-                <img src={item.image} alt={item.name} className="favorite-product-image" />
-              </div>
+        {isLoading && <div className="favorite-empty-state">Đang tải sản phẩm yêu thích...</div>}
+        {error && <div className="favorite-message favorite-message--error">{error}</div>}
 
-              <div className="favorite-product-body">
-                <h2>{item.name}</h2>
-                <strong className="favorite-product-price">{item.price}</strong>
-                <p className="favorite-product-date">{item.savedAt}</p>
+        {!isLoading && (
+          <div className={`favorite-product-grid favorite-product-grid--${viewMode}`}>
+            {visibleItems.map((item) => (
+              <article className="favorite-product-card" key={item.id}>
+                <Link to={`/product-detail/${item.id}`} className="favorite-product-image-wrap">
+                  <img src={item.image} alt={item.name} className="favorite-product-image" />
+                </Link>
 
-                <div className="favorite-card-actions">
-                  <button
-                    type="button"
-                    className="favorite-delete-btn"
-                    aria-label={`Xóa ${item.name} khỏi sản phẩm yêu thích`}
-                    onClick={() => handleRemove(item.id)}
-                  >
-                    <Trash2 size={17} />
-                  </button>
-                  <button
-                    type="button"
-                    className="favorite-add-cart-btn"
-                    aria-label={`Thêm ${item.name} vào giỏ hàng`}
-                  >
-                    <Plus size={19} />
-                  </button>
+                <div className="favorite-product-body">
+                  <Link to={`/product-detail/${item.id}`} className="favorite-product-title-link">
+                    <h2>{item.name}</h2>
+                  </Link>
+                  <strong className="favorite-product-price">{formatCurrency(item.price)}</strong>
+                  <p className="favorite-product-date">{formatAddedDate(item.addedAt)}</p>
+
+                  <div className="favorite-card-actions">
+                    <button
+                      type="button"
+                      className="favorite-delete-btn"
+                      aria-label={`Xóa ${item.name} khỏi sản phẩm yêu thích`}
+                      onClick={() => handleRemove(item.id)}
+                    >
+                      <Trash2 size={17} />
+                    </button>
+                    <button
+                      type="button"
+                      className="favorite-add-cart-btn"
+                      aria-label={`Thêm ${item.name} vào giỏ hàng`}
+                      onClick={() => handleAddToCart(item)}
+                    >
+                      <Plus size={19} />
+                    </button>
+                  </div>
                 </div>
-              </div>
-            </article>
-          ))}
-        </div>
+              </article>
+            ))}
+          </div>
+        )}
 
-        {visibleItems.length === 0 && (
+        {!isLoading && visibleItems.length === 0 && !error && (
           <div className="favorite-empty-state">
-            Không có sản phẩm yêu thích nào trong danh mục này.
+            Chưa có sản phẩm yêu thích nào. Hãy mở chi tiết sản phẩm và bấm biểu tượng trái tim để lưu lại.
           </div>
         )}
       </div>

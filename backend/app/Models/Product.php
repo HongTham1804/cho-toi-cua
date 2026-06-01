@@ -18,6 +18,7 @@ class Product extends Model
         'price',
         'discount_price',
         'stock',
+        'unit',
         'image_url',
         'description',
         'is_active',
@@ -37,5 +38,17 @@ class Product extends Model
     public function store()
     {
         return $this->belongsTo(Store::class);
+    }
+
+    public function favoriteProducts()
+    {
+        return $this->hasMany(FavoriteProduct::class);
+    }
+
+    public function favoritedByUsers()
+    {
+        return $this->belongsToMany(User::class, 'favorite_products')
+            ->withPivot('added_at')
+            ->withTimestamps();
     }
 }

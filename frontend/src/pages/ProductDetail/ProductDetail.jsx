@@ -1,56 +1,74 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Link, useNavigate, useParams } from 'react-router-dom';
 import CustomerHeader from '../../components/CustomerHeader/CustomerHeader';
+import { addCartItem } from '../../services/cartStorage';
+import {
+  addFavoriteProduct,
+  fetchFavoriteProducts,
+  removeFavoriteProduct,
+} from '../../services/favoriteApi';
+import { fetchProductById } from '../../services/productApi';
 import './ProductDetail.css';
 
-const productCatalog = [
-  {
-    id: '1',
-    name: 'Cá Hồi Na Uy Tươi Cắt Lát (500g)',
-    image: 'https://images.unsplash.com/photo-1519708227418-c8fd9a32b7a2?auto=format&fit=crop&w=1400&q=90',
-    imageAlt: 'Miếng cá hồi Na Uy tươi cắt lát',
-    rating: 4.8,
-    reviewsCount: 128,
-    sold: '1.2k',
-    price: 395000,
-    unit: 'Khay 500g',
-    origin: 'Salmar, Na Uy',
-    storage: '0 - 4°C trong 3 ngày',
-    stock: 24,
-    description:
-      'Cá hồi nhập khẩu trực tiếp bằng đường hàng không từ Na Uy. Thịt cá có màu cam đào đặc trưng, những vân mỡ trắng xen kẽ đều đặn. Cực kỳ phù hợp để làm sashimi, áp chảo hoặc nướng. Đảm bảo độ tươi ngon ngọt tự nhiên nhất.',
-  },
-  {
-    id: '2',
-    name: 'Thịt Bò Úc Nhập Khẩu (300g)',
-    image: 'https://images.unsplash.com/photo-1607623814075-e51df1bdc82f?auto=format&fit=crop&w=1400&q=90',
-    imageAlt: 'Thịt bò tươi cắt lát',
-    rating: 4.7,
-    reviewsCount: 95,
-    sold: '850',
-    price: 250000,
-    unit: 'Khay 300g',
-    origin: 'Úc',
-    storage: '-18°C',
-    stock: 18,
-    description:
-      'Thịt bò nhập khẩu có độ mềm và vị ngọt tự nhiên, thích hợp làm bít tết, áp chảo hoặc nhúng lẩu. Sản phẩm được đóng gói kỹ và bảo quản lạnh theo tiêu chuẩn.',
-  },
-];
-
 function formatCurrency(value) {
-  return `${new Intl.NumberFormat('vi-VN').format(value)}đ`;
+  return `${new Intl.NumberFormat('vi-VN').format(Number(value || 0))}đ`;
+}
+
+function getStockLabel(product) {
+  const stock = Number(product?.stock || 0);
+
+  if (stock <= 0) {
+    return 'Hết hàng';
+  }
+
+  return `Còn ${stock} sản phẩm`;
 }
 
 export default function ProductDetail() {
   const navigate = useNavigate();
   const { id } = useParams();
-  const product = productCatalog.find((item) => item.id === id) || productCatalog[0];
+  const [product, setProduct] = useState(null);
+  const [isLoading, setIsLoading] = useState(Boolean(id));
+  const [error, setError] = useState('');
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [quantity, setQuantity] = useState(1);
   const [isFavorite, setIsFavorite] = useState(false);
+  const [isFavoriteSaving, setIsFavoriteSaving] = useState(false);
   const [cartNotice, setCartNotice] = useState('');
   const [zoom, setZoom] = useState({ active: false, x: 50, y: 50 });
+
+  useEffect(() => {
+    if (!id) {
+      return undefined;
+    }
+
+    let isMounted = true;
+
+    Promise.all([
+      fetchProductById(id),
+      fetchFavoriteProducts().catch(() => []),
+    ])
+      .then(([apiProduct, favoriteProducts]) => {
+        if (!isMounted) return;
+        setProduct(apiProduct);
+        setQuantity(apiProduct.stock > 0 ? 1 : 0);
+        setIsFavorite(favoriteProducts.some((favorite) => String(favorite.id) === String(apiProduct.id)));
+      })
+      .catch(() => {
+        if (!isMounted) return;
+        setProduct(null);
+        setError('Không lấy được chi tiết sản phẩm từ backend.');
+      })
+      .finally(() => {
+        if (isMounted) {
+          setIsLoading(false);
+        }
+      });
+
+    return () => {
+      isMounted = false;
+    };
+  }, [id]);
 
   function handleLogout(event) {
     event.preventDefault();
@@ -76,13 +94,48 @@ export default function ProductDetail() {
   }
 
   function updateQuantity(nextQuantity) {
-    setQuantity(Math.max(1, Math.min(product.stock, nextQuantity)));
+    if (!product) return;
+
+    const maxQuantity = Number(product.stock || 0);
+    const safeQuantity = maxQuantity > 0 ? Math.max(1, Math.min(maxQuantity, nextQuantity)) : 0;
+    setQuantity(safeQuantity);
     setCartNotice('');
   }
 
   function handleAddToCart() {
+    if (!product || quantity <= 0) return;
+
+    Array.from({ length: quantity }).forEach(() => addCartItem(product));
     setCartNotice(`Đã thêm ${quantity} ${product.unit.toLowerCase()} vào giỏ hàng.`);
   }
+
+  async function handleToggleFavorite() {
+    if (!product) return;
+
+    setIsFavoriteSaving(true);
+    setCartNotice('');
+
+    try {
+      if (isFavorite) {
+        await removeFavoriteProduct(product.id);
+        setIsFavorite(false);
+        setCartNotice('Đã xóa sản phẩm khỏi danh sách yêu thích.');
+        return;
+      }
+
+      await addFavoriteProduct(product.id);
+      setIsFavorite(true);
+      navigate('/favorite-products');
+    } catch (favoriteError) {
+      setCartNotice(favoriteError.message || 'Không thể cập nhật sản phẩm yêu thích.');
+    } finally {
+      setIsFavoriteSaving(false);
+    }
+  }
+
+  const hasProduct = Boolean(product);
+  const pageError = id ? error : 'Không tìm thấy sản phẩm cần xem.';
+  const stockLabel = hasProduct ? getStockLabel(product) : '';
 
   return (
     <div className="ctc-product-detail-page">
@@ -113,108 +166,122 @@ export default function ProductDetail() {
         </div>
       )}
 
-      <main className="ctc-product-detail">
-        <section className="ctc-product-media" aria-label="Ảnh sản phẩm">
-          <div
-            className={`ctc-product-image-shell ${zoom.active ? 'is-zooming' : ''}`}
-            onMouseEnter={() => setZoom((current) => ({ ...current, active: true }))}
-            onMouseMove={handleZoomMove}
-            onMouseLeave={() => setZoom((current) => ({ ...current, active: false }))}
-          >
-            <img src={product.image} alt={product.imageAlt} className="ctc-product-image" />
+      {isLoading && (
+        <main className="ctc-product-detail-state">
+          <p>Đang tải chi tiết sản phẩm...</p>
+        </main>
+      )}
+
+      {!isLoading && pageError && (
+        <main className="ctc-product-detail-state">
+          <i className="fa-solid fa-box-open"></i>
+          <p>{pageError}</p>
+          <button type="button" onClick={() => navigate(-1)}>
+            Quay lại
+          </button>
+        </main>
+      )}
+
+      {!isLoading && hasProduct && (
+        <main className="ctc-product-detail">
+          <section className="ctc-product-media" aria-label="Ảnh sản phẩm">
             <div
-              className="ctc-product-image-zoom"
-              aria-hidden="true"
-              style={{
-                backgroundImage: `url(${product.image})`,
-                backgroundPosition: `${zoom.x}% ${zoom.y}%`,
-              }}
-            />
-          </div>
-        </section>
+              className={`ctc-product-image-shell ${zoom.active ? 'is-zooming' : ''}`}
+              onMouseEnter={() => setZoom((current) => ({ ...current, active: true }))}
+              onMouseMove={handleZoomMove}
+              onMouseLeave={() => setZoom((current) => ({ ...current, active: false }))}
+            >
+              <img src={product.image} alt={product.name} className="ctc-product-image" />
+              <div
+                className="ctc-product-image-zoom"
+                aria-hidden="true"
+                style={{
+                  backgroundImage: `url(${product.image})`,
+                  backgroundPosition: `${zoom.x}% ${zoom.y}%`,
+                }}
+              />
+            </div>
+          </section>
 
-        <section className="ctc-product-summary">
-          <h1>{product.name}</h1>
+          <section className="ctc-product-summary">
+            <h1>{product.name}</h1>
 
-          <div className="ctc-product-rating" aria-label={`${product.rating} sao`}>
-            <span className="ctc-product-stars" aria-hidden="true">★★★★★</span>
-            <span>({product.reviewsCount} Đánh giá)</span>
-            <span className="ctc-product-dot" aria-hidden="true">•</span>
-            <span>Đã bán {product.sold}</span>
-          </div>
-
-          <p className="ctc-product-price">{formatCurrency(product.price)}</p>
-          <p className="ctc-product-note">Giá đã bao gồm thuế VAT. Đơn vị tính: {product.unit}.</p>
-
-          <div className="ctc-product-info-grid" aria-label="Thông tin sản phẩm">
-            <article className="ctc-product-info-card">
-              <i className="fa-regular fa-map"></i>
-              <div>
-                <span>Xuất xứ</span>
-                <strong>{product.origin}</strong>
-              </div>
-            </article>
-
-            <article className="ctc-product-info-card">
-              <i className="fa-regular fa-calendar"></i>
-              <div>
-                <span>Bảo quản</span>
-                <strong>{product.storage}</strong>
-              </div>
-            </article>
-          </div>
-
-          <p className="ctc-product-description">{product.description}</p>
-
-          <div className="ctc-product-purchase">
-            <div className="ctc-product-quantity-row">
-              <span>Số lượng:</span>
-              <div className="ctc-product-quantity" aria-label="Chọn số lượng">
-                <button
-                  type="button"
-                  aria-label="Giảm số lượng"
-                  disabled={quantity <= 1}
-                  onClick={() => updateQuantity(quantity - 1)}
-                >
-                  −
-                </button>
-                <strong>{quantity}</strong>
-                <button
-                  type="button"
-                  aria-label="Tăng số lượng"
-                  disabled={quantity >= product.stock}
-                  onClick={() => updateQuantity(quantity + 1)}
-                >
-                  +
-                </button>
-              </div>
-              <small>Còn {product.stock} khay</small>
+            <div className="ctc-product-rating" aria-label="Chưa có đánh giá">
+              <span className="ctc-product-stars" aria-hidden="true">★★★★★</span>
+              <span>Chưa có đánh giá</span>
             </div>
 
-            <div className="ctc-product-actions">
-              <button className="ctc-product-add-cart" type="button" onClick={handleAddToCart}>
-                <i className="fa-solid fa-cart-shopping"></i>
-                Thêm vào giỏ
-              </button>
-              <button
-                className={`ctc-product-favorite ${isFavorite ? 'is-active' : ''}`}
-                type="button"
-                aria-label={isFavorite ? 'Bỏ khỏi sản phẩm yêu thích' : 'Thêm vào sản phẩm yêu thích'}
-                aria-pressed={isFavorite}
-                onClick={() => setIsFavorite((value) => !value)}
-              >
-                <i className={`${isFavorite ? 'fa-solid' : 'fa-regular'} fa-heart`}></i>
-              </button>
+            <p className="ctc-product-price">{formatCurrency(product.price)}</p>
+            <p className="ctc-product-note">Giá đã bao gồm thuế VAT. Đơn vị tính: {product.unit}.</p>
+
+            <div className="ctc-product-info-grid" aria-label="Thông tin sản phẩm">
+              <article className="ctc-product-info-card">
+                <i className="fa-regular fa-calendar"></i>
+                <div>
+                  <span>Bảo quản</span>
+                  <strong>{product.storage}</strong>
+                </div>
+              </article>
             </div>
 
-            {cartNotice && (
-              <p className="ctc-product-cart-notice" role="status" aria-live="polite">
-                {cartNotice}
-              </p>
-            )}
-          </div>
-        </section>
-      </main>
+            <p className="ctc-product-description">{product.description || 'Sản phẩm chưa có mô tả.'}</p>
+
+            <div className="ctc-product-purchase">
+              <div className="ctc-product-quantity-row">
+                <span>Số lượng:</span>
+                <div className="ctc-product-quantity" aria-label="Chọn số lượng">
+                  <button
+                    type="button"
+                    aria-label="Giảm số lượng"
+                    disabled={quantity <= 1}
+                    onClick={() => updateQuantity(quantity - 1)}
+                  >
+                    −
+                  </button>
+                  <strong>{quantity}</strong>
+                  <button
+                    type="button"
+                    aria-label="Tăng số lượng"
+                    disabled={quantity >= product.stock}
+                    onClick={() => updateQuantity(quantity + 1)}
+                  >
+                    +
+                  </button>
+                </div>
+                <small>{stockLabel}</small>
+              </div>
+
+              <div className="ctc-product-actions">
+                <button
+                  className="ctc-product-add-cart"
+                  type="button"
+                  onClick={handleAddToCart}
+                  disabled={quantity <= 0}
+                >
+                  <i className="fa-solid fa-cart-shopping"></i>
+                  Thêm vào giỏ
+                </button>
+                <button
+                  className={`ctc-product-favorite ${isFavorite ? 'is-active' : ''}`}
+                  type="button"
+                  aria-label={isFavorite ? 'Bỏ khỏi sản phẩm yêu thích' : 'Thêm vào sản phẩm yêu thích'}
+                  aria-pressed={isFavorite}
+                  onClick={handleToggleFavorite}
+                  disabled={isFavoriteSaving}
+                >
+                  <i className={`${isFavorite ? 'fa-solid' : 'fa-regular'} fa-heart`}></i>
+                </button>
+              </div>
+
+              {cartNotice && (
+                <p className="ctc-product-cart-notice" role="status" aria-live="polite">
+                  {cartNotice}
+                </p>
+              )}
+            </div>
+          </section>
+        </main>
+      )}
     </div>
   );
 }

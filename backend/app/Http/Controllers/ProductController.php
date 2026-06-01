@@ -87,7 +87,9 @@ class ProductController extends Controller
      */
     public function show($id)
     {
-        $product = Product::find($id);
+        $product = Product::with(['category', 'store'])
+            ->where('is_active', true)
+            ->find($id);
 
         if (!$product) {
             return response()->json([

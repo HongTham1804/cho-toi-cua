@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useState } from 'react';
-import { useLocation, useSearchParams } from 'react-router-dom';
+import { useLocation, useNavigate, useSearchParams } from 'react-router-dom';
 import './supermarket-details.css';
 import '@fortawesome/fontawesome-free/css/all.min.css';
 import { addCartItem } from '../../services/cartStorage';
@@ -82,6 +82,7 @@ export default function SupermarketDetails() {
   const [isStoreOpen, setIsStoreOpen] = useState(() => isStoreOpenNow());
   const [searchParams] = useSearchParams();
   const location = useLocation();
+  const navigate = useNavigate();
 
   const storeId = Number(searchParams.get('store_id') || location.state?.store_id || 1);
 
@@ -187,6 +188,19 @@ export default function SupermarketDetails() {
     addCartItem(product);
   };
 
+  const openProductDetail = (product) => {
+    navigate(`/product-detail/${product.id}`, {
+      state: { productId: product.id, storeId },
+    });
+  };
+
+  const handleProductCardKeyDown = (event, product) => {
+    if (event.key === 'Enter' || event.key === ' ') {
+      event.preventDefault();
+      openProductDetail(product);
+    }
+  };
+
   useEffect(() => {
     setProductVisibleCount(8);
   }, [activeCategory, products, sortMode]);
@@ -270,7 +284,14 @@ export default function SupermarketDetails() {
 
               <div className="flash-sale-grid">
                 {visibleFlashProducts.map((product) => (
-                  <div key={product.id} className="flash-product-card">
+                  <div
+                    key={product.id}
+                    className="flash-product-card"
+                    role="button"
+                    tabIndex={0}
+                    onClick={() => openProductDetail(product)}
+                    onKeyDown={(event) => handleProductCardKeyDown(event, product)}
+                  >
                     <span className="discount-badge">
                       -{Math.round((1 - product.price / product.originalPrice) * 100)}%
                     </span>
@@ -320,7 +341,14 @@ export default function SupermarketDetails() {
               <div className="product-grid-custom">
                 {productError && <p className="products-error-note">{productError}</p>}
                 {visibleProducts.map((product) => (
-                  <div key={product.id} className="product-card-v2">
+                  <div
+                    key={product.id}
+                    className="product-card-v2"
+                    role="button"
+                    tabIndex={0}
+                    onClick={() => openProductDetail(product)}
+                    onKeyDown={(event) => handleProductCardKeyDown(event, product)}
+                  >
                     <div className={getProductImageBoxClass(product)}>
                       <img src={product.image} alt={product.name} />
                     </div>
@@ -334,7 +362,10 @@ export default function SupermarketDetails() {
                       </div>
                       <button
                         className="btn-add-cart"
-                        onClick={() => handleAddToCart(product)}
+                        onClick={(event) => {
+                          event.stopPropagation();
+                          handleAddToCart(product);
+                        }}
                         title="Thêm vào giỏ hàng"
                       >
                         +
