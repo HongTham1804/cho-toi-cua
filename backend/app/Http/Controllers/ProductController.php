@@ -18,8 +18,7 @@ class ProductController extends Controller
     {
         // Khởi tạo query và chỉ lấy các sản phẩm đang được bật bán (true)
         $query = Product::query()
-            ->with(['category', 'store'])
-            ->where('is_active', true);
+            ->with(['category', 'store']);
 
         // 1. Xử lý Tìm kiếm & Lọc (Filter) theo yêu cầu
         if ($request->has('search') && $request->search != '') {
@@ -116,7 +115,6 @@ class ProductController extends Controller
     public function show($id)
     {
         $product = Product::with(['category', 'store'])
-            ->where('is_active', true)
             ->find($id);
 
         if (!$product) {

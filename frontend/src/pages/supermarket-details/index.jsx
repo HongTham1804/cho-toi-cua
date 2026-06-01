@@ -275,6 +275,10 @@ export default function SupermarketDetails() {
   };
 
   const handleAddToCart = (product) => {
+    if (!product.isAvailable) {
+      return;
+    }
+
     addCartItem(product);
   };
 
@@ -485,7 +489,7 @@ export default function SupermarketDetails() {
                 {visibleProducts.map((product) => (
                   <div
                     key={product.id}
-                    className="product-card-v2"
+                    className={`product-card-v2 ${!product.isAvailable ? 'is-out-of-stock' : ''}`}
                     role="button"
                     tabIndex={0}
                     onClick={() => openProductDetail(product)}
@@ -505,14 +509,15 @@ export default function SupermarketDetails() {
                         )}
                       </div>
                       <button
-                        className="btn-add-cart"
+                        className={`btn-add-cart ${!product.isAvailable ? 'btn-add-cart--out' : ''}`}
                         onClick={(event) => {
                           event.stopPropagation();
                           handleAddToCart(product);
                         }}
-                        title="Thêm vào giỏ hàng"
+                        disabled={!product.isAvailable}
+                        title={product.isAvailable ? 'Thêm vào giỏ hàng' : 'Hết hàng'}
                       >
-                        +
+                        {product.isAvailable ? '+' : 'Hết hàng'}
                       </button>
                     </div>
                   </div>

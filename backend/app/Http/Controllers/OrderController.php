@@ -49,8 +49,16 @@ class OrderController extends Controller
                     $product = Product::lockForUpdate()->findOrFail($item['product_id']);
 
                     $quantity = (int) $item['quantity'];
+                    if ((int) $product->store_id !== (int) $data['store_id']) {
+                        throw new \Exception("Sản phẩm {$product->name} không thuộc siêu thị đang thanh toán.");
+                    }
+
+                    if (! $product->is_active || $product->stock <= 0) {
+                        throw new \Exception("Sản phẩm {$product->name} tạm hết hàng, xin lỗi quý khách.");
+                    }
+
                     if ($product->stock < $quantity) {
-                        throw new \Exception("Sản phẩm {$product->name} không đủ tồn kho.");
+                        throw new \Exception("Sản phẩm {$product->name} chỉ còn {$product->stock} sản phẩm, xin lỗi quý khách.");
                     }
 
                     $unitPrice = $product->discount_price ?? $product->price;
@@ -123,8 +131,12 @@ class OrderController extends Controller
                 'data' => $order,
             ], 201);
         } catch (\Throwable $e) {
+            $message = $e->getMessage();
+
             return response()->json([
-                'message' => 'Không thể tạo đơn hàng: ' . $e->getMessage(),
+                'message' => str_contains($message, 'tạm hết hàng') || str_contains($message, 'chỉ còn')
+                    ? $message
+                    : 'Không thể tạo đơn hàng: ' . $message,
             ], 400);
         }
     }

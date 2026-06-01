@@ -75,7 +75,10 @@ export default function ShoppingCart() {
   );
 
   const recommendedProducts = useMemo(
-    () => recommendedPool.filter((product) => !cartItemIds.has(String(product.id))).slice(0, 4),
+    () =>
+      recommendedPool
+        .filter((product) => product.isAvailable && !cartItemIds.has(String(product.id)))
+        .slice(0, 4),
     [cartItemIds, recommendedPool]
   );
 
@@ -96,6 +99,8 @@ export default function ShoppingCart() {
   };
 
   const handleAddRecommended = (product) => {
+    if (!product.isAvailable) return;
+
     setCartItems(addCartItem(product));
   };
 

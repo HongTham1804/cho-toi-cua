@@ -5,6 +5,7 @@ use App\Http\Controllers\CategoryController;
 use App\Http\Controllers\FavoriteProductController;
 use App\Http\Controllers\FlashSaleController;
 use App\Http\Controllers\OrderController;
+use App\Http\Controllers\PartnerProductController;
 use App\Http\Controllers\ProductController;
 use App\Http\Controllers\ProductImageController;
 use App\Http\Controllers\ShipperSimulationController;
@@ -36,6 +37,10 @@ Route::apiResource('categories', CategoryController::class)->only(['index', 'sho
 Route::apiResource('stores', StoreController::class)->only(['index', 'show']);
 Route::get('/product-images/{slug}.svg', [ProductImageController::class, 'show']);
 Route::apiResource('products', ProductController::class);
+Route::middleware('auth:sanctum')->prefix('partner')->group(function () {
+    Route::get('/products', [PartnerProductController::class, 'index']);
+    Route::patch('/products/{product}', [PartnerProductController::class, 'update']);
+});
 Route::middleware('auth:sanctum')->prefix('favorites')->group(function () {
     Route::get('/', [FavoriteProductController::class, 'index']);
     Route::post('/', [FavoriteProductController::class, 'store']);

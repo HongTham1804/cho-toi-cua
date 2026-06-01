@@ -100,6 +100,8 @@ export const mapApiProduct = (product) => {
     originalPrice,
     unit: product.unit || '1 sản phẩm',
     stock: Number(product.stock || 0),
+    isActive: product.is_active !== false,
+    isAvailable: product.is_active !== false && Number(product.stock || 0) > 0,
     description: product.description || '',
     storage: STORAGE_RULES[category] || 'Bảo quản nơi khô ráo, thoáng mát',
     image: resolveImageUrl(product.image_url),

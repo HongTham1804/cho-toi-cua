@@ -1,98 +1,70 @@
-import { useState, useRef } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import "./index.css";
 import "@fortawesome/fontawesome-free/css/all.min.css";
-import imgTomato from "../../assets/Cà chua Mộc Châu.png";
-import imgSuplo from "../../assets/Súp lơ xanh.png";
-import imgBeef from "../../assets/Thịt bò.jpg";
-
-/* ─── Mock data ──────────────────────────────────────────────────── */
-const INITIAL_PRODUCTS = [
-  {
-    id: "TOM-001",
-    name: "Cà chua Mộc Châu",
-    price: 35000,
-    stock: 120,
-    unit: "kg",
-    category: "rau",
-    active: true,
-    updatedAt: "10:30, 24/10",
-    img: imgTomato,
-  },
-  {
-    id: "BRO-002",
-    name: "Súp lơ xanh baby",
-    price: 45000,
-    stock: 0,
-    unit: "kg",
-    category: "rau",
-    active: false,
-    updatedAt: "08:15, 23/10",
-    img: imgSuplo,
-  },
-  {
-    id: "BEEF-101",
-    name: "Thịt bò Úc nhập khẩu",
-    price: 250000,
-    stock: 15,
-    unit: "kg",
-    category: "thit",
-    active: true,
-    updatedAt: "14:20, 24/10",
-    img: imgBeef,
-  },
-];
-
-const FILTERS = [
-  { id: "all", label: "Tất cả" },
-  { id: "rau", label: "Rau củ quả" },
-  { id: "thit", label: "Thịt tươi" },
-  { id: "trai", label: "Trái cây" },
-];
+import {
+  fetchPartnerProducts,
+  updatePartnerProductInfo,
+  updatePartnerProductStock,
+  updatePartnerProductStatus,
+} from "../../services/partnerInventoryApi";
+import "./index.css";
 
 const NAV_ITEMS = [
   { id: "orders", label: "Đơn hàng", icon: "fa-solid fa-clipboard-list", path: "/order-management" },
-  { id: "categories", label: "Quản lý kho", icon: "fa-solid fa-tags", path: "/inventory" },
-
+  { id: "inventory", label: "Quản lý kho", icon: "fa-solid fa-tags", path: "/inventory" },
 ];
 
 function formatCurrency(value) {
-  return Number(value).toLocaleString("vi-VN") + "đ";
+  return Number(value || 0).toLocaleString("vi-VN") + "đ";
 }
 
-/* ─── Main page ──────────────────────────────────────────────────── */
 export default function Inventory() {
   const navigate = useNavigate();
-  const [products, setProducts] = useState(INITIAL_PRODUCTS);
+  const [products, setProducts] = useState([]);
+  const [store, setStore] = useState(null);
   const [activeFilter, setActiveFilter] = useState("all");
   const [isOpen, setIsOpen] = useState(true);
   const [toast, setToast] = useState({ msg: "", type: "success" });
+  const [isLoading, setIsLoading] = useState(true);
+  const [pageError, setPageError] = useState("");
+  const [searchTerm, setSearchTerm] = useState("");
   const [editingStock, setEditingStock] = useState(null);
   const [stockInput, setStockInput] = useState("");
-  const [deleteTarget, setDeleteTarget] = useState(null);
-  const [showAddModal, setShowAddModal] = useState(false);
+  const [editingProduct, setEditingProduct] = useState(null);
 
-  function handleViewDetail(id) {
-    navigate(`/product/${id}`);
-  }
+  useEffect(() => {
+    let isMounted = true;
+
+    setIsLoading(true);
+    setPageError("");
+
+    fetchPartnerProducts()
+      .then(({ store: apiStore, products: apiProducts }) => {
+        if (!isMounted) return;
+        setStore(apiStore);
+        setProducts(apiProducts);
+        setIsOpen(apiStore?.status !== "inactive");
+      })
+      .catch((error) => {
+        if (!isMounted) return;
+        setPageError(error.message || "Không lấy được sản phẩm trong kho.");
+      })
+      .finally(() => {
+        if (isMounted) setIsLoading(false);
+      });
+
+    return () => {
+      isMounted = false;
+    };
+  }, []);
 
   function showToast(msg, type = "success") {
     setToast({ msg, type });
-    setTimeout(() => setToast({ msg: "", type: "success" }), 3000);
+    window.setTimeout(() => setToast({ msg: "", type: "success" }), 3000);
   }
 
-  function handleToggle(id) {
-    setProducts((prev) =>
-      prev.map((p) => {
-        if (p.id !== id) return p;
-        const next = !p.active;
-        showToast(
-          next ? `Đã bật bán "${p.name}"` : `Đã tắt bán "${p.name}"`,
-          next ? "success" : "warn"
-        );
-        return { ...p, active: next, updatedAt: nowStr() };
-      })
-    );
+  function handleViewDetail(id) {
+    navigate(`/product/${id}`);
   }
 
   function startEditStock(product) {
@@ -100,44 +72,94 @@ export default function Inventory() {
     setStockInput(String(product.stock));
   }
 
-  function commitStock(id) {
-    const val = parseInt(stockInput, 10);
-    if (isNaN(val) || val < 0) {
+  function cancelEditStock() {
+    setEditingStock(null);
+    setStockInput("");
+  }
+
+  async function commitStock(id) {
+    const nextStock = Number.parseInt(stockInput, 10);
+
+    if (Number.isNaN(nextStock) || nextStock < 0) {
       showToast("Số lượng không hợp lệ.", "error");
-      setEditingStock(null);
+      cancelEditStock();
       return;
     }
-    setProducts((prev) =>
-      prev.map((p) =>
-        p.id === id
-          ? { ...p, stock: val, active: val > 0 ? p.active : false, updatedAt: nowStr() }
-          : p
-      )
-    );
-    showToast("Đã cập nhật tồn kho!");
-    setEditingStock(null);
+
+    cancelEditStock();
+
+    try {
+      const updatedProduct = await updatePartnerProductStock(id, nextStock);
+      setProducts((currentProducts) =>
+        currentProducts.map((product) => (product.id === id ? updatedProduct : product))
+      );
+      showToast("Đã cập nhật tồn kho.");
+    } catch (error) {
+      showToast(error.message || "Không cập nhật được tồn kho.", "error");
+    }
   }
 
-  function handleConfirmDelete() {
-    setProducts((prev) => prev.filter((p) => p.id !== deleteTarget.id));
-    showToast(`Đã xóa "${deleteTarget.name}"`, "warn");
-    setDeleteTarget(null);
+  async function handleToggleProduct(product) {
+    const nextActive = !product.active;
+
+    try {
+      const updatedProduct = await updatePartnerProductStatus(product.id, nextActive);
+      setProducts((currentProducts) =>
+        currentProducts.map((item) => (item.id === product.id ? updatedProduct : item))
+      );
+      showToast(
+        nextActive ? `Đã bật bán "${product.name}".` : `Đã tạm hết hàng "${product.name}".`,
+        nextActive ? "success" : "warn"
+      );
+    } catch (error) {
+      showToast(error.message || "Không cập nhật được trạng thái sản phẩm.", "error");
+    }
   }
 
-  function handleAddProduct(newProduct) {
-    setProducts((prev) => [...prev, newProduct]);
-    showToast(`Đã thêm "${newProduct.name}"!`);
-    setShowAddModal(false);
+  async function handleSaveProductInfo({ id, name, originalPrice }) {
+    const cleanName = name.trim();
+    const nextOriginalPrice = Number(originalPrice);
+
+    if (!cleanName || Number.isNaN(nextOriginalPrice) || nextOriginalPrice < 0) {
+      showToast("Tên sản phẩm hoặc giá gốc không hợp lệ.", "error");
+      return;
+    }
+
+    try {
+      const updatedProduct = await updatePartnerProductInfo(id, {
+        name: cleanName,
+        originalPrice: nextOriginalPrice,
+      });
+      setProducts((currentProducts) =>
+        currentProducts.map((product) => (product.id === id ? updatedProduct : product))
+      );
+      setEditingProduct(null);
+      showToast("Đã cập nhật tên và giá gốc sản phẩm.");
+    } catch (error) {
+      showToast(error.message || "Không cập nhật được sản phẩm.", "error");
+    }
   }
 
-  const filtered =
-    activeFilter === "all"
-      ? products
-      : products.filter((p) => p.category === activeFilter);
+  const filters = useMemo(() => {
+    const categories = [...new Set(products.map((product) => product.category).filter(Boolean))];
+    return [
+      { id: "all", label: "Tất cả" },
+      ...categories.map((category) => ({ id: category, label: category })),
+    ];
+  }, [products]);
+
+  const filteredProducts = useMemo(() => {
+    const keyword = searchTerm.trim().toLowerCase();
+
+    return products.filter((product) => {
+      const matchesCategory = activeFilter === "all" || product.category === activeFilter;
+      const matchesSearch = !keyword || product.name.toLowerCase().includes(keyword);
+      return matchesCategory && matchesSearch;
+    });
+  }, [activeFilter, products, searchTerm]);
 
   return (
     <div className="inv-page">
-      {/* ── Sidebar ── */}
       <aside className="inv-sidebar">
         <div className="inv-brand">
           <div className="inv-brand-icon">
@@ -153,9 +175,10 @@ export default function Inventory() {
         </div>
 
         <button
+          type="button"
           className={`inv-toggle-btn ${isOpen ? "is-open" : "is-closed"}`}
           onClick={() => {
-            setIsOpen((v) => !v);
+            setIsOpen((value) => !value);
             showToast(isOpen ? "Đã đóng cửa hàng." : "Đã mở cửa hàng!");
           }}
         >
@@ -166,7 +189,8 @@ export default function Inventory() {
           {NAV_ITEMS.map((item) => (
             <button
               key={item.id}
-              className={`inv-nav-item ${item.id === "categories" ? "active" : ""}`}
+              type="button"
+              className={`inv-nav-item ${item.id === "inventory" ? "active" : ""}`}
               onClick={() => item.path && navigate(item.path)}
             >
               <i className={`inv-nav-icon ${item.icon}`} />
@@ -176,9 +200,7 @@ export default function Inventory() {
         </nav>
       </aside>
 
-      {/* ── Right panel ── */}
       <div className="inv-right">
-        {/* Header */}
         <header className="inv-header">
           <div className="inv-search-wrap">
             <i className="fa-solid fa-magnifying-glass inv-search-icon" />
@@ -186,34 +208,35 @@ export default function Inventory() {
               type="search"
               className="inv-search"
               placeholder="Tìm kiếm sản phẩm..."
+              value={searchTerm}
+              onChange={(event) => setSearchTerm(event.target.value)}
             />
           </div>
-          
         </header>
 
-        {/* Main */}
         <main className="inv-main">
           <div className="inv-main-top">
             <div>
               <h1 className="inv-title">Cập nhật tồn kho</h1>
-              <p className="inv-subtitle">Theo dõi và cập nhật sản phẩm của bạn.</p>
+              <p className="inv-subtitle">
+                {store?.name || "Theo dõi và cập nhật sản phẩm của bạn."}
+              </p>
             </div>
 
             <div className="inv-actions">
-              {FILTERS.map((f) => (
+              {filters.map((filter) => (
                 <button
-                  key={f.id}
-                  className={`inv-filter-btn ${activeFilter === f.id ? "active" : ""}`}
-                  onClick={() => setActiveFilter(f.id)}
+                  key={filter.id}
+                  type="button"
+                  className={`inv-filter-btn ${activeFilter === filter.id ? "active" : ""}`}
+                  onClick={() => setActiveFilter(filter.id)}
                 >
-                  {f.label}
+                  {filter.label}
                 </button>
               ))}
-              
             </div>
           </div>
 
-          {/* Table */}
           <div className="inv-table-wrap">
             <table className="inv-table">
               <thead>
@@ -228,14 +251,14 @@ export default function Inventory() {
                 </tr>
               </thead>
               <tbody>
-                {filtered.length === 0 ? (
-                  <tr>
-                    <td colSpan={6} className="inv-empty-row">
-                      <i className="fa-solid fa-box-open" /> Không có sản phẩm nào
-                    </td>
-                  </tr>
+                {isLoading ? (
+                  <TableMessage icon="fa-solid fa-spinner fa-spin" message="Đang tải sản phẩm..." />
+                ) : pageError ? (
+                  <TableMessage icon="fa-solid fa-triangle-exclamation" message={pageError} />
+                ) : filteredProducts.length === 0 ? (
+                  <TableMessage icon="fa-solid fa-box-open" message="Không có sản phẩm nào" />
                 ) : (
-                  filtered.map((product) => (
+                  filteredProducts.map((product) => (
                     <ProductRow
                       key={product.id}
                       product={product}
@@ -244,9 +267,10 @@ export default function Inventory() {
                       onStockInputChange={setStockInput}
                       onStartEdit={startEditStock}
                       onCommitStock={commitStock}
-                      onToggle={handleToggle}
+                      onCancelStock={cancelEditStock}
+                      onToggleProduct={handleToggleProduct}
+                      onEditProduct={setEditingProduct}
                       onViewDetail={handleViewDetail}
-                      onDelete={(p) => setDeleteTarget(p)}
                     />
                   ))
                 )}
@@ -262,25 +286,27 @@ export default function Inventory() {
         </div>
       )}
 
-      {deleteTarget && (
-        <DeleteModal
-          product={deleteTarget}
-          onConfirm={handleConfirmDelete}
-          onCancel={() => setDeleteTarget(null)}
-        />
-      )}
-
-      {showAddModal && (
-        <AddProductModal
-          onSave={handleAddProduct}
-          onCancel={() => setShowAddModal(false)}
+      {editingProduct && (
+        <EditProductModal
+          product={editingProduct}
+          onSave={handleSaveProductInfo}
+          onCancel={() => setEditingProduct(null)}
         />
       )}
     </div>
   );
 }
 
-/* ─── Product row ────────────────────────────────────────────────── */
+function TableMessage({ icon, message }) {
+  return (
+    <tr>
+      <td colSpan={7} className="inv-empty-row">
+        <i className={icon} /> {message}
+      </td>
+    </tr>
+  );
+}
+
 function ProductRow({
   product,
   isEditingStock,
@@ -288,9 +314,10 @@ function ProductRow({
   onStockInputChange,
   onStartEdit,
   onCommitStock,
-  onToggle,
+  onCancelStock,
+  onToggleProduct,
+  onEditProduct,
   onViewDetail,
-  onDelete,
 }) {
   return (
     <tr
@@ -300,26 +327,26 @@ function ProductRow({
         if (!isEditingStock) onViewDetail(product.id);
       }}
     >
-      {/* Image */}
       <td>
         <div className="inv-product-img-wrap">
-          <img src={product.img} alt={product.name} className="inv-product-img" />
+          {product.img ? (
+            <img src={product.img} alt={product.name} className="inv-product-img" />
+          ) : (
+            <i className="fa-solid fa-box-open" />
+          )}
         </div>
       </td>
 
-      {/* Name */}
       <td>
         <p className="inv-product-name">{product.name}</p>
-        <p className="inv-product-code">Mã: {product.id}</p>
+        <p className="inv-product-code">Mã: SP-{product.id}</p>
       </td>
 
-      {/* Price */}
       <td>
         <span className="inv-price">{formatCurrency(product.price)}</span>
       </td>
 
-      {/* Stock */}
-      <td onClick={(e) => e.stopPropagation()}>
+      <td onClick={(event) => event.stopPropagation()}>
         {isEditingStock ? (
           <div className="inv-stock-edit">
             <input
@@ -328,17 +355,24 @@ function ProductRow({
               min="0"
               value={stockInput}
               autoFocus
-              onChange={(e) => onStockInputChange(e.target.value)}
-              onKeyDown={(e) => {
-                if (e.key === "Enter") onCommitStock(product.id);
-                if (e.key === "Escape") onCommitStock(product.id);
+              onChange={(event) => onStockInputChange(event.target.value)}
+              onKeyDown={(event) => {
+                if (event.key === "Enter") event.currentTarget.blur();
+                if (event.key === "Escape") {
+                  event.currentTarget.dataset.cancelled = "true";
+                  onCancelStock();
+                }
               }}
-              onBlur={() => onCommitStock(product.id)}
+              onBlur={(event) => {
+                if (event.currentTarget.dataset.cancelled === "true") return;
+                onCommitStock(product.id);
+              }}
             />
             <span className="inv-stock-unit">{product.unit}</span>
           </div>
         ) : (
           <button
+            type="button"
             className={`inv-stock-badge ${product.stock === 0 ? "out" : "in"}`}
             title="Nhấn để chỉnh sửa"
             onClick={() => onStartEdit(product)}
@@ -348,40 +382,32 @@ function ProductRow({
         )}
       </td>
 
-      {/* Toggle */}
-      <td onClick={(e) => e.stopPropagation()}>
+      <td onClick={(event) => event.stopPropagation()}>
         <button
+          type="button"
           className={`inv-toggle ${product.active ? "on" : "off"}`}
           role="switch"
           aria-checked={product.active}
-          onClick={() => onToggle(product.id)}
-          title={product.active ? "Đang bán — nhấn để tắt" : "Tạm dừng — nhấn để bật"}
+          onClick={() => onToggleProduct(product)}
+          title={product.active ? "Đang bán - nhấn để tạm hết hàng" : "Tạm hết hàng - nhấn để bán lại"}
         >
           <span className="inv-toggle-thumb" />
         </button>
       </td>
 
-      {/* Updated at */}
       <td>
         <span className="inv-updated">{product.updatedAt}</span>
       </td>
 
-      {/* Actions */}
-      <td onClick={(e) => e.stopPropagation()}>
+      <td onClick={(event) => event.stopPropagation()}>
         <div className="inv-row-actions">
           <button
+            type="button"
             className="inv-row-btn inv-row-btn--edit"
             title="Chỉnh sửa"
-            onClick={() => onViewDetail(product.id)}
+            onClick={() => onEditProduct(product)}
           >
             <i className="fa-solid fa-pen" />
-          </button>
-          <button
-            className="inv-row-btn inv-row-btn--delete"
-            title="Xóa sản phẩm"
-            onClick={() => onDelete(product)}
-          >
-            <i className="fa-regular fa-trash-can" />
           </button>
         </div>
       </td>
@@ -389,217 +415,70 @@ function ProductRow({
   );
 }
 
-/* ─── Delete modal ───────────────────────────────────────────────── */
-function DeleteModal({ product, onConfirm, onCancel }) {
-  return (
-    <div className="inv-overlay" onClick={onCancel}>
-      <div className="inv-modal inv-modal--delete" onClick={(e) => e.stopPropagation()}>
-        <div className="inv-modal-warning-icon">
-          <i className="fa-solid fa-triangle-exclamation" />
-        </div>
+function EditProductModal({ product, onSave, onCancel }) {
+  const [name, setName] = useState(product.name);
+  const [originalPrice, setOriginalPrice] = useState(String(product.price));
 
-        <h2 className="inv-modal-title">Xác nhận xóa sản phẩm</h2>
-
-        <p className="inv-modal-desc">
-          Bạn có chắc chắn muốn xóa{" "}
-          <strong>{product.name}</strong> khỏi hệ thống không?
-          Hành động này không thể hoàn tác.
-        </p>
-
-        <div className="inv-modal-note">
-          <i className="fa-solid fa-circle-info" />
-          <div>
-            <p className="inv-modal-note-title">Lưu ý: Xóa mềm (Soft Delete)</p>
-            <p className="inv-modal-note-body">
-              Dữ liệu thực tế không bị xóa hoàn toàn khỏi cơ sở dữ liệu để đảm
-              bảo tính toàn vẹn của lịch sử đơn hàng. Trạng thái sản phẩm sẽ
-              được chuyển sang <em>đã xóa</em>.{" "}
-              <a href="#">Tìm hiểu thêm</a>
-            </p>
-          </div>
-        </div>
-
-        <div className="inv-modal-footer">
-          <button className="inv-modal-btn-cancel" onClick={onCancel}>Hủy</button>
-          <button className="inv-modal-btn-delete" onClick={onConfirm}>
-            <i className="fa-regular fa-trash-can" /> Xác nhận xóa
-          </button>
-        </div>
-      </div>
-    </div>
-  );
-}
-
-/* ─── Add product modal ──────────────────────────────────────────── */
-const CATEGORY_OPTIONS = [
-  { value: "rau", label: "Rau củ quả" },
-  { value: "thit", label: "Thịt tươi" },
-  { value: "trai", label: "Trái cây" },
-  { value: "hai-san", label: "Hải sản" },
-];
-
-function AddProductModal({ onSave, onCancel }) {
-  const [name, setName] = useState("");
-  const [category, setCategory] = useState("");
-  const [price, setPrice] = useState("");
-  const [discount, setDiscount] = useState("");
-  const [imgPreview, setImgPreview] = useState(null);
-  const [imgFile, setImgFile] = useState(null);
-  const fileRef = useRef(null);
-
-  const basePrice = parseFloat(price) || 0;
-  const discountPct = parseFloat(discount) || 0;
-  const finalPrice = basePrice * (1 + discountPct / 100);
-
-  function handleFile(e) {
-    const file = e.target.files[0];
-    if (!file) return;
-    setImgFile(file);
-    setImgPreview(URL.createObjectURL(file));
-  }
-
-  function handleSave() {
-    if (!name.trim()) return;
-    onSave({
-      id: "NEW-" + Date.now(),
-      name: name.trim(),
-      price: basePrice || 0,
-      stock: 0,
-      unit: "kg",
-      category: category || "rau",
-      active: true,
-      updatedAt: nowStr(),
-      img: imgPreview || null,
-    });
-  }
+  const canSave = name.trim() && originalPrice !== "" && Number(originalPrice) >= 0;
 
   return (
     <div className="inv-overlay" onClick={onCancel}>
-      <div className="inv-modal inv-modal--add" onClick={(e) => e.stopPropagation()}>
+      <div className="inv-modal inv-modal--add" onClick={(event) => event.stopPropagation()}>
         <div className="inv-modal-head">
-          <h2 className="inv-modal-title">Thêm sản phẩm mới</h2>
-          <button className="inv-modal-close" onClick={onCancel}>
+          <h2 className="inv-modal-title">Chỉnh sửa sản phẩm</h2>
+          <button className="inv-modal-close" type="button" onClick={onCancel}>
             <i className="fa-solid fa-xmark" />
           </button>
         </div>
 
         <div className="inv-modal-body">
-          {/* Left: image upload */}
-          <div className="inv-modal-img-col">
-            <p className="inv-modal-label">Hình ảnh sản phẩm</p>
-            <button
-              className="inv-img-upload"
-              onClick={() => fileRef.current?.click()}
-              type="button"
-            >
-              {imgPreview ? (
-                <img src={imgPreview} alt="preview" className="inv-img-preview" />
-              ) : (
-                <>
-                  <i className="fa-solid fa-cloud-arrow-up inv-upload-icon" />
-                  <span className="inv-upload-label">Chọn file</span>
-                </>
-              )}
-            </button>
-            <input
-              ref={fileRef}
-              type="file"
-              accept="image/*"
-              style={{ display: "none" }}
-              onChange={handleFile}
-            />
-          </div>
-
-          {/* Right: fields */}
           <div className="inv-modal-fields">
             <div className="inv-field">
-              <label className="inv-modal-label">Tên sản phẩm</label>
+              <label className="inv-modal-label" htmlFor="edit-product-name">
+                Tên sản phẩm
+              </label>
               <input
+                id="edit-product-name"
                 className="inv-modal-input"
                 type="text"
-                placeholder="VD: Bắp cải thảo Đà Lạt tươi"
                 value={name}
-                onChange={(e) => setName(e.target.value)}
+                onChange={(event) => setName(event.target.value)}
               />
             </div>
 
             <div className="inv-field">
-              <label className="inv-modal-label">Quản lý kho</label>
-              <select
-                className="inv-modal-select"
-                value={category}
-                onChange={(e) => setCategory(e.target.value)}
-              >
-                <option value="">Chọn danh mục</option>
-                {CATEGORY_OPTIONS.map((o) => (
-                  <option key={o.value} value={o.value}>{o.label}</option>
-                ))}
-              </select>
-            </div>
-
-            <div className="inv-field">
-              <label className="inv-modal-label">Cấu hình giá</label>
-              <div className="inv-price-row">
-                <div className="inv-price-field">
-                  <span className="inv-price-sub">Giá gốc (VND)</span>
-                  <div className="inv-input-suffix">
-                    <input
-                      className="inv-modal-input"
-                      type="number"
-                      min="0"
-                      placeholder="25000"
-                      value={price}
-                      onChange={(e) => setPrice(e.target.value)}
-                    />
-                    <span className="inv-suffix">đ</span>
-                  </div>
-                </div>
-                <div className="inv-price-field">
-                  <span className="inv-price-sub">Chiết khấu (%)</span>
-                  <div className="inv-input-suffix">
-                    <input
-                      className="inv-modal-input"
-                      type="number"
-                      min="0"
-                      max="100"
-                      placeholder="0"
-                      value={discount}
-                      onChange={(e) => setDiscount(e.target.value)}
-                    />
-                    <span className="inv-suffix">%</span>
-                  </div>
-                </div>
+              <label className="inv-modal-label" htmlFor="edit-product-price">
+                Giá gốc (VND)
+              </label>
+              <div className="inv-input-suffix">
+                <input
+                  id="edit-product-price"
+                  className="inv-modal-input"
+                  type="number"
+                  min="0"
+                  value={originalPrice}
+                  onChange={(event) => setOriginalPrice(event.target.value)}
+                />
+                <span className="inv-suffix">đ</span>
               </div>
-              {basePrice > 0 && (
-                <p className="inv-final-price">
-                  <i className="fa-solid fa-tag" /> Giá bán thực tế sẽ là:{" "}
-                  <strong>{finalPrice.toLocaleString("vi-VN")} VND</strong>
-                </p>
-              )}
             </div>
           </div>
         </div>
 
         <div className="inv-modal-footer">
-          <button className="inv-modal-btn-cancel" onClick={onCancel}>Hủy</button>
+          <button className="inv-modal-btn-cancel" type="button" onClick={onCancel}>
+            Hủy
+          </button>
           <button
             className="inv-modal-btn-save"
-            onClick={handleSave}
-            disabled={!name.trim()}
+            type="button"
+            disabled={!canSave}
+            onClick={() => onSave({ id: product.id, name, originalPrice })}
           >
-            <i className="fa-solid fa-floppy-disk" /> Lưu sản phẩm
+            <i className="fa-solid fa-floppy-disk" /> Lưu
           </button>
         </div>
       </div>
     </div>
   );
-}
-
-function nowStr() {
-  const d = new Date();
-  const hh = String(d.getHours()).padStart(2, "0");
-  const mm = String(d.getMinutes()).padStart(2, "0");
-  const dd = String(d.getDate()).padStart(2, "0");
-  const mo = String(d.getMonth() + 1).padStart(2, "0");
-  return `${hh}:${mm}, ${dd}/${mo}`;
 }

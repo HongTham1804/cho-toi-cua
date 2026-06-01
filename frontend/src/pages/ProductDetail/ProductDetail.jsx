@@ -17,7 +17,7 @@ function formatCurrency(value) {
 function getStockLabel(product) {
   const stock = Number(product?.stock || 0);
 
-  if (stock <= 0) {
+  if (!product?.isAvailable || stock <= 0) {
     return 'Hết hàng';
   }
 
@@ -51,7 +51,7 @@ export default function ProductDetail() {
       .then(([apiProduct, favoriteProducts]) => {
         if (!isMounted) return;
         setProduct(apiProduct);
-        setQuantity(apiProduct.stock > 0 ? 1 : 0);
+        setQuantity(apiProduct.isAvailable ? 1 : 0);
         setIsFavorite(favoriteProducts.some((favorite) => String(favorite.id) === String(apiProduct.id)));
       })
       .catch(() => {
@@ -103,7 +103,7 @@ export default function ProductDetail() {
   }
 
   function handleAddToCart() {
-    if (!product || quantity <= 0) return;
+    if (!product || !product.isAvailable || quantity <= 0) return;
 
     Array.from({ length: quantity }).forEach(() => addCartItem(product));
     setCartNotice(`Đã thêm ${quantity} ${product.unit.toLowerCase()} vào giỏ hàng.`);
@@ -136,6 +136,7 @@ export default function ProductDetail() {
   const hasProduct = Boolean(product);
   const pageError = id ? error : 'Không tìm thấy sản phẩm cần xem.';
   const stockLabel = hasProduct ? getStockLabel(product) : '';
+  const isPurchasable = Boolean(product?.isAvailable);
 
   return (
     <div className="ctc-product-detail-page">
@@ -233,7 +234,7 @@ export default function ProductDetail() {
                   <button
                     type="button"
                     aria-label="Giảm số lượng"
-                    disabled={quantity <= 1}
+                    disabled={!isPurchasable || quantity <= 1}
                     onClick={() => updateQuantity(quantity - 1)}
                   >
                     −
@@ -242,7 +243,7 @@ export default function ProductDetail() {
                   <button
                     type="button"
                     aria-label="Tăng số lượng"
-                    disabled={quantity >= product.stock}
+                    disabled={!isPurchasable || quantity >= product.stock}
                     onClick={() => updateQuantity(quantity + 1)}
                   >
                     +
@@ -256,10 +257,10 @@ export default function ProductDetail() {
                   className="ctc-product-add-cart"
                   type="button"
                   onClick={handleAddToCart}
-                  disabled={quantity <= 0}
+                  disabled={!isPurchasable || quantity <= 0}
                 >
                   <i className="fa-solid fa-cart-shopping"></i>
-                  Thêm vào giỏ
+                  {isPurchasable ? 'Thêm vào giỏ' : 'Hết hàng'}
                 </button>
                 <button
                   className={`ctc-product-favorite ${isFavorite ? 'is-active' : ''}`}
