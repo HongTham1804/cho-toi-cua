@@ -3,56 +3,46 @@ import { useNavigate, useSearchParams } from "react-router-dom";
 import CustomerHeader from "../../components/CustomerHeader/CustomerHeader";
 import Footer from "../../components/Footer/Footer";
 import "./order-history.css";
-import {
-  fetchOrders,
-  reorder,
-} from "./api/order-history-api";
+import { fetchOrders, reorder } from "./api/order-history-api";
 
 const STATUS_MAP = {
-  pending:   { label: "Chờ xử lý",     className: "pending" },
+  pending: { label: "Chờ xử lý", className: "pending" },
   preparing: { label: "Đang lấy hàng", className: "preparing" },
-  shipping:  { label: "Đang giao",     className: "shipping" },
+  shipping: { label: "Đang giao", className: "shipping" },
   completed: { label: "Đã hoàn thành", className: "completed" },
-  cancelled: { label: "Đã hủy",        className: "cancelled" },
+  cancelled: { label: "Đã hủy", className: "cancelled" },
 };
 
 const TABS = [
-  { value: "all",       label: "Tất cả" },
-  { value: "pending",   label: "Chờ xử lý" },
+  { value: "all", label: "Tất cả" },
+  { value: "pending", label: "Chờ xử lý" },
   { value: "preparing", label: "Đang lấy hàng" },
-  { value: "shipping",  label: "Đang giao" },
+  { value: "shipping", label: "Đang giao" },
   { value: "completed", label: "Đã hoàn thành" },
   { value: "cancelled", label: "Đã hủy" },
 ];
 
 function formatCurrency(value) {
-  return Number(value).toLocaleString("vi-VN") + "đ";
+  return `${Number(value).toLocaleString("vi-VN")}đ`;
 }
 
 function StoreIcon() {
   return (
-    <svg
-      width="16" height="16" viewBox="0 0 24 24" fill="none"
-      stroke="currentColor" strokeWidth="2.2"
-      strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"
-    >
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
       <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" />
       <polyline points="9 22 9 12 15 12 15 22" />
     </svg>
   );
 }
 
-/* ═══════════════════════════════════════════════════════════════
-   APP
-═══════════════════════════════════════════════════════════════ */
-function App() {
+export default function OrderHistory() {
   const [searchParams] = useSearchParams();
   const statusFromUrl = searchParams.get("status");
   const initialStatus = TABS.some((tab) => tab.value === statusFromUrl) ? statusFromUrl : "all";
-  const [orders, setOrders]           = useState([]);
+  const [orders, setOrders] = useState([]);
   const [activeStatus, setActiveStatus] = useState(initialStatus);
-  const [isLoading, setIsLoading]     = useState(true);
-  const [toast, setToast]             = useState("");
+  const [isLoading, setIsLoading] = useState(true);
+  const [toast, setToast] = useState("");
   const [reorderingId, setReorderingId] = useState("");
 
   useEffect(() => {
@@ -82,10 +72,6 @@ function App() {
     setTimeout(() => setToast(""), 3200);
   }
 
-  function handleChangeTab(status) {
-    setActiveStatus(status);
-  }
-
   async function handleReorder(orderId) {
     setReorderingId(orderId);
     try {
@@ -111,11 +97,7 @@ function App() {
             </a>
           </div>
 
-          <div
-            className="order-tabs"
-            role="tablist"
-            aria-label="Lọc đơn hàng theo trạng thái"
-          >
+          <div className="order-tabs" role="tablist" aria-label="Lọc đơn hàng theo trạng thái">
             {TABS.map((tab) => (
               <button
                 key={tab.value}
@@ -123,7 +105,7 @@ function App() {
                 type="button"
                 role="tab"
                 aria-selected={activeStatus === tab.value}
-                onClick={() => handleChangeTab(tab.value)}
+                onClick={() => setActiveStatus(tab.value)}
               >
                 {tab.label}
               </button>
@@ -160,17 +142,13 @@ function App() {
   );
 }
 
-/* ═══════════════════════════════════════════════════════════════
-   ORDER CARD
-═══════════════════════════════════════════════════════════════ */
 function OrderCard({ order, reorderingId, onReorder }) {
   const navigate = useNavigate();
   const status = STATUS_MAP[order.status] ?? {
     label: order.status,
     className: "pending",
   };
-  const detailPath = `/order-detail/${encodeURIComponent(order.id)}`;
-  const openDetail = () => navigate(detailPath);
+  const openDetail = () => navigate(`/order-detail/${encodeURIComponent(order.id)}`);
 
   return (
     <article
@@ -190,9 +168,7 @@ function OrderCard({ order, reorderingId, onReorder }) {
           <span className="store-icon"><StoreIcon /></span>
           {order.storeName}
         </div>
-        <span className={`status-badge ${status.className}`}>
-          {status.label}
-        </span>
+        <span className={`status-badge ${status.className}`}>{status.label}</span>
       </div>
 
       <div className="order-card-body">
@@ -239,9 +215,6 @@ function OrderCard({ order, reorderingId, onReorder }) {
   );
 }
 
-/* ═══════════════════════════════════════════════════════════════
-   LOADING / EMPTY
-═══════════════════════════════════════════════════════════════ */
 function LoadingOrders() {
   return (
     <section id="order-list">
@@ -267,12 +240,11 @@ function LoadingOrders() {
 function EmptyState() {
   return (
     <div className="empty-state">
-      <div className="empty-icon">📦</div>
+      <div className="empty-icon">
+        <i className="fa-solid fa-box-open" aria-hidden="true"></i>
+      </div>
       <p className="empty-title">Không có đơn hàng nào</p>
       <p className="empty-sub">Chưa có đơn hàng trong mục này.</p>
     </div>
   );
 }
-
-export default App;
-

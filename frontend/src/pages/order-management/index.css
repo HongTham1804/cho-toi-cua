@@ -477,6 +477,7 @@ a { text-decoration: none; color: inherit; }
 .om-ready-btn:hover:not(:disabled) {
   background: var(--om-green-dk);
   box-shadow: 0 4px 14px rgba(26,122,74,.4);
+  transform: translateY(-2px);
 }
 
 .om-ready-btn:active:not(:disabled) { transform: scale(.97); }
@@ -506,6 +507,25 @@ a { text-decoration: none; color: inherit; }
 .om-badge.ready {
   background: #dcfce7;
   color: var(--om-green);
+}
+
+.om-badge.cancelled {
+  background: #fee2e2;
+  color: #dc2626;
+}
+
+.om-order-card--cancelled {
+  border-color: #fecaca;
+}
+
+.om-order-card--cancelled .om-card-footer {
+  background: #fff7f7;
+}
+
+.om-cancelled-note {
+  color: #dc2626;
+  font-size: 0.8125rem;
+  font-weight: 700;
 }
 
 /* ── Section title ─────────────────────────────────────────────── */
@@ -871,6 +891,13 @@ a { text-decoration: none; color: inherit; }
   background: var(--om-green);
   box-shadow: 0 2px 6px rgba(26,122,74,.3);
   cursor: default;
+}
+
+.om-recent-empty {
+  padding: 16px;
+  color: var(--om-text-muted);
+  font-size: 0.875rem;
+  text-align: center;
 }
 
 /* Stats column */
