@@ -63,6 +63,16 @@ export default function Inventory() {
     window.setTimeout(() => setToast({ msg: "", type: "success" }), 3000);
   }
 
+  function handlePartnerLogout() {
+    window.localStorage.removeItem("partner_token");
+    window.localStorage.removeItem("partner_user");
+    window.localStorage.removeItem("partner_store");
+    window.sessionStorage.removeItem("partner_token");
+    window.sessionStorage.removeItem("partner_user");
+    window.sessionStorage.removeItem("partner_store");
+    navigate("/partner-login", { replace: true });
+  }
+
   function handleViewDetail(id) {
     navigate(`/product/${id}`);
   }
@@ -198,6 +208,11 @@ export default function Inventory() {
             </button>
           ))}
         </nav>
+
+        <button className="inv-logout-btn" type="button" onClick={handlePartnerLogout}>
+          <i className="fa-solid fa-right-from-bracket inv-nav-icon" />
+          <span>Đăng xuất</span>
+        </button>
       </aside>
 
       <div className="inv-right">

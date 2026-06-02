@@ -5,6 +5,7 @@ use App\Http\Controllers\CategoryController;
 use App\Http\Controllers\FavoriteProductController;
 use App\Http\Controllers\FlashSaleController;
 use App\Http\Controllers\OrderController;
+use App\Http\Controllers\PartnerOrderController;
 use App\Http\Controllers\PartnerProductController;
 use App\Http\Controllers\ProductController;
 use App\Http\Controllers\ProductImageController;
@@ -38,6 +39,9 @@ Route::apiResource('stores', StoreController::class)->only(['index', 'show']);
 Route::get('/product-images/{slug}.svg', [ProductImageController::class, 'show']);
 Route::apiResource('products', ProductController::class);
 Route::middleware('auth:sanctum')->prefix('partner')->group(function () {
+    Route::get('/orders', [PartnerOrderController::class, 'index']);
+    Route::match(['post', 'patch'], '/orders/{order}/prepare', [PartnerOrderController::class, 'prepare']);
+    Route::match(['post', 'patch'], '/orders/{order}/start-delivery', [PartnerOrderController::class, 'startDelivery']);
     Route::get('/products', [PartnerProductController::class, 'index']);
     Route::patch('/products/{product}', [PartnerProductController::class, 'update']);
 });
@@ -53,6 +57,4 @@ Route::get('/user-vouchers', [VoucherController::class, 'userVouchers']);
 Route::get('/flash-sales', [FlashSaleController::class, 'index']);
 
 Route::get('/shippers', [ShipperSimulationController::class, 'index']);
-Route::match(['post', 'patch'], '/orders/{id}/prepare', [ShipperSimulationController::class, 'prepareOrder']);
 Route::match(['post', 'patch'], '/orders/{id}/assign-shipper', [ShipperSimulationController::class, 'assignShipper']);
-Route::match(['post', 'patch'], '/orders/{id}/start-delivery', [ShipperSimulationController::class, 'startDelivery']);

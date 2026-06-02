@@ -7,6 +7,22 @@ import imgQR from "../../assets/QR.jpg";
 const API_BASE_URL = "http://localhost:8000/api";
 const API_ORIGIN = API_BASE_URL.replace(/\/api$/, "");
 
+const getPartnerToken = () =>
+  window.localStorage.getItem("partner_token") || window.sessionStorage.getItem("partner_token");
+
+const getPartnerHeaders = () => {
+  const token = getPartnerToken();
+
+  if (!token) {
+    throw new Error("Bạn cần đăng nhập tài khoản đối tác để xem đơn hàng.");
+  }
+
+  return {
+    Authorization: `Bearer ${token}`,
+    "Content-Type": "application/json",
+  };
+};
+
 const NAV_ITEMS = [
   { id: "orders", label: "Đơn hàng", icon: "fa-solid fa-clipboard-list", path: "/order-management" },
   { id: "categories", label: "Quản lý kho", icon: "fa-solid fa-tags", path: "/inventory" },
@@ -19,6 +35,9 @@ const ORDER_STATUS_LABELS = {
   completed: "Đã hoàn thành",
   cancelled: "Đã hủy",
 };
+
+const DELIVERY_HISTORY_STATUSES = ["shipping", "completed"];
+const HISTORY_STATUSES = [...DELIVERY_HISTORY_STATUSES, "cancelled"];
 
 function resolveImageUrl(imageUrl) {
   if (!imageUrl) return "";
@@ -76,10 +95,13 @@ function mapApiOrder(order) {
 }
 
 async function fetchOrders() {
-  const response = await fetch(`${API_BASE_URL}/orders?per_page=100`);
+  const response = await fetch(`${API_BASE_URL}/partner/orders?per_page=100`, {
+    headers: getPartnerHeaders(),
+  });
 
   if (!response.ok) {
-    throw new Error("Không thể tải danh sách đơn hàng.");
+    const payload = await response.json().catch(() => ({}));
+    throw new Error(payload.message || "Không thể tải danh sách đơn hàng.");
   }
 
   const payload = await response.json();
@@ -89,9 +111,9 @@ async function fetchOrders() {
 }
 
 async function prepareOrder(orderId) {
-  const response = await fetch(`${API_BASE_URL}/orders/${orderId}/prepare`, {
+  const response = await fetch(`${API_BASE_URL}/partner/orders/${orderId}/prepare`, {
     method: "POST",
-    headers: { "Content-Type": "application/json" },
+    headers: getPartnerHeaders(),
     body: "{}",
   });
 
@@ -105,9 +127,9 @@ async function prepareOrder(orderId) {
 }
 
 async function startDelivery(orderId) {
-  const response = await fetch(`${API_BASE_URL}/orders/${orderId}/start-delivery`, {
+  const response = await fetch(`${API_BASE_URL}/partner/orders/${orderId}/start-delivery`, {
     method: "POST",
-    headers: { "Content-Type": "application/json" },
+    headers: getPartnerHeaders(),
     body: "{}",
   });
 
@@ -146,28 +168,48 @@ export default function OrderManagement() {
   useEffect(() => {
     let isMounted = true;
 
-    async function loadOrders() {
-      setIsLoadingOrders(true);
+    async function loadOrders({ silent = false } = {}) {
+      if (!silent) setIsLoadingOrders(true);
       try {
         const nextOrders = await fetchOrders();
         if (isMounted) setOrders(nextOrders);
       } catch (error) {
-        if (isMounted) showToast(error.message || "Không thể tải đơn hàng.");
+        if (!isMounted) return;
+
+        if (String(error.message || "").includes("đăng nhập")) {
+          showToast(error.message);
+          navigate("/partner-login", { replace: true });
+          return;
+        }
+
+        if (!silent) showToast(error.message || "Không thể tải đơn hàng.");
       } finally {
-        if (isMounted) setIsLoadingOrders(false);
+        if (isMounted && !silent) setIsLoadingOrders(false);
       }
     }
 
     loadOrders();
+    const refreshTimer = window.setInterval(() => loadOrders({ silent: true }), 15000);
 
     return () => {
       isMounted = false;
+      window.clearInterval(refreshTimer);
     };
-  }, []);
+  }, [navigate]);
 
   function showToast(message) {
     setToast(message);
     window.setTimeout(() => setToast(""), 3000);
+  }
+
+  function handlePartnerLogout() {
+    window.localStorage.removeItem("partner_token");
+    window.localStorage.removeItem("partner_user");
+    window.localStorage.removeItem("partner_store");
+    window.sessionStorage.removeItem("partner_token");
+    window.sessionStorage.removeItem("partner_user");
+    window.sessionStorage.removeItem("partner_store");
+    navigate("/partner-login", { replace: true });
   }
 
   async function handleReady(order) {
@@ -225,8 +267,8 @@ export default function OrderManagement() {
 
   const newOrders = searchedOrders.filter((order) => order.status === "pending");
   const handoverOrders = searchedOrders.filter((order) => order.status === "preparing");
-  const historyOrders = searchedOrders.filter((order) => ["shipping", "completed"].includes(order.status));
-  const cancelledOrders = searchedOrders.filter((order) => order.status === "cancelled");
+  const deliveryHistoryOrders = searchedOrders.filter((order) => DELIVERY_HISTORY_STATUSES.includes(order.status));
+  const historyOrders = searchedOrders.filter((order) => HISTORY_STATUSES.includes(order.status));
 
   return (
     <div className="om-page">
@@ -271,6 +313,11 @@ export default function OrderManagement() {
             </button>
           ))}
         </nav>
+
+        <button className="om-logout-btn" type="button" onClick={handlePartnerLogout}>
+          <i className="fa-solid fa-right-from-bracket om-nav-icon" />
+          <span>Đăng xuất</span>
+        </button>
       </aside>
 
       <div className="om-right">
@@ -321,15 +368,6 @@ export default function OrderManagement() {
             >
               Lịch sử
             </button>
-            <button
-              className={`om-tab ${activeTab === "cancelled" ? "active" : ""}`}
-              type="button"
-              role="tab"
-              aria-selected={activeTab === "cancelled"}
-              onClick={() => setActiveTab("cancelled")}
-            >
-              Đơn hàng bị hủy ({cancelledOrders.length})
-            </button>
           </div>
 
           {activeTab === "new" && (
@@ -356,7 +394,7 @@ export default function OrderManagement() {
           {activeTab === "shipper" && (
             <HandoverTab
               orders={handoverOrders}
-              historyOrders={historyOrders}
+              deliveryHistoryOrders={deliveryHistoryOrders}
               isLoading={isLoadingOrders}
               processingOrderId={deliveryOrderId}
               onStartDelivery={handleStartDelivery}
@@ -367,10 +405,6 @@ export default function OrderManagement() {
 
           {activeTab === "history" && (
             <HistoryTab orders={historyOrders} isLoading={isLoadingOrders} />
-          )}
-
-          {activeTab === "cancelled" && (
-            <CancelledTab orders={cancelledOrders} isLoading={isLoadingOrders} />
           )}
         </main>
       </div>
@@ -438,8 +472,8 @@ function NewOrderCard({ order, isProcessing, onReady }) {
   );
 }
 
-function HandoverTab({ orders, historyOrders, isLoading, processingOrderId, onStartDelivery, onToast, onHistory }) {
-  const recentOrders = [...orders, ...historyOrders].slice(0, 3);
+function HandoverTab({ orders, deliveryHistoryOrders, isLoading, processingOrderId, onStartDelivery, onToast, onHistory }) {
+  const recentOrders = deliveryHistoryOrders.slice(0, 3);
 
   if (isLoading) {
     return <EmptyState faIcon="fa-solid fa-spinner fa-spin" title="Đang tải đơn bàn giao" sub="Đang lấy dữ liệu từ backend." />;
@@ -476,7 +510,7 @@ function HandoverTab({ orders, historyOrders, isLoading, processingOrderId, onSt
           <div className="om-stat-cards">
             <div className="om-stat-card om-stat-card--teal">
               <i className="fa-solid fa-truck" />
-              <span className="om-stat-num">{historyOrders.length}</span>
+              <span className="om-stat-num">{deliveryHistoryOrders.length}</span>
               <span className="om-stat-label">Đã giao h.nay</span>
             </div>
             <div className="om-stat-card om-stat-card--orange">
@@ -590,7 +624,7 @@ function HistoryTab({ orders, isLoading }) {
                   <td>{order.note || "Không có"}</td>
                   <td>
                     <span className="om-badge ready">
-                      <i className="fa-solid fa-check" /> {ORDER_STATUS_LABELS[order.status] || order.status}
+                      <i className={order.status === "cancelled" ? "fa-solid fa-ban" : "fa-solid fa-check"} /> {ORDER_STATUS_LABELS[order.status] || order.status}
                     </span>
                   </td>
                 </tr>
@@ -605,66 +639,6 @@ function HistoryTab({ orders, isLoading }) {
           </tbody>
         </table>
       </div>
-    </section>
-  );
-}
-
-function CancelledTab({ orders, isLoading }) {
-  if (isLoading) {
-    return <EmptyState faIcon="fa-solid fa-spinner fa-spin" title="Đang tải đơn bị hủy" sub="Đang lấy dữ liệu từ backend." />;
-  }
-
-  return (
-    <section className="om-handover-section">
-      {orders.length > 0 ? (
-        <div className="om-orders-grid">
-          {orders.map((order) => (
-            <article className="om-order-card om-order-card--cancelled" key={order.rawId}>
-              <div className="om-card-head">
-                <div className="om-order-id">
-                  <span className="om-order-hash">#{order.id}</span>
-                  <span className="om-badge cancelled">Đã hủy</span>
-                </div>
-                <p className="om-order-meta">
-                  {order.time} • {order.itemCount} món • {order.customer}
-                </p>
-                {order.note && (
-                  <p className="om-order-note">
-                    <i className="fa-solid fa-note-sticky" /> Ghi chú: {order.note}
-                  </p>
-                )}
-              </div>
-
-              <div className="om-card-divider" />
-
-              <ul className="om-item-list">
-                {order.items.map((item) => (
-                  <li key={item.id} className="om-item-row">
-                    <span className="om-item-img-wrap">
-                      <img src={item.image} alt={item.name} className="om-item-img" />
-                    </span>
-                    <div className="om-item-info">
-                      <span className="om-item-name">{item.name}</span>
-                      <span className="om-item-qty">x{item.qty}</span>
-                    </div>
-                    <span className="om-item-price">{formatCurrency(item.price)}</span>
-                  </li>
-                ))}
-              </ul>
-
-              <div className="om-card-footer">
-                <div className="om-total-row">
-                  <span className="om-total-label">Tổng cộng</span>
-                  <span className="om-total-value">{formatCurrency(order.total)}</span>
-                </div>
-                <span className="om-cancelled-note">Khách hàng đã hủy đơn</span>
-              </div>
-            </article>
-          ))}
-        </div>
-      ) : (
-        <EmptyState faIcon="fa-solid fa-ban" title="Chưa có đơn bị hủy" sub="Khi khách hủy đơn, đơn sẽ xuất hiện ở mục này." />
-      )}
     </section>
   );
 }

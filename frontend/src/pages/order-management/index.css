@@ -185,6 +185,31 @@ a { text-decoration: none; color: inherit; }
   text-align: center;
 }
 
+.om-logout-btn {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 0 16px 18px;
+  padding: 11px 18px;
+  border: none;
+  border-radius: var(--om-radius-md);
+  background: rgba(239, 68, 68, 0.12);
+  color: #fecaca;
+  font-size: 0.875rem;
+  font-weight: 600;
+  text-align: left;
+  transition: background var(--om-t), color var(--om-t), transform 100ms ease;
+}
+
+.om-logout-btn:hover {
+  background: rgba(239, 68, 68, 0.22);
+  color: #ffffff;
+}
+
+.om-logout-btn:active {
+  transform: scale(0.98);
+}
+
 /* ═══════════════════════════════════════════════════════════════
    HEADER
 ═══════════════════════════════════════════════════════════════ */
@@ -1118,6 +1143,8 @@ a { text-decoration: none; color: inherit; }
   .om-nav-item span:last-child { display: none; }
   .om-nav-item.active { background: var(--om-green-mid); }
   .om-nav-icon { font-size: 1.3rem; width: auto; }
+  .om-logout-btn { margin: 0 10px 14px; padding: 12px; justify-content: center; }
+  .om-logout-btn span { display: none; }
 
   .om-right { margin-left: 64px; }
   .om-main { padding: 20px 16px; }

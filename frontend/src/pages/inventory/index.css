@@ -177,6 +177,31 @@ a { text-decoration: none; color: inherit; }
   text-align: center;
 }
 
+.inv-logout-btn {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 0 16px 18px;
+  padding: 11px 18px;
+  border: none;
+  border-radius: var(--inv-radius-md);
+  background: rgba(239, 68, 68, 0.12);
+  color: #fecaca;
+  font-size: 0.875rem;
+  font-weight: 600;
+  text-align: left;
+  transition: background var(--inv-t), color var(--inv-t), transform 100ms ease;
+}
+
+.inv-logout-btn:hover {
+  background: rgba(239, 68, 68, 0.22);
+  color: #ffffff;
+}
+
+.inv-logout-btn:active {
+  transform: scale(0.98);
+}
+
 /* ═══════════════════════════════════════════════════════════════
    RIGHT PANEL
 ═══════════════════════════════════════════════════════════════ */
@@ -928,6 +953,8 @@ a { text-decoration: none; color: inherit; }
 
   .inv-nav-item { padding: 12px; justify-content: center; border-left: none; }
   .inv-nav-icon { font-size: 1.2rem; width: auto; }
+  .inv-logout-btn { margin: 0 10px 14px; padding: 12px; justify-content: center; }
+  .inv-logout-btn span { display: none; }
 
   .inv-right { margin-left: 64px; }
   .inv-main { padding: 20px 14px; }
