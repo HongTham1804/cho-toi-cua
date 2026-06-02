@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { Link, useNavigate, useParams } from 'react-router-dom';
+import { Link, useLocation, useNavigate, useParams } from 'react-router-dom';
 import CustomerHeader from '../../components/CustomerHeader/CustomerHeader';
 import { addCartItem } from '../../services/cartStorage';
 import {
@@ -26,6 +26,7 @@ function getStockLabel(product) {
 
 export default function ProductDetail() {
   const navigate = useNavigate();
+  const location = useLocation();
   const { id } = useParams();
   const [product, setProduct] = useState(null);
   const [isLoading, setIsLoading] = useState(Boolean(id));
@@ -137,6 +138,13 @@ export default function ProductDetail() {
   const pageError = id ? error : 'Không tìm thấy sản phẩm cần xem.';
   const stockLabel = hasProduct ? getStockLabel(product) : '';
   const isPurchasable = Boolean(product?.isAvailable);
+  const routeStoreId = Number(
+    new URLSearchParams(location.search).get('store_id') ||
+    location.state?.storeId ||
+    location.state?.store_id ||
+    product?.store_id
+  );
+  const storeDetailUrl = routeStoreId ? `/supermarket-details?store_id=${routeStoreId}` : '';
 
   return (
     <div className="ctc-product-detail-page">
@@ -206,6 +214,12 @@ export default function ProductDetail() {
 
           <section className="ctc-product-summary">
             <h1>{product.name}</h1>
+            {storeDetailUrl && (
+              <Link to={storeDetailUrl} className="ctc-product-store-link">
+                <i className="fa-solid fa-store"></i>
+                {product.storeName || 'Xem siêu thị đang bán'}
+              </Link>
+            )}
 
             <div className="ctc-product-rating" aria-label="Chưa có đánh giá">
               <span className="ctc-product-stars" aria-hidden="true">★★★★★</span>

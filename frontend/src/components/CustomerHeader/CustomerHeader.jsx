@@ -1,7 +1,7 @@
 import '@fortawesome/fontawesome-free/css/all.min.css';
 import logoMain from '../../assets/logo-main.png'; 
 import React, { useEffect, useMemo, useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { CART_CHANGED_EVENT, getCartTotalQuantity } from '../../services/cartStorage';
 import { fetchCategories, fetchProducts } from '../../services/productApi';
 import bachHoaXanhLogo from '../../assets/logos/BHX.webp';
@@ -21,11 +21,24 @@ export default function CustomerHeader({ onMenuClick, onLoginClick, onRegisterCl
     const [searchValue, setSearchValue] = useState('');
     const [selectedCategory, setSelectedCategory] = useState(DEFAULT_CATEGORY);
     const [selectedProduct, setSelectedProduct] = useState(null);
+    const [isSearchFocused, setIsSearchFocused] = useState(false);
     const [cartQuantity, setCartQuantity] = useState(0);
     const [products, setProducts] = useState([]);
     const [categories, setCategories] = useState([DEFAULT_CATEGORY]);
     const isGuest = variant === 'guest';
     const navigate = useNavigate();
+    const location = useLocation();
+
+    const scopedStoreId = useMemo(() => {
+      const params = new URLSearchParams(location.search);
+      const storeIdFromQuery = Number(params.get('store_id'));
+      const storeIdFromState = Number(location.state?.store_id || location.state?.storeId);
+      const storeId = storeIdFromQuery || storeIdFromState;
+
+      return location.pathname === '/supermarket-details' && storeId ? storeId : null;
+    }, [location.pathname, location.search, location.state]);
+
+    const isStoreScopedSearch = Boolean(scopedStoreId);
 
     useEffect(() => {
       if (isGuest) {
@@ -50,7 +63,7 @@ export default function CustomerHeader({ onMenuClick, onLoginClick, onRegisterCl
 
       let isMounted = true;
 
-      Promise.all([fetchProducts(), fetchCategories()])
+      Promise.all([fetchProducts({ storeId: scopedStoreId || undefined, perPage: 200 }), fetchCategories()])
         .then(([apiProducts, apiCategories]) => {
           if (!isMounted) return;
           setProducts(apiProducts);
@@ -65,10 +78,14 @@ export default function CustomerHeader({ onMenuClick, onLoginClick, onRegisterCl
       return () => {
         isMounted = false;
       };
-    }, [isGuest]);
+    }, [isGuest, scopedStoreId]);
 
     const searchText = searchValue.trim().toLowerCase();
-    const isSearchOpen = !isGuest && (searchValue || selectedCategory !== DEFAULT_CATEGORY);
+    const isSearchOpen = !isGuest && (
+      Boolean(searchValue) ||
+      selectedCategory !== DEFAULT_CATEGORY ||
+      (isStoreScopedSearch && isSearchFocused)
+    );
 
     const productResults = useMemo(() => {
       if (!isSearchOpen) {
@@ -88,7 +105,7 @@ export default function CustomerHeader({ onMenuClick, onLoginClick, onRegisterCl
         }
       });
 
-      return Array.from(uniqueByName.values()).slice(0, 8);
+      return Array.from(uniqueByName.values());
     }, [isSearchOpen, products, searchText, selectedCategory]);
 
     const storesForSelectedProduct = useMemo(() => {
@@ -118,12 +135,40 @@ export default function CustomerHeader({ onMenuClick, onLoginClick, onRegisterCl
     }, [products, selectedProduct]);
 
     const handleSelectStore = (store) => {
+      const productInSelectedStore = products.find(
+        (product) =>
+          product.name === selectedProduct?.name &&
+          Number(product.store_id) === Number(store.store_id)
+      ) || selectedProduct;
+
       setSearchValue('');
       setSelectedProduct(null);
       setSelectedCategory(DEFAULT_CATEGORY);
-      navigate(`/supermarket-details?store_id=${store.store_id}`, {
-        state: { store_id: store.store_id },
+      navigate(`/product-detail/${productInSelectedStore.id}?store_id=${store.store_id}`, {
+        state: {
+          productId: productInSelectedStore.id,
+          storeId: store.store_id,
+          backToStoreUrl: `/supermarket-details?store_id=${store.store_id}`,
+        },
       });
+    };
+
+    const handleSelectProduct = (product) => {
+      if (isStoreScopedSearch) {
+        setSearchValue('');
+        setSelectedProduct(null);
+        setSelectedCategory(DEFAULT_CATEGORY);
+        navigate(`/product-detail/${product.id}?store_id=${scopedStoreId}`, {
+          state: {
+            productId: product.id,
+            storeId: scopedStoreId,
+            backToStoreUrl: `/supermarket-details?store_id=${scopedStoreId}`,
+          },
+        });
+        return;
+      }
+
+      setSelectedProduct(product);
     };
 
     return (
@@ -162,7 +207,14 @@ export default function CustomerHeader({ onMenuClick, onLoginClick, onRegisterCl
               setSearchValue(event.target.value);
               setSelectedProduct(null);
             }}
-            onFocus={() => setSelectedProduct(null)}
+            onFocus={() => {
+              setSelectedProduct(null);
+              setIsSearchFocused(true);
+            }}
+            onBlur={() => {
+              window.setTimeout(() => setIsSearchFocused(false), 160);
+            }}
+            onClick={() => setIsSearchFocused(true)}
           />
           <i className="fa-solid fa-magnifying-glass search-icon"></i>
 
@@ -176,7 +228,7 @@ export default function CustomerHeader({ onMenuClick, onLoginClick, onRegisterCl
                       type="button"
                       key={product.id}
                       className={`search-product-row ${selectedProduct?.name === product.name ? 'active' : ''}`}
-                      onClick={() => setSelectedProduct(product)}
+                      onClick={() => handleSelectProduct(product)}
                     >
                       <img src={product.image} alt={product.name} />
                       <span>
@@ -190,7 +242,7 @@ export default function CustomerHeader({ onMenuClick, onLoginClick, onRegisterCl
                 <p className="search-empty-state">Không tìm thấy sản phẩm phù hợp.</p>
               )}
 
-              {selectedProduct && (
+              {selectedProduct && !isStoreScopedSearch && (
                 <div className="search-store-panel">
                   <div className="search-dropdown-title">Chọn siêu thị có sản phẩm này</div>
                   <div className="search-store-list">

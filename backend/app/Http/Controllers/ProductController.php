@@ -61,7 +61,7 @@ class ProductController extends Controller
         }
 
         $perPage = (int) $request->query('per_page', 25);
-        $perPage = min(max($perPage, 1), 100);
+        $perPage = min(max($perPage, 1), 200);
 
         $products = $query->paginate($perPage);
         $productIds = $products->getCollection()->pluck('id');
