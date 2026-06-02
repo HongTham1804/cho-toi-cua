@@ -10,6 +10,7 @@ use App\Http\Controllers\PartnerOrderController;
 use App\Http\Controllers\PartnerProductController;
 use App\Http\Controllers\ProductController;
 use App\Http\Controllers\ProductImageController;
+use App\Http\Controllers\ReviewController;
 use App\Http\Controllers\ShipperSimulationController;
 use App\Http\Controllers\StoreController;
 use App\Http\Controllers\TrackingController;
@@ -34,6 +35,8 @@ Route::prefix('auth')->group(function () {
 Route::get('/orders', [OrderController::class, 'index']);
 Route::post('/orders', [OrderController::class, 'checkout']);
 Route::get('/orders/{order}/tracking', [TrackingController::class, 'show']);
+Route::get('/orders/{order}/review', [ReviewController::class, 'showOrder']);
+Route::post('/orders/{order}/reviews', [ReviewController::class, 'storeOrderReviews']);
 Route::patch('/orders/{id}/arrived', [OrderController::class, 'arrived']);
 Route::patch('/orders/{id}/complete', [OrderController::class, 'complete']);
 Route::get('/orders/{id}', [OrderController::class, 'show']);

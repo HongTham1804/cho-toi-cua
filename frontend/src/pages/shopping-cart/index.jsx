@@ -547,11 +547,11 @@ export default function ShoppingCart() {
                 <div className="delivery-location-summary-left">
                   <i className="fa-solid fa-location-dot"></i>
                   <div>
-                    <strong>Vi tri nhan hang</strong>
+                    <strong>Vị trí nhận hàng</strong>
                     <p>
                       {deliveryLocation
                         ? deliveryLocation.address || `${deliveryLocation.lat.toFixed(5)}, ${deliveryLocation.lng.toFixed(5)}`
-                        : 'Bam de cap nhat vi tri tren ban do'}
+                        : 'Bấm để cập nhật vị trí trên bản đồ'}
                     </p>
                   </div>
                 </div>

@@ -167,59 +167,67 @@ export default function SupermarketDetails() {
 
   useEffect(() => {
     let isMounted = true;
+    let timerId = null;
 
     setFlashSaleProducts([]);
-    fetchFlashSales({ storeId })
-      .then((apiFlashSales) => {
-        if (!isMounted) return;
+    timerId = window.setTimeout(() => {
+      fetchFlashSales({ storeId })
+        .then((apiFlashSales) => {
+          if (!isMounted) return;
 
-        const flashItems = apiFlashSales[0]?.products || [];
-        setFlashSaleProducts(flashItems.map((item) => ({
-          ...mapApiProduct({
-            ...item.product,
-            is_flash_sale: true,
-            flash_sale_price: item.flash_sale_price,
-            original_price: item.original_price,
-            flash_sale_sold_percent: item.sold_percent,
-            flash_sale_remaining: item.remaining,
-            flash_sale_end_time: apiFlashSales[0]?.end_time,
-          }),
-          flashSaleProductId: item.id,
-          soldPercent: item.sold_percent,
-          remaining: item.remaining,
-        })));
+          const flashItems = apiFlashSales[0]?.products || [];
+          setFlashSaleProducts(flashItems.map((item) => ({
+            ...mapApiProduct({
+              ...item.product,
+              is_flash_sale: true,
+              flash_sale_price: item.flash_sale_price,
+              original_price: item.original_price,
+              flash_sale_sold_percent: item.sold_percent,
+              flash_sale_remaining: item.remaining,
+              flash_sale_end_time: apiFlashSales[0]?.end_time,
+            }),
+            flashSaleProductId: item.id,
+            soldPercent: item.sold_percent,
+            remaining: item.remaining,
+          })));
 
-        if (apiFlashSales[0]?.end_time) {
-          const secondsLeft = Math.max(
-            0,
-            Math.floor((new Date(apiFlashSales[0].end_time).getTime() - Date.now()) / 1000)
-          );
-          setCountdownSeconds(secondsLeft);
-        }
-      })
-      .catch(() => {
-        if (isMounted) setFlashSaleProducts([]);
-      });
+          if (apiFlashSales[0]?.end_time) {
+            const secondsLeft = Math.max(
+              0,
+              Math.floor((new Date(apiFlashSales[0].end_time).getTime() - Date.now()) / 1000)
+            );
+            setCountdownSeconds(secondsLeft);
+          }
+        })
+        .catch(() => {
+          if (isMounted) setFlashSaleProducts([]);
+        });
+    }, 120);
 
     return () => {
       isMounted = false;
+      if (timerId) window.clearTimeout(timerId);
     };
   }, [storeId]);
 
   useEffect(() => {
     let isMounted = true;
+    let timerId = null;
 
     setVouchers([]);
-    fetchVouchers({ storeId, userId: getCurrentCustomerId() })
-      .then((apiVouchers) => {
-        if (isMounted) setVouchers(apiVouchers);
-      })
-      .catch(() => {
-        if (isMounted) setVouchers([]);
-      });
+    timerId = window.setTimeout(() => {
+      fetchVouchers({ storeId, userId: getCurrentCustomerId() })
+        .then((apiVouchers) => {
+          if (isMounted) setVouchers(apiVouchers);
+        })
+        .catch(() => {
+          if (isMounted) setVouchers([]);
+        });
+    }, 260);
 
     return () => {
       isMounted = false;
+      if (timerId) window.clearTimeout(timerId);
     };
   }, [storeId]);
 
@@ -336,7 +344,7 @@ export default function SupermarketDetails() {
       <div className="supermarket-main-container">
         <div className="shop-header-section">
           <div className={getStoreBannerClass(store)}>
-            <img src={getStoreBanner(store)} alt={`${store?.name || 'Siêu thị'} banner`} />
+            <img src={getStoreBanner(store)} alt={`${store?.name || 'Siêu thị'} banner`} fetchPriority="high" />
           </div>
 
           <div className="shop-info-card">
@@ -438,7 +446,7 @@ export default function SupermarketDetails() {
                       -{Math.round((1 - product.price / product.originalPrice) * 100)}%
                     </span>
                     <div className={getFlashImageBoxClass(product)}>
-                      <img src={product.image} alt={product.name} />
+                      <img src={product.image} alt={product.name} loading="lazy" decoding="async" />
                     </div>
                     <div className="p-info-flash">
                       <h3>{product.name}</h3>
@@ -496,7 +504,7 @@ export default function SupermarketDetails() {
                     onKeyDown={(event) => handleProductCardKeyDown(event, product)}
                   >
                     <div className={getProductImageBoxClass(product)}>
-                      <img src={product.image} alt={product.name} />
+                      <img src={product.image} alt={product.name} loading="lazy" decoding="async" />
                     </div>
                     <div className="p-info">
                       <h3>{product.name}</h3>

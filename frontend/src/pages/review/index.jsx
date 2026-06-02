@@ -23,7 +23,7 @@ export default function App() {
 
     async function loadOrder() {
       try {
-        const orderId = getOrderIdFromUrl() ?? "CTC-2024-8892";
+        const orderId = getOrderIdFromUrl();
         const nextOrder = await fetchReviewOrder(orderId);
         if (!active) return;
 
@@ -147,7 +147,7 @@ export default function App() {
     setSubmitting(true);
 
     try {
-      const result = await postReviews(order.orderId, anonymous, payload, imageMap);
+      const result = await postReviews(order.rawOrderId || order.orderId, anonymous, payload, imageMap);
       showToast(result.message ?? "Đánh giá thành công!", "success");
       setSubmitted(true);
     } catch (err) {

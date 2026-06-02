@@ -7,6 +7,7 @@ use App\Models\Product;
 use App\Http\Requests\StoreProductRequest;
 use App\Http\Requests\UpdateProductRequest;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Cache;
 
 class ProductController extends Controller
 {
@@ -16,6 +17,7 @@ class ProductController extends Controller
      */
     public function index(Request $request)
     {
+        return Cache::remember('products:index:' . md5($request->fullUrl()), now()->addSeconds(60), function () use ($request) {
         // Khởi tạo query và chỉ lấy các sản phẩm đang được bật bán (true)
         $query = Product::query()
             ->with(['category', 'store']);
@@ -63,8 +65,13 @@ class ProductController extends Controller
         $perPage = (int) $request->query('per_page', 25);
         $perPage = min(max($perPage, 1), 200);
 
-        $products = $query->paginate($perPage);
-        $productIds = $products->getCollection()->pluck('id');
+        $products = $request->boolean('simple')
+            ? $query->limit($perPage)->get()
+            : $query->paginate($perPage);
+        $productCollection = $request->boolean('simple')
+            ? $products
+            : $products->getCollection();
+        $productIds = $productCollection->pluck('id');
         $activeFlashItems = FlashSaleProduct::query()
             ->with('flashSale')
             ->whereIn('product_id', $productIds)
@@ -76,7 +83,7 @@ class ProductController extends Controller
             ->get()
             ->keyBy('product_id');
 
-        $products->getCollection()->transform(function (Product $product) use ($activeFlashItems) {
+        $productCollection->transform(function (Product $product) use ($activeFlashItems) {
             $flashItem = $activeFlashItems->get($product->id);
 
             $product->setAttribute('is_flash_sale', (bool) $flashItem);
@@ -90,10 +97,15 @@ class ProductController extends Controller
             return $product;
         });
 
+        if (! $request->boolean('simple')) {
+            $products->setCollection($productCollection);
+        }
+
         return response()->json([
             'success' => true,
             'data' => $products
         ]);
+        });
     }
 
     /**
@@ -114,7 +126,7 @@ class ProductController extends Controller
      */
     public function show($id)
     {
-        $product = Product::with(['category', 'store'])
+        $product = Product::with(['category', 'store', 'reviews.user:id,name'])
             ->find($id);
 
         if (!$product) {
@@ -123,6 +135,30 @@ class ProductController extends Controller
                 'message' => 'Không tìm thấy sản phẩm'
             ], 404);
         }
+
+        $reviews = $product->reviews
+            ->sortByDesc('created_at')
+            ->values()
+            ->map(function ($review) {
+                return [
+                    'id' => $review->id,
+                    'rating' => (int) $review->rating,
+                    'comment' => $review->comment,
+                    'user_name' => $review->user?->name ?? 'Khách hàng',
+                    'created_at' => $review->created_at,
+                ];
+            });
+
+        $reviewCount = $reviews->count();
+        $averageRating = $reviewCount > 0
+            ? round($reviews->avg('rating'), 1)
+            : 0;
+
+        $product->setAttribute('review_summary', [
+            'count' => $reviewCount,
+            'average_rating' => $averageRating,
+        ]);
+        $product->setRelation('reviews', $reviews);
 
         return response()->json([
             'success' => true,

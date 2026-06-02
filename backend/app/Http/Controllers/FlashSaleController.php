@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\FlashSale;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Cache;
 
 class FlashSaleController extends Controller
 {
@@ -23,7 +24,8 @@ class FlashSaleController extends Controller
             ->where('status', '!=', 'active')
             ->update(['status' => 'active']);
 
-        $flashSales = FlashSale::with([
+        $flashSales = Cache::remember('flash-sales:index:' . md5($request->fullUrl()), now()->addSeconds(30), function () use ($request) {
+            return FlashSale::with([
                 'products.product.category',
                 'products.product.store',
             ])
@@ -74,6 +76,7 @@ class FlashSaleController extends Controller
             })
             ->filter(fn ($flashSale) => $flashSale['products']->isNotEmpty())
             ->values();
+        });
 
         return response()->json([
             'message' => 'Lấy flash sale thành công.',

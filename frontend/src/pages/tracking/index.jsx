@@ -40,7 +40,7 @@ function formatEta(seconds) {
   }
 
   const minutes = Math.max(1, Math.round(seconds / 60));
-  return `${minutes} phut`;
+  return `${minutes} phút`;
 }
 
 function formatDistance(meters) {
@@ -166,7 +166,7 @@ export default function Tracking() {
         }
       } catch (err) {
         if (!active) return;
-        setError(err.message || "Khong the tai trang thai don hang. Vui long thu lai.");
+        setError(err.message || "Không thể tải trạng thái đơn hàng. Vui lòng thử lại.");
       } finally {
         if (active) {
           setLoading(false);
@@ -260,7 +260,7 @@ export default function Tracking() {
   return (
     <div className="tracking-page">
       <main className="tracking-body" role="main">
-        <section className="col-left" aria-label="Ban do va lo trinh">
+        <section className="col-left" aria-label="Bản đồ và lộ trình">
           <EtaBanner eta={etaText} loading={loading || routeLoading} />
           <MapPanel
             tracking={tracking}
@@ -275,7 +275,7 @@ export default function Tracking() {
           <RouteStrip tracking={tracking} loading={loading} />
         </section>
 
-        <aside className="col-right" aria-label="Thong tin shipper va trang thai">
+        <aside className="col-right" aria-label="Thông tin shipper và trạng thái">
           <ShipperCard shipper={tracking?.shipper} loading={loading} />
           <TimelinePanel steps={tracking?.steps ?? []} loading={loading} error={error} />
         </aside>
@@ -287,7 +287,7 @@ export default function Tracking() {
 function EtaBanner({ eta, loading }) {
   return (
     <div className="eta-banner">
-      <p className="eta-label">Du kien giao</p>
+      <p className="eta-label">Dự kiến giao</p>
       <p className={`eta-time${loading ? " skeleton" : ""}`}>{loading ? "" : eta}</p>
     </div>
   );
@@ -309,9 +309,9 @@ function MapPanel({
   const progressLabel = isArrived ? 100 : Math.round(Math.min(SHIPPER_PROGRESS_CAP, clampProgress(simulatedProgress)));
 
   return (
-    <div className="map-wrapper tracking-map-wrapper" aria-label="Ban do lo trinh giao hang">
+    <div className="map-wrapper tracking-map-wrapper" aria-label="Bản đồ lộ trình giao hàng">
       {loading ? (
-        <div className="tracking-map-loading">Dang tai ban do...</div>
+        <div className="tracking-map-loading">Đang tải bản đồ...</div>
       ) : hasMap ? (
         <MapContainer
           center={pointToLatLng(tracking.origin)}
@@ -337,14 +337,14 @@ function MapPanel({
           )}
           <Marker position={pointToLatLng(tracking.origin)} icon={storeIcon}>
             <Popup>
-              <strong>{tracking.origin.label || "Sieu thi"}</strong>
+              <strong>{tracking.origin.label || "Siêu thị"}</strong>
               <br />
               {tracking.origin.address}
             </Popup>
           </Marker>
           <Marker position={pointToLatLng(tracking.destination)} icon={homeIcon}>
             <Popup>
-              <strong>Vi tri nhan hang</strong>
+              <strong>Vị trí nhận hàng</strong>
               <br />
               {tracking.destination.address}
             </Popup>
@@ -354,24 +354,24 @@ function MapPanel({
               <Popup>
                 {tracking.shipper?.name || "Shipper"}
                 <br />
-                {isArrived ? "Da den noi" : `Dang giao: ${progressLabel}%`}
+                {isArrived ? "Đã đến nơi" : `Đang giao: ${progressLabel}%`}
               </Popup>
             </Marker>
           )}
         </MapContainer>
       ) : (
         <div className="tracking-map-empty">
-          Don hang chua co toa do nhan hang nen chua the hien ban do.
+          Đơn hàng chưa có tọa độ nhận hàng nên chưa thể hiển thị bản đồ.
         </div>
       )}
 
       {hasMap && (
         <>
           <div className="map-label map-label-store">
-            <span>{tracking.origin.label || "Sieu thi"}</span>
+            <span>{tracking.origin.label || "Siêu thị"}</span>
           </div>
           <div className="map-label map-label-home">
-            <span>Nha cua ban</span>
+            <span>Nhà của bạn</span>
           </div>
         </>
       )}
@@ -380,15 +380,15 @@ function MapPanel({
         <i className="fa-regular fa-clock" aria-hidden="true" />
         <span>
           {routeLoading
-            ? "Dang tinh duong..."
-            : [distanceText, etaText && etaText !== "-" ? etaText : ""].filter(Boolean).join(" - ") || "Dang cho route"}
+            ? "Đang tính đường..."
+            : [distanceText, etaText && etaText !== "-" ? etaText : ""].filter(Boolean).join(" - ") || "Đang chờ lộ trình"}
         </span>
       </div>
 
       {hasMap && (
         <div className="tracking-progress-card">
           <div className="tracking-progress-row">
-            <span>Shipper dang di chuyen</span>
+            <span>Shipper đang di chuyển</span>
             <strong>{progressLabel}%</strong>
           </div>
           <div className="tracking-progress-bar" aria-hidden="true">
@@ -396,7 +396,7 @@ function MapPanel({
           </div>
           {isArrived && (
             <a className="tracking-arrived-link" href={`/order-detail/${tracking.order.id}`}>
-              Xac nhan da nhan hang
+              Xác nhận đã nhận hàng
             </a>
           )}
         </div>
@@ -433,7 +433,7 @@ function RouteStrip({ tracking, loading }) {
       <div className="route-point origin">
         <span className="route-dot dot-green"></span>
         <div>
-          <p className="route-label">Lay hang tai</p>
+          <p className="route-label">Lấy hàng tại</p>
           <p className={`route-addr${loading ? " skeleton" : ""}`}>{loading ? "" : tracking?.origin?.label ?? "-"}</p>
         </div>
       </div>
@@ -441,7 +441,7 @@ function RouteStrip({ tracking, loading }) {
       <div className="route-point destination">
         <span className="route-dot dot-home"></span>
         <div>
-          <p className="route-label">Giao den</p>
+          <p className="route-label">Giao đến</p>
           <p className={`route-addr${loading ? " skeleton" : ""}`}>
             {loading ? "" : tracking?.destination?.address ?? "-"}
           </p>
@@ -457,16 +457,16 @@ function ShipperCard({ shipper, loading }) {
       <img
         className="shipper-avatar"
         src="/assets/shipper.jpg"
-        alt={shipper?.name ? `Anh cua shipper ${shipper.name}` : "Anh shipper"}
+        alt={shipper?.name ? `Ảnh của shipper ${shipper.name}` : "Ảnh shipper"}
       />
       <div className="shipper-info">
-        <p className="shipper-label">Shipper cua ban</p>
+        <p className="shipper-label">Shipper của bạn</p>
         <p className={`shipper-name${loading ? " skeleton" : ""}`}>{loading ? "" : shipper?.name ?? "-"}</p>
         <p className="shipper-plate">
-          {loading ? "Dang tai" : `Bien so: ${shipper?.license_plate ?? "-"}`}
+          {loading ? "Đang tải" : `Biển số: ${shipper?.license_plate ?? "-"}`}
         </p>
       </div>
-      <a className="btn-call" href={`tel:${shipper?.phone ?? "0900000000"}`} aria-label="Goi cho shipper">
+      <a className="btn-call" href={`tel:${shipper?.phone ?? "0900000000"}`} aria-label="Gọi cho shipper">
         <i className="fa-solid fa-phone" aria-hidden="true" />
       </a>
     </div>
@@ -476,7 +476,7 @@ function ShipperCard({ shipper, loading }) {
 function TimelinePanel({ steps, loading, error }) {
   return (
     <div className="timeline-section">
-      <h3 className="section-title">Trang thai giao hang</h3>
+      <h3 className="section-title">Trạng thái giao hàng</h3>
       <ol className="timeline" aria-live="polite">
         {error ? (
           <li className="tracking-error">{error}</li>
@@ -485,7 +485,7 @@ function TimelinePanel({ steps, loading, error }) {
         ) : steps.length > 0 ? (
           steps.map((step) => <TimelineItem key={step.key} step={step} />)
         ) : (
-          <li className="tracking-error">Chua co thong tin trang thai.</li>
+          <li className="tracking-error">Chưa có thông tin trạng thái.</li>
         )}
       </ol>
     </div>

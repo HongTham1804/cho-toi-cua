@@ -21,7 +21,7 @@ class TrackingController extends Controller
         $shipper = $shipment?->shipper ?? $order->shipper;
 
         return response()->json([
-            'message' => 'Lay du lieu theo doi don hang thanh cong.',
+            'message' => 'Lấy dữ liệu theo dõi đơn hàng thành công.',
             'data' => [
                 'order' => [
                     'id' => $order->id,
@@ -150,7 +150,7 @@ class TrackingController extends Controller
             'destination' => [
                 'lat' => $destinationLat,
                 'lng' => $destinationLng,
-                'label' => $order->customer?->name ?? 'Khach hang',
+                'label' => $order->customer?->name ?? 'Khách hàng',
                 'address' => $order->delivery_address ?? $order->shipping_address,
             ],
             'current' => [
@@ -170,32 +170,32 @@ class TrackingController extends Controller
         return [
             [
                 'key' => 'pending',
-                'title' => 'Don hang da duoc tao',
-                'description' => 'Sieu thi da nhan thong tin don hang.',
+                'title' => 'Đơn hàng đã được tạo',
+                'description' => 'Siêu thị đã nhận thông tin đơn hàng.',
                 'time' => $order->created_at,
                 'done' => true,
                 'active' => $status === 'pending',
             ],
             [
                 'key' => 'preparing',
-                'title' => 'Dang chuan bi hang',
-                'description' => 'Sieu thi dang gom san pham trong don.',
+                'title' => 'Đang chuẩn bị hàng',
+                'description' => 'Siêu thị đang gom sản phẩm trong đơn.',
                 'time' => in_array($status, ['preparing', 'shipping', 'completed'], true) ? $order->updated_at : null,
                 'done' => in_array($status, ['preparing', 'shipping', 'completed'], true),
                 'active' => $status === 'preparing',
             ],
             [
                 'key' => 'shipping',
-                'title' => 'Shipper dang giao hang',
-                'description' => 'Don hang dang di chuyen tu sieu thi den vi tri nhan hang.',
+                'title' => 'Shipper đang giao hàng',
+                'description' => 'Đơn hàng đang di chuyển từ siêu thị đến vị trí nhận hàng.',
                 'time' => $shipment?->started_at,
                 'done' => in_array($status, ['shipping', 'completed'], true),
                 'active' => $status === 'shipping',
             ],
             [
                 'key' => 'completed',
-                'title' => 'Hoan tat don hang',
-                'description' => 'Khach hang da nhan duoc hang.',
+                'title' => 'Hoàn tất đơn hàng',
+                'description' => 'Khách hàng đã nhận được hàng.',
                 'time' => $shipment?->completed_at,
                 'done' => $status === 'completed',
                 'active' => $status === 'completed',

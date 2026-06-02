@@ -153,9 +153,9 @@ export default function OrderDetail() {
     try {
       const updatedOrder = await completeOrder(order.id);
       setOrder(updatedOrder);
-      showToast("Da xac nhan ban da nhan duoc hang.");
+      showToast("Đã xác nhận bạn đã nhận được hàng.");
     } catch (error) {
-      showToast(error.message || "Khong the xac nhan nhan hang. Vui long thu lai.");
+      showToast(error.message || "Không thể xác nhận nhận hàng. Vui lòng thử lại.");
     } finally {
       setCompleting(false);
     }

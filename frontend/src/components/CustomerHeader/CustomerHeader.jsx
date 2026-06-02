@@ -1,6 +1,6 @@
 import '@fortawesome/fontawesome-free/css/all.min.css';
 import logoMain from '../../assets/logo-main.png'; 
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { CART_CHANGED_EVENT, getCartTotalQuantity } from '../../services/cartStorage';
 import { fetchCategories, fetchProducts } from '../../services/productApi';
@@ -25,6 +25,7 @@ export default function CustomerHeader({ onMenuClick, onLoginClick, onRegisterCl
     const [cartQuantity, setCartQuantity] = useState(0);
     const [products, setProducts] = useState([]);
     const [categories, setCategories] = useState([DEFAULT_CATEGORY]);
+    const [hasLoadedSearchData, setHasLoadedSearchData] = useState(false);
     const isGuest = variant === 'guest';
     const navigate = useNavigate();
     const location = useLocation();
@@ -57,28 +58,35 @@ export default function CustomerHeader({ onMenuClick, onLoginClick, onRegisterCl
     }, [isGuest]);
 
     useEffect(() => {
-      if (isGuest) {
-        return undefined;
+      setProducts([]);
+      setCategories([DEFAULT_CATEGORY]);
+      setSelectedProduct(null);
+      setHasLoadedSearchData(false);
+    }, [scopedStoreId]);
+
+    const loadSearchData = useCallback(() => {
+      if (isGuest || hasLoadedSearchData) {
+        return;
       }
 
-      let isMounted = true;
-
-      Promise.all([fetchProducts({ storeId: scopedStoreId || undefined, perPage: 200 }), fetchCategories()])
+      setHasLoadedSearchData(true);
+      Promise.all([
+        fetchProducts({
+          storeId: scopedStoreId || undefined,
+          perPage: scopedStoreId ? 40 : 200,
+        }),
+        fetchCategories(),
+      ])
         .then(([apiProducts, apiCategories]) => {
-          if (!isMounted) return;
           setProducts(apiProducts);
           setCategories([DEFAULT_CATEGORY, ...apiCategories.map((category) => category.name)]);
         })
         .catch(() => {
-          if (!isMounted) return;
           setProducts([]);
           setCategories([DEFAULT_CATEGORY]);
+          setHasLoadedSearchData(false);
         });
-
-      return () => {
-        isMounted = false;
-      };
-    }, [isGuest, scopedStoreId]);
+    }, [hasLoadedSearchData, isGuest, scopedStoreId]);
 
     const searchText = searchValue.trim().toLowerCase();
     const isSearchOpen = !isGuest && (
@@ -187,9 +195,12 @@ export default function CustomerHeader({ onMenuClick, onLoginClick, onRegisterCl
               className="search-category-select"
               value={selectedCategory}
               onChange={(event) => {
+                loadSearchData();
                 setSelectedCategory(event.target.value);
                 setSelectedProduct(null);
               }}
+              onFocus={loadSearchData}
+              onClick={loadSearchData}
             >
               {categories.map((category) => (
                 <option key={category} value={category}>
@@ -204,17 +215,22 @@ export default function CustomerHeader({ onMenuClick, onLoginClick, onRegisterCl
             className="search-input"
             value={searchValue}
             onChange={(event) => {
+              loadSearchData();
               setSearchValue(event.target.value);
               setSelectedProduct(null);
             }}
             onFocus={() => {
+              loadSearchData();
               setSelectedProduct(null);
               setIsSearchFocused(true);
             }}
             onBlur={() => {
               window.setTimeout(() => setIsSearchFocused(false), 160);
             }}
-            onClick={() => setIsSearchFocused(true)}
+            onClick={() => {
+              loadSearchData();
+              setIsSearchFocused(true);
+            }}
           />
           <i className="fa-solid fa-magnifying-glass search-icon"></i>
 

@@ -6,28 +6,33 @@ use App\Models\User;
 use App\Models\Voucher;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Cache;
 
 class VoucherController extends Controller
 {
     public function index(Request $request): JsonResponse
     {
-        $userId = $request->query('user_id');
+        return Cache::remember('vouchers:index:' . md5($request->fullUrl()), now()->addSeconds(30), function () use ($request) {
+        $userId = $request->query('user_id') ? (int) $request->query('user_id') : null;
+        $savedVoucherStates = $this->savedVoucherStates($userId);
 
         $vouchers = Voucher::with('store')
+            ->withCount('users')
             ->when($request->filled('store_id'), function ($query) use ($request) {
                 $query->where('store_id', $request->query('store_id'));
             })
             ->orderByRaw("FIELD(discount_type, 'freeship', 'fixed', 'percentage')")
             ->orderBy('min_order_value')
             ->get()
-            ->map(function (Voucher $voucher) use ($userId) {
-                return $this->formatVoucher($voucher, $userId ? (int) $userId : null);
+            ->map(function (Voucher $voucher) use ($savedVoucherStates) {
+                return $this->formatVoucher($voucher, $savedVoucherStates);
             });
 
         return response()->json([
             'message' => 'Lấy danh sách voucher thành công.',
             'data' => $vouchers,
         ]);
+        });
     }
 
     public function save(Request $request, Voucher $voucher): JsonResponse
@@ -62,10 +67,11 @@ class VoucherController extends Controller
         $user->vouchers()->syncWithoutDetaching([
             $voucher->id => ['is_used' => false],
         ]);
+        Cache::flush();
 
         return response()->json([
             'message' => 'Đã lưu voucher vào ví.',
-            'data' => $this->formatVoucher($voucher->fresh('store'), (int) $user->id),
+            'data' => $this->formatVoucher($voucher->fresh('store')->loadCount('users'), [$voucher->id => false]),
         ]);
     }
 
@@ -87,15 +93,17 @@ class VoucherController extends Controller
         }
 
         $user->vouchers()->detach($voucher->id);
+        Cache::flush();
 
         return response()->json([
             'message' => 'Đã bỏ lưu voucher.',
-            'data' => $this->formatVoucher($voucher->fresh('store'), (int) $user->id),
+            'data' => $this->formatVoucher($voucher->fresh('store')->loadCount('users')),
         ]);
     }
 
     public function userVouchers(Request $request): JsonResponse
     {
+        return Cache::remember('user-vouchers:index:' . md5($request->fullUrl()), now()->addSeconds(30), function () use ($request) {
         $data = $request->validate([
             'user_id' => ['required', 'exists:users,id'],
             'store_id' => ['nullable', 'exists:stores,id'],
@@ -105,34 +113,40 @@ class VoucherController extends Controller
 
         $vouchers = $user->vouchers()
             ->with('store')
+            ->withCount('users')
             ->when(isset($data['store_id']), function ($query) use ($data) {
                 $query->where('store_id', $data['store_id']);
             })
             ->wherePivot('is_used', false)
             ->orderByRaw("FIELD(discount_type, 'freeship', 'fixed', 'percentage')")
             ->get()
-            ->map(fn (Voucher $voucher) => $this->formatVoucher($voucher, (int) $user->id, (bool) $voucher->pivot->is_used));
+            ->map(fn (Voucher $voucher) => $this->formatVoucher($voucher, [
+                $voucher->id => (bool) $voucher->pivot->is_used,
+            ]));
 
         return response()->json([
             'message' => 'Lấy ví voucher thành công.',
             'data' => $vouchers,
         ]);
+        });
     }
 
-    private function formatVoucher(Voucher $voucher, ?int $userId = null, bool $isUsed = false): array
+    private function savedVoucherStates(?int $userId): array
     {
-        $saved = false;
-
-        if ($userId) {
-            $savedVoucher = $voucher->users()
-                ->where('users.id', $userId)
-                ->first();
-
-            if ($savedVoucher) {
-                $isUsed = (bool) $savedVoucher->pivot->is_used;
-                $saved = ! $isUsed;
-            }
+        if (! $userId) {
+            return [];
         }
+
+        return User::find($userId)?->vouchers()
+            ->pluck('user_vouchers.is_used', 'vouchers.id')
+            ->mapWithKeys(fn ($isUsed, $voucherId) => [(int) $voucherId => (bool) $isUsed])
+            ->all() ?? [];
+    }
+
+    private function formatVoucher(Voucher $voucher, array $savedVoucherStates = []): array
+    {
+        $isUsed = $savedVoucherStates[$voucher->id] ?? false;
+        $saved = array_key_exists($voucher->id, $savedVoucherStates) && ! $isUsed;
 
         return [
             'id' => $voucher->id,
@@ -146,7 +160,7 @@ class VoucherController extends Controller
             'max_discount_amount' => $voucher->max_discount_amount ? (float) $voucher->max_discount_amount : null,
             'usage_limit' => $voucher->usage_limit,
             'used_count' => $voucher->used_count,
-            'saved_count' => $voucher->users()->count(),
+            'saved_count' => $voucher->users_count ?? 0,
             'min_order_value' => (float) $voucher->min_order_value,
             'start_date' => $voucher->start_date,
             'end_date' => $voucher->end_date,

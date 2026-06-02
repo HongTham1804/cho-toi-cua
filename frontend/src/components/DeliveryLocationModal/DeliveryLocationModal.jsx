@@ -12,19 +12,19 @@ const DEFAULT_POSITION = {
 const STORE_FALLBACKS = [
   {
     id: 1,
-    name: 'Bach Hoa Xanh Le Van Chi',
+    name: 'Bách Hóa Xanh Lê Văn Chí',
     latitude: 10.856496093453933,
     longitude: 106.77405206796195,
   },
   {
     id: 2,
-    name: 'WinMart Le Van Viet',
+    name: 'WinMart Lê Văn Việt',
     latitude: 10.845183433582347,
     longitude: 106.7785716799879,
   },
   {
     id: 3,
-    name: 'GO! Di An',
+    name: 'GO! Dĩ An',
     latitude: 10.889120952863461,
     longitude: 106.77583425300035,
   },
@@ -96,7 +96,7 @@ export default function DeliveryLocationModal({
     return source
       .map((store, index) => ({
         id: Number(store.id || index + 1),
-        name: store.name || STORE_FALLBACKS[index]?.name || 'Sieu thi',
+        name: store.name || STORE_FALLBACKS[index]?.name || 'Siêu thị',
         latitude: Number(store.latitude || STORE_FALLBACKS[index]?.latitude),
         longitude: Number(store.longitude || STORE_FALLBACKS[index]?.longitude),
       }))
@@ -105,11 +105,11 @@ export default function DeliveryLocationModal({
 
   const handleUseCurrentLocation = () => {
     if (!navigator.geolocation) {
-      setLocationStatus('Trinh duyet khong ho tro lay vi tri hien tai.');
+      setLocationStatus('Trình duyệt không hỗ trợ lấy vị trí hiện tại.');
       return;
     }
 
-    setLocationStatus('Dang lay vi tri hien tai...');
+    setLocationStatus('Đang lấy vị trí hiện tại...');
 
     navigator.geolocation.getCurrentPosition(
       (result) => {
@@ -117,10 +117,10 @@ export default function DeliveryLocationModal({
           lat: result.coords.latitude,
           lng: result.coords.longitude,
         });
-        setLocationStatus('Da cap nhat vi tri hien tai. Ban co the keo ghim de chinh lai.');
+        setLocationStatus('Đã cập nhật vị trí hiện tại. Bạn có thể kéo ghim để chỉnh lại.');
       },
       () => {
-        setLocationStatus('Khong lay duoc vi tri hien tai. Ban hay keo ghim tren ban do.');
+        setLocationStatus('Không lấy được vị trí hiện tại. Bạn hãy kéo ghim trên bản đồ.');
       },
       {
         enableHighAccuracy: true,
@@ -143,8 +143,8 @@ export default function DeliveryLocationModal({
       <section className="delivery-location-modal" onClick={(event) => event.stopPropagation()}>
         <header className="delivery-location-head">
           <div>
-            <p>Vi tri nhan hang</p>
-            <h2>Cap nhat dia chi giao hang</h2>
+            <p>Vị trí nhận hàng</p>
+            <h2>Cập nhật địa chỉ giao hàng</h2>
           </div>
           <button className="delivery-location-close" type="button" onClick={onClose}>
             <i className="fa-solid fa-xmark" />
@@ -186,7 +186,7 @@ export default function DeliveryLocationModal({
                   },
                 }}
               >
-                <Popup>Vi tri nhan hang cua ban</Popup>
+                <Popup>Vị trí nhận hàng của bạn</Popup>
               </Marker>
             </MapContainer>
           </div>
@@ -198,22 +198,17 @@ export default function DeliveryLocationModal({
               onClick={handleUseCurrentLocation}
             >
               <i className="fa-solid fa-location-crosshairs" />
-              Dung vi tri hien tai
+              Dùng vị trí hiện tại
             </button>
 
             <label className="delivery-location-field">
-              <span>Dia chi chi tiet</span>
+              <span>Địa chỉ chi tiết</span>
               <textarea
                 value={address}
                 onChange={(event) => setAddress(event.target.value)}
-                placeholder="Vi du: So nha, ten duong, phuong/xã, ghi chu cho shipper..."
+                placeholder="Ví dụ: Số nhà, tên đường, phường/xã, ghi chú cho shipper..."
               />
             </label>
-
-            <div className="delivery-location-coords">
-              <span>Lat: {position.lat.toFixed(6)}</span>
-              <span>Lng: {position.lng.toFixed(6)}</span>
-            </div>
 
             {locationStatus && <p className="delivery-location-status">{locationStatus}</p>}
           </div>
@@ -221,10 +216,10 @@ export default function DeliveryLocationModal({
 
         <footer className="delivery-location-footer">
           <button className="delivery-location-secondary" type="button" onClick={onClose}>
-            Huy
+            Hủy
           </button>
           <button className="delivery-location-primary" type="button" onClick={handleConfirm}>
-            Xac nhan vi tri
+            Xác nhận vị trí
           </button>
         </footer>
       </section>

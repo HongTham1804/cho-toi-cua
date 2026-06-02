@@ -45,6 +45,11 @@ class Product extends Model
         return $this->hasMany(FavoriteProduct::class);
     }
 
+    public function reviews()
+    {
+        return $this->hasMany(Review::class);
+    }
+
     public function favoritedByUsers()
     {
         return $this->belongsToMany(User::class, 'favorite_products')

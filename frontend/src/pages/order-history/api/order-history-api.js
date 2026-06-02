@@ -138,7 +138,7 @@ export async function completeOrder(orderId) {
   const payload = await response.json().catch(() => ({}));
 
   if (!response.ok) {
-    throw new Error(payload.message || "Khong the xac nhan da nhan hang.");
+    throw new Error(payload.message || "Không thể xác nhận đã nhận hàng.");
   }
 
   return mapOrder(payload.data);

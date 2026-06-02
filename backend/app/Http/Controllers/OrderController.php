@@ -9,6 +9,7 @@ use App\Models\Product;
 use App\Models\Voucher;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 
 class OrderController extends Controller
@@ -127,6 +128,7 @@ class OrderController extends Controller
                         'is_used' => true,
                     ]);
                 }
+                Cache::flush();
 
                 return $order->load(['customer', 'store', 'shipper', 'shipment', 'details.product']);
             });
@@ -247,13 +249,13 @@ class OrderController extends Controller
 
         if (! $order) {
             return response()->json([
-                'message' => 'Khong tim thay don hang.',
+                'message' => 'Không tìm thấy đơn hàng.',
             ], 404);
         }
 
         if ($order->status !== 'shipping') {
             return response()->json([
-                'message' => 'Chi co the danh dau da den noi cho don dang giao.',
+                'message' => 'Chỉ có thể đánh dấu đã đến nơi cho đơn đang giao.',
             ], 422);
         }
 
@@ -275,8 +277,8 @@ class OrderController extends Controller
                     'type' => 'delivery',
                 ],
                 [
-                    'title' => sprintf('Don hang #%s da den noi', str_pad((string) $order->id, 4, '0', STR_PAD_LEFT)),
-                    'message' => 'Don hang cua ban da den dia chi nhan hang. Vui long kiem tra va xac nhan da nhan duoc hang.',
+                    'title' => sprintf('Đơn hàng #%s đã đến nơi', str_pad((string) $order->id, 4, '0', STR_PAD_LEFT)),
+                    'message' => 'Đơn hàng của bạn đã đến địa chỉ nhận hàng. Vui lòng kiểm tra và xác nhận đã nhận được hàng.',
                     'link' => "/order-detail/{$order->id}",
                     'is_read' => false,
                 ]
@@ -286,7 +288,7 @@ class OrderController extends Controller
         });
 
         return response()->json([
-            'message' => 'Don hang da den noi.',
+            'message' => 'Đơn hàng đã đến nơi.',
             'data' => $order,
         ]);
     }
@@ -297,13 +299,13 @@ class OrderController extends Controller
 
         if (! $order) {
             return response()->json([
-                'message' => 'Khong tim thay don hang.',
+                'message' => 'Không tìm thấy đơn hàng.',
             ], 404);
         }
 
         if ($order->status !== 'shipping') {
             return response()->json([
-                'message' => 'Chi co the xac nhan da nhan hang cho don dang giao.',
+                'message' => 'Chỉ có thể xác nhận đã nhận hàng cho đơn đang giao.',
             ], 422);
         }
 
@@ -330,8 +332,8 @@ class OrderController extends Controller
                     'type' => 'success',
                 ],
                 [
-                    'title' => sprintf('Don hang #%s da hoan thanh', str_pad((string) $order->id, 4, '0', STR_PAD_LEFT)),
-                    'message' => 'Cam on ban da xac nhan da nhan hang. Hay danh gia san pham neu ban co thoi gian nhe.',
+                    'title' => sprintf('Đơn hàng #%s đã hoàn thành', str_pad((string) $order->id, 4, '0', STR_PAD_LEFT)),
+                    'message' => 'Cảm ơn bạn đã xác nhận đã nhận hàng. Hãy đánh giá sản phẩm nếu bạn có thời gian nhé.',
                     'link' => "/order-detail/{$order->id}",
                     'is_read' => false,
                 ]
@@ -341,7 +343,7 @@ class OrderController extends Controller
         });
 
         return response()->json([
-            'message' => 'Da xac nhan nhan hang thanh cong.',
+            'message' => 'Đã xác nhận nhận hàng thành công.',
             'data' => $order,
         ]);
     }

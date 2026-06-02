@@ -164,18 +164,6 @@
   box-shadow: 0 0 0 3px rgba(0, 122, 77, 0.12);
 }
 
-.delivery-location-coords {
-  display: flex;
-  flex-direction: column;
-  gap: 5px;
-  padding: 10px 12px;
-  border-radius: 8px;
-  background: #f8fafc;
-  color: #475569;
-  font-size: 0.82rem;
-  font-weight: 600;
-}
-
 .delivery-location-status {
   margin: 0;
   padding: 10px 12px;

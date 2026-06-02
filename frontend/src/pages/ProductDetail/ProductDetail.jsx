@@ -24,6 +24,25 @@ function getStockLabel(product) {
   return `Còn ${stock} sản phẩm`;
 }
 
+function formatReviewDate(value) {
+  if (!value) return '';
+
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return '';
+
+  return date.toLocaleDateString('vi-VN', {
+    day: '2-digit',
+    month: '2-digit',
+    year: 'numeric',
+  });
+}
+
+function getReviewLabel(product) {
+  const count = Number(product?.reviewSummary?.count || 0);
+
+  return count > 0 ? `${count} đánh giá` : 'Chưa có đánh giá';
+}
+
 export default function ProductDetail() {
   const navigate = useNavigate();
   const location = useLocation();
@@ -37,6 +56,7 @@ export default function ProductDetail() {
   const [isFavoriteSaving, setIsFavoriteSaving] = useState(false);
   const [cartNotice, setCartNotice] = useState('');
   const [zoom, setZoom] = useState({ active: false, x: 50, y: 50 });
+  const [isReviewModalOpen, setIsReviewModalOpen] = useState(false);
 
   useEffect(() => {
     if (!id) {
@@ -221,10 +241,23 @@ export default function ProductDetail() {
               </Link>
             )}
 
-            <div className="ctc-product-rating" aria-label="Chưa có đánh giá">
+            <button
+              type="button"
+              className={`ctc-product-rating ${product.reviews?.length ? 'has-reviews' : ''}`}
+              aria-label={getReviewLabel(product)}
+              disabled={!product.reviews?.length}
+              onClick={() => {
+                if (product.reviews?.length) setIsReviewModalOpen(true);
+              }}
+            >
               <span className="ctc-product-stars" aria-hidden="true">★★★★★</span>
-              <span>Chưa có đánh giá</span>
-            </div>
+              <span>{getReviewLabel(product)}</span>
+              {product.reviewSummary?.count > 0 && (
+                <strong className="ctc-product-rating-score">
+                  {product.reviewSummary.averageRating.toFixed(1)}/5
+                </strong>
+              )}
+            </button>
 
             <p className="ctc-product-price">{formatCurrency(product.price)}</p>
             <p className="ctc-product-note">Giá đã bao gồm thuế VAT. Đơn vị tính: {product.unit}.</p>
@@ -297,6 +330,81 @@ export default function ProductDetail() {
           </section>
         </main>
       )}
+
+      {hasProduct && isReviewModalOpen && (
+        <ReviewModal
+          product={product}
+          onClose={() => setIsReviewModalOpen(false)}
+        />
+      )}
+    </div>
+  );
+}
+
+function ReviewModal({ product, onClose }) {
+  const averageRating = Number(product.reviewSummary?.averageRating || 0);
+  const reviewCount = Number(product.reviewSummary?.count || 0);
+  const ratings = [5, 4, 3, 2, 1].map((rating) => {
+    const count = product.reviews.filter((review) => review.rating === rating).length;
+
+    return {
+      rating,
+      count,
+      percent: reviewCount > 0 ? (count / reviewCount) * 100 : 0,
+    };
+  });
+
+  return (
+    <div className="ctc-review-modal-overlay" onClick={onClose}>
+      <section className="ctc-review-modal" role="dialog" aria-modal="true" aria-label="Đánh giá sản phẩm" onClick={(event) => event.stopPropagation()}>
+        <header className="ctc-review-modal-head">
+          <h2>Đánh giá sản phẩm ({reviewCount})</h2>
+          <button type="button" onClick={onClose} aria-label="Đóng đánh giá">
+            <i className="fa-solid fa-xmark" />
+          </button>
+        </header>
+
+        <div className="ctc-review-modal-summary">
+          <div className="ctc-review-score">
+            <strong>{averageRating.toFixed(1)}</strong>
+            <span aria-hidden="true">★★★★★</span>
+            <small>{reviewCount} đánh giá</small>
+          </div>
+          <div className="ctc-review-bars">
+            {ratings.map((item) => (
+              <div className="ctc-review-bar-row" key={item.rating}>
+                <span>{item.rating}</span>
+                <i aria-hidden="true">★</i>
+                <div className="ctc-review-bar">
+                  <b style={{ width: `${item.percent}%` }} />
+                </div>
+                <em>{item.count}</em>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        <ul className="ctc-review-list">
+          {product.reviews.map((review) => (
+            <li key={review.id}>
+              <div className="ctc-review-avatar" aria-hidden="true">
+                {review.userName.charAt(0).toUpperCase()}
+              </div>
+              <div className="ctc-review-content">
+                <div className="ctc-review-meta">
+                  <strong>{review.userName}</strong>
+                  <span>{formatReviewDate(review.createdAt)}</span>
+                </div>
+                <div className="ctc-review-stars" aria-label={`${review.rating} sao`}>
+                  {'★'.repeat(Math.max(0, Math.min(5, review.rating)))}
+                  {'☆'.repeat(Math.max(0, 5 - Math.min(5, review.rating)))}
+                </div>
+                {review.comment && <p>{review.comment}</p>}
+              </div>
+            </li>
+          ))}
+        </ul>
+      </section>
     </div>
   );
 }

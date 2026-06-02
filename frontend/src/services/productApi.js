@@ -1,6 +1,7 @@
 const API_BASE_URL = 'http://localhost:8000/api';
 const API_ORIGIN = API_BASE_URL.replace(/\/api$/, '');
 const CACHE_PREFIX = 'ctc-api-cache:';
+const pendingRequests = new Map();
 
 const readCache = (key) => {
   try {
@@ -38,13 +39,28 @@ export const clearVoucherCache = () => {
   clearCacheContaining('user-vouchers:');
 };
 
+export const clearProductCache = () => {
+  clearCacheContaining('product:');
+  clearCacheContaining('products:');
+};
+
 const cachedRequest = async (key, ttlMs, request) => {
   const cached = readCache(key);
   if (cached) return cached;
 
-  const value = await request();
-  writeCache(key, value, ttlMs);
-  return value;
+  if (pendingRequests.has(key)) {
+    return pendingRequests.get(key);
+  }
+
+  const pending = request()
+    .then((value) => {
+      writeCache(key, value, ttlMs);
+      return value;
+    })
+    .finally(() => pendingRequests.delete(key));
+
+  pendingRequests.set(key, pending);
+  return pending;
 };
 
 const CATEGORY_NAME_MAP = {
@@ -111,76 +127,82 @@ export const mapApiProduct = (product) => {
     flashSaleSoldPercent: product.flash_sale_sold_percent ?? null,
     flashSaleRemaining: product.flash_sale_remaining ?? null,
     flashSaleEndTime: product.flash_sale_end_time ?? null,
+    reviewSummary: {
+      count: Number(product.review_summary?.count || 0),
+      averageRating: Number(product.review_summary?.average_rating || 0),
+    },
+    reviews: Array.isArray(product.reviews)
+      ? product.reviews.map((review) => ({
+          id: String(review.id),
+          rating: Number(review.rating || 0),
+          comment: review.comment || '',
+          userName: review.user_name || 'Khách hàng',
+          createdAt: review.created_at || '',
+        }))
+      : [],
     sequence: Number(product.id),
   };
 };
 
 export const fetchProducts = async ({ storeId, search, perPage = 40 } = {}) => {
-  const params = new URLSearchParams({ per_page: String(perPage) });
+  const params = new URLSearchParams({ per_page: String(perPage), simple: '1' });
 
   if (storeId) params.set('store_id', String(storeId));
   if (search) params.set('search', search);
 
   const cacheKey = `products:${params.toString()}`;
-  const cached = readCache(cacheKey);
-  if (cached) return cached;
+  return cachedRequest(cacheKey, 5 * 60 * 1000, async () => {
+    const response = await fetch(`${API_BASE_URL}/products?${params.toString()}`);
 
-  const response = await fetch(`${API_BASE_URL}/products?${params.toString()}`);
+    if (!response.ok) {
+      throw new Error('Kh?ng l?y ???c s?n ph?m t? backend');
+    }
 
-  if (!response.ok) {
-    throw new Error('Không lấy được sản phẩm từ backend');
-  }
-
-  const payload = await response.json();
-  const products = normalizePageItems(payload).map(mapApiProduct);
-  writeCache(cacheKey, products, 2 * 60 * 1000);
-  return products;
+    const payload = await response.json();
+    return normalizePageItems(payload).map(mapApiProduct);
+  });
 };
 
 export const fetchProductById = async (productId) => {
-  const response = await fetch(`${API_BASE_URL}/products/${productId}`);
+  return cachedRequest(`product:${productId}`, 5 * 60 * 1000, async () => {
+    const response = await fetch(`${API_BASE_URL}/products/${productId}`);
 
-  if (!response.ok) {
-    throw new Error('Không lấy được chi tiết sản phẩm từ backend');
-  }
+    if (!response.ok) {
+      throw new Error('Kh?ng l?y ???c chi ti?t s?n ph?m t? backend');
+    }
 
-  const payload = await response.json();
-  return mapApiProduct(payload.data);
+    const payload = await response.json();
+    return mapApiProduct(payload.data);
+  });
 };
 
 export const fetchStores = async () => {
-  const cached = readCache('stores');
-  if (cached) return cached;
+  return cachedRequest('stores', 10 * 60 * 1000, async () => {
+    const response = await fetch(`${API_BASE_URL}/stores`);
 
-  const response = await fetch(`${API_BASE_URL}/stores`);
+    if (!response.ok) {
+      throw new Error('Kh?ng l?y ???c si?u th? t? backend');
+    }
 
-  if (!response.ok) {
-    throw new Error('Không lấy được siêu thị từ backend');
-  }
-
-  const payload = await response.json();
-  const stores = normalizePageItems(payload);
-  writeCache('stores', stores, 10 * 60 * 1000);
-  return stores;
+    const payload = await response.json();
+    return normalizePageItems(payload);
+  });
 };
 
 export const fetchCategories = async () => {
-  const cached = readCache('categories');
-  if (cached) return cached;
+  return cachedRequest('categories', 10 * 60 * 1000, async () => {
+    const response = await fetch(`${API_BASE_URL}/categories`);
 
-  const response = await fetch(`${API_BASE_URL}/categories`);
+    if (!response.ok) {
+      throw new Error('Kh?ng l?y ???c danh m?c t? backend');
+    }
 
-  if (!response.ok) {
-    throw new Error('Không lấy được danh mục từ backend');
-  }
-
-  const payload = await response.json();
-  const categories = normalizePageItems(payload).map((category) => ({
-    id: Number(category.id),
-    name: CATEGORY_NAME_MAP[category.name] || category.name,
-  }));
-  writeCache('categories', categories, 10 * 60 * 1000);
-  return categories;
+    const payload = await response.json();
+    return normalizePageItems(payload).map((category) => ({
+      id: Number(category.id),
+      name: CATEGORY_NAME_MAP[category.name] || category.name,
+    }));
+  });
 };
 
 export const fetchVouchers = async ({ storeId, userId } = {}) => {
@@ -190,19 +212,16 @@ export const fetchVouchers = async ({ storeId, userId } = {}) => {
   if (userId) params.set('user_id', String(userId));
 
   const cacheKey = `vouchers:${params.toString()}`;
-  const cached = readCache(cacheKey);
-  if (cached) return cached;
+  return cachedRequest(cacheKey, 2 * 60 * 1000, async () => {
+    const response = await fetch(`${API_BASE_URL}/vouchers?${params.toString()}`);
 
-  const response = await fetch(`${API_BASE_URL}/vouchers?${params.toString()}`);
+    if (!response.ok) {
+      throw new Error('Kh?ng l?y ???c voucher t? backend');
+    }
 
-  if (!response.ok) {
-    throw new Error('Không lấy được voucher từ backend');
-  }
-
-  const payload = await response.json();
-  const vouchers = normalizePageItems(payload);
-  writeCache(cacheKey, vouchers, 30 * 1000);
-  return vouchers;
+    const payload = await response.json();
+    return normalizePageItems(payload);
+  });
 };
 
 export const saveVoucher = async ({ voucherId, userId }) => {
@@ -250,19 +269,16 @@ export const fetchUserVouchers = async ({ userId, storeId } = {}) => {
   if (storeId) params.set('store_id', String(storeId));
 
   const cacheKey = `user-vouchers:${params.toString()}`;
-  const cached = readCache(cacheKey);
-  if (cached) return cached;
+  return cachedRequest(cacheKey, 2 * 60 * 1000, async () => {
+    const response = await fetch(`${API_BASE_URL}/user-vouchers?${params.toString()}`);
 
-  const response = await fetch(`${API_BASE_URL}/user-vouchers?${params.toString()}`);
+    if (!response.ok) {
+      throw new Error('Kh?ng l?y ???c v? voucher');
+    }
 
-  if (!response.ok) {
-    throw new Error('Không lấy được ví voucher');
-  }
-
-  const payload = await response.json();
-  const vouchers = normalizePageItems(payload);
-  writeCache(cacheKey, vouchers, 30 * 1000);
-  return vouchers;
+    const payload = await response.json();
+    return normalizePageItems(payload);
+  });
 };
 
 export const fetchFlashSales = async ({ storeId, status = 'active' } = {}) => {
@@ -272,17 +288,14 @@ export const fetchFlashSales = async ({ storeId, status = 'active' } = {}) => {
   if (status) params.set('status', status);
 
   const cacheKey = `flash-sales:${params.toString()}`;
-  const cached = readCache(cacheKey);
-  if (cached) return cached;
+  return cachedRequest(cacheKey, 60 * 1000, async () => {
+    const response = await fetch(`${API_BASE_URL}/flash-sales?${params.toString()}`);
 
-  const response = await fetch(`${API_BASE_URL}/flash-sales?${params.toString()}`);
+    if (!response.ok) {
+      throw new Error('Kh?ng l?y ???c flash sale');
+    }
 
-  if (!response.ok) {
-    throw new Error('Không lấy được flash sale');
-  }
-
-  const payload = await response.json();
-  const flashSales = normalizePageItems(payload);
-  writeCache(cacheKey, flashSales, 30 * 1000);
-  return flashSales;
+    const payload = await response.json();
+    return normalizePageItems(payload);
+  });
 };

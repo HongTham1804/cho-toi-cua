@@ -7,7 +7,7 @@ export function getOrderIdFromUrl() {
 
 export async function fetchOrderTracking(orderId) {
   if (!orderId) {
-    throw new Error("Khong tim thay ma don hang de theo doi.");
+    throw new Error("Không tìm thấy mã đơn hàng để theo dõi.");
   }
 
   const normalizedOrderId = String(orderId).replace(/^ORD-/i, "").replace(/^0+/, "") || orderId;
@@ -15,7 +15,7 @@ export async function fetchOrderTracking(orderId) {
   const payload = await response.json().catch(() => ({}));
 
   if (!response.ok) {
-    throw new Error(payload.message || "Khong the tai du lieu theo doi don hang.");
+    throw new Error(payload.message || "Không thể tải dữ liệu theo dõi đơn hàng.");
   }
 
   return normalizeTrackingPayload(payload.data);
@@ -46,7 +46,7 @@ export async function fetchOsrmRoute(origin, destination) {
 
 export async function markOrderArrived(orderId) {
   if (!orderId) {
-    throw new Error("Khong tim thay ma don hang.");
+    throw new Error("Không tìm thấy mã đơn hàng.");
   }
 
   const response = await fetch(`${API_BASE_URL}/orders/${encodeURIComponent(orderId)}/arrived`, {
@@ -60,7 +60,7 @@ export async function markOrderArrived(orderId) {
   const payload = await response.json().catch(() => ({}));
 
   if (!response.ok) {
-    throw new Error(payload.message || "Khong the cap nhat don hang da den noi.");
+    throw new Error(payload.message || "Không thể cập nhật đơn hàng đã đến nơi.");
   }
 
   return payload.data;
