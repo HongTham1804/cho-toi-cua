@@ -21,7 +21,7 @@ public function rules(): array
         'delivery_address' => ['nullable', 'string', 'max:500'],
         'delivery_latitude' => ['nullable', 'numeric', 'between:-90,90'],
         'delivery_longitude' => ['nullable', 'numeric', 'between:-180,180'],
-        'payment_method' => ['required', 'string', 'in:cod,bank_transfer,momo'],
+        'payment_method' => ['required', 'string', 'in:cod,payos,bank_transfer,wallet'],
         'note' => ['nullable', 'string', 'max:1000'],
 
         'items' => ['required', 'array', 'min:1'],

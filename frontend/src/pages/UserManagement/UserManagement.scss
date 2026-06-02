@@ -69,20 +69,13 @@ $primary-green: #006C49;
         border: 1px solid $border-color;
         color: $text-secondary;
       }
-
-      .btn-create {
-        background: $primary-green;
-        border: none;
-        color: white;
-        box-shadow: 0px 1px 2px rgba(0, 0, 0, 0.05);
-      }
     }
   }
 
   /* Bộ lọc */
   .filters {
-    display: flex;
-    align-items: flex-end;
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
     background: $bg-color;
     border: 1px solid $border-color;
     border-radius: 8px;
@@ -110,26 +103,6 @@ $primary-green: #006C49;
         font-family: 'Be Vietnam Pro', sans-serif;
         color: $text-main;
         cursor: pointer;
-      }
-    }
-
-    .btn-reset-filter {
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 8px;
-      background: #E2E8F8;
-      border: none;
-      border-radius: 4px;
-      height: 38px;
-      padding: 0 24px;
-      font-weight: 600;
-      color: $text-main;
-      cursor: pointer;
-      transition: background 0.2s;
-
-      &:hover {
-        background: #d0d9f2;
       }
     }
   }
@@ -218,18 +191,6 @@ $primary-green: #006C49;
           font-size: 13px;
           color: $text-secondary;
           margin-top: 4px;
-        }
-      }
-
-      .role-cell {
-        .badge {
-          font-size: 10px;
-          font-weight: 700;
-          padding: 2px 8px;
-          border-radius: 12px;
-          display: inline-block;
-          margin-top: 6px;
-          letter-spacing: 0.5px;
         }
       }
 
@@ -322,87 +283,6 @@ $primary-green: #006C49;
           }
         }
       }
-    }
-  }
-}
-/* --- CSS CHO MODAL THÊM NGƯỜI DÙNG --- */
-.modal-overlay {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100vw;
-  height: 100vh;
-  background: rgba(0, 0, 0, 0.4);
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  z-index: 1000;
-  backdrop-filter: blur(2px);
-}
-
-.modal-content {
-  background: #FFFFFF;
-  padding: 32px;
-  border-radius: 12px;
-  width: 500px;
-  box-shadow: 0px 4px 24px rgba(0, 0, 0, 0.1);
-
-  h3 {
-    margin-top: 0;
-    color: #151C27;
-    font-size: 20px;
-  }
-
-  .form-group {
-    display: flex;
-    flex-direction: column;
-    gap: 8px;
-    margin-bottom: 16px;
-
-    label {
-      font-size: 13px;
-      font-weight: 600;
-      color: #3C4A42;
-    }
-
-    input, select {
-      padding: 10px 12px;
-      border: 1px solid #BBCABF;
-      border-radius: 6px;
-      font-size: 14px;
-      outline: none;
-      font-family: 'Be Vietnam Pro', sans-serif;
-
-      &:focus {
-        border-color: #006C49;
-      }
-    }
-  }
-
-  .modal-actions {
-    display: flex;
-    justify-content: flex-end;
-    gap: 12px;
-    margin-top: 24px;
-
-    button {
-      padding: 10px 20px;
-      border-radius: 6px;
-      font-weight: 600;
-      cursor: pointer;
-      font-size: 14px;
-    }
-
-    .btn-cancel {
-      background: #F9F9FF;
-      border: 1px solid #BBCABF;
-      color: #3C4A42;
-    }
-
-    .btn-save {
-      background: #006C49;
-      border: none;
-      color: white;
     }
   }
 }

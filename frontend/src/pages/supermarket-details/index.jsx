@@ -4,6 +4,10 @@ import './supermarket-details.css';
 import '@fortawesome/fontawesome-free/css/all.min.css';
 import { addCartItem } from '../../services/cartStorage';
 import {
+  getFlashSaleReminderIds,
+  saveFlashSaleReminder,
+} from '../../services/flashSaleReminderStorage';
+import {
   fetchCategories,
   fetchFlashSales,
   fetchProducts,
@@ -81,6 +85,59 @@ const formatCountdown = (totalSeconds) => {
     .join(' : ');
 };
 
+const formatMaskedFlashPrice = (price) => {
+  const formattedPrice = formatPrice(price);
+  return formattedPrice.replace(/\d/, '?');
+};
+
+const getDisplayFlashSale = (flashSales, nowMs = Date.now()) =>
+  [...flashSales]
+    .filter((flashSale) => new Date(flashSale.end_time).getTime() > nowMs)
+    .sort((first, second) => new Date(first.start_time).getTime() - new Date(second.start_time).getTime())[0] || null;
+
+const getFlashSaleTiming = (flashSale, nowMs = Date.now()) => {
+  if (!flashSale) {
+    return {
+      phase: 'none',
+      label: 'Bắt đầu trong',
+      secondsLeft: 0,
+    };
+  }
+
+  const startMs = new Date(flashSale.start_time).getTime();
+  const endMs = new Date(flashSale.end_time).getTime();
+
+  if (Number.isNaN(startMs) || Number.isNaN(endMs)) {
+    return {
+      phase: 'none',
+      label: 'Bắt đầu trong',
+      secondsLeft: 0,
+    };
+  }
+
+  if (nowMs < startMs) {
+    return {
+      phase: 'upcoming',
+      label: 'Bắt đầu trong',
+      secondsLeft: Math.max(0, Math.floor((startMs - nowMs) / 1000)),
+    };
+  }
+
+  if (nowMs <= endMs) {
+    return {
+      phase: 'active',
+      label: 'Kết thúc trong',
+      secondsLeft: Math.max(0, Math.floor((endMs - nowMs) / 1000)),
+    };
+  }
+
+  return {
+    phase: 'ended',
+    label: 'Bắt đầu trong',
+    secondsLeft: 0,
+  };
+};
+
 const SAFE_FIT_PRODUCT_NAMES = new Set([
   'Rau cải xanh VietGAP 500g',
   'Rau muống sạch bó 400g',
@@ -102,9 +159,11 @@ export default function SupermarketDetails() {
   const [sortMode, setSortMode] = useState('best-seller');
   const [flashVisibleCount, setFlashVisibleCount] = useState(4);
   const [productVisibleCount, setProductVisibleCount] = useState(8);
-  const [countdownSeconds, setCountdownSeconds] = useState(2 * 3600 + 15 * 60 + 30);
   const [products, setProducts] = useState([]);
+  const [flashSale, setFlashSale] = useState(null);
   const [flashSaleProducts, setFlashSaleProducts] = useState([]);
+  const [flashReminderNotice, setFlashReminderNotice] = useState('');
+  const [remindedFlashProductIds, setRemindedFlashProductIds] = useState([]);
   const [vouchers, setVouchers] = useState([]);
   const [voucherNotice, setVoucherNotice] = useState('');
   const [savingVoucherIds, setSavingVoucherIds] = useState([]);
@@ -114,6 +173,7 @@ export default function SupermarketDetails() {
   const [isLoadingProducts, setIsLoadingProducts] = useState(false);
   const [productError, setProductError] = useState('');
   const [isStoreOpen, setIsStoreOpen] = useState(() => isStoreOpenNow());
+  const [nowMs, setNowMs] = useState(() => Date.now());
   const [searchParams] = useSearchParams();
   const location = useLocation();
   const navigate = useNavigate();
@@ -168,14 +228,19 @@ export default function SupermarketDetails() {
   useEffect(() => {
     let isMounted = true;
     let timerId = null;
+    let refreshTimerId = null;
 
     setFlashSaleProducts([]);
-    timerId = window.setTimeout(() => {
-      fetchFlashSales({ storeId })
+
+    const loadFlashSale = () => {
+      fetchFlashSales({ storeId, status: 'all' })
         .then((apiFlashSales) => {
           if (!isMounted) return;
 
-          const flashItems = apiFlashSales[0]?.products || [];
+          const displayFlashSale = getDisplayFlashSale(apiFlashSales);
+          setFlashSale(displayFlashSale || null);
+
+          const flashItems = displayFlashSale?.products || [];
           setFlashSaleProducts(flashItems.map((item) => ({
             ...mapApiProduct({
               ...item.product,
@@ -184,29 +249,27 @@ export default function SupermarketDetails() {
               original_price: item.original_price,
               flash_sale_sold_percent: item.sold_percent,
               flash_sale_remaining: item.remaining,
-              flash_sale_end_time: apiFlashSales[0]?.end_time,
+              flash_sale_end_time: displayFlashSale?.end_time,
             }),
             flashSaleProductId: item.id,
             soldPercent: item.sold_percent,
             remaining: item.remaining,
           })));
-
-          if (apiFlashSales[0]?.end_time) {
-            const secondsLeft = Math.max(
-              0,
-              Math.floor((new Date(apiFlashSales[0].end_time).getTime() - Date.now()) / 1000)
-            );
-            setCountdownSeconds(secondsLeft);
-          }
         })
         .catch(() => {
-          if (isMounted) setFlashSaleProducts([]);
+          if (!isMounted) return;
+          setFlashSale(null);
+          setFlashSaleProducts([]);
         });
-    }, 120);
+    };
+
+    timerId = window.setTimeout(loadFlashSale, 120);
+    refreshTimerId = window.setInterval(loadFlashSale, 60 * 1000);
 
     return () => {
       isMounted = false;
       if (timerId) window.clearTimeout(timerId);
+      if (refreshTimerId) window.clearInterval(refreshTimerId);
     };
   }, [storeId]);
 
@@ -237,8 +300,12 @@ export default function SupermarketDetails() {
   }, [storeId]);
 
   useEffect(() => {
+    setRemindedFlashProductIds(getFlashSaleReminderIds());
+  }, [flashSale?.id]);
+
+  useEffect(() => {
     const timer = window.setInterval(() => {
-      setCountdownSeconds((seconds) => (seconds > 0 ? seconds - 1 : 0));
+      setNowMs(Date.now());
     }, 1000);
 
     return () => window.clearInterval(timer);
@@ -253,6 +320,9 @@ export default function SupermarketDetails() {
     return () => window.clearInterval(timer);
   }, []);
 
+  const flashSaleTiming = useMemo(() => getFlashSaleTiming(flashSale, nowMs), [flashSale, nowMs]);
+  const isFlashSaleActive = flashSaleTiming.phase === 'active';
+  const isFlashSaleUpcoming = flashSaleTiming.phase === 'upcoming';
   const flashProducts = flashSaleProducts;
 
   const sortedProducts = useMemo(() => {
@@ -281,6 +351,22 @@ export default function SupermarketDetails() {
   const handleLoadMoreProducts = () => {
     setProductVisibleCount((count) => Math.min(count + 8, sortedProducts.length));
   };
+
+  const handleFlashReminder = (product) => {
+    const reminder = saveFlashSaleReminder({ product, flashSale, storeId });
+
+    if (!reminder) {
+      setFlashReminderNotice('Chưa thể lưu nhắc nhở cho sản phẩm này.');
+      window.setTimeout(() => setFlashReminderNotice(''), 2400);
+      return;
+    }
+
+    setRemindedFlashProductIds(getFlashSaleReminderIds());
+    setFlashReminderNotice(`Đã lưu nhắc nhở cho ${product.name}.`);
+    window.setTimeout(() => setFlashReminderNotice(''), 2400);
+  };
+
+  const getFlashReminderId = (product) => `${flashSale?.id}:${product.flashSaleProductId || product.id}`;
 
   const handleAddToCart = (product) => {
     if (!product.isAvailable) {
@@ -428,7 +514,11 @@ export default function SupermarketDetails() {
             <section className="flash-sale-section">
               <div className="flash-sale-header">
                 <h2>
-                  ⚡ Giờ Vàng Giá Sốc <span className="countdown">{formatCountdown(countdownSeconds)}</span>
+                  ⚡ Giờ Vàng Giá Sốc
+                  <span className={`countdown-label countdown-label--${flashSaleTiming.phase}`}>
+                    {flashSaleTiming.label}
+                  </span>
+                  <span className="countdown">{formatCountdown(flashSaleTiming.secondsLeft)}</span>
                 </h2>
               </div>
 
@@ -450,21 +540,42 @@ export default function SupermarketDetails() {
                     </div>
                     <div className="p-info-flash">
                       <h3>{product.name}</h3>
-                      <div className="price-box">
-                        <span className="p-price">{formatPrice(product.price)}</span>
+                      <div className={`price-box ${isFlashSaleUpcoming ? 'price-box--upcoming' : ''}`}>
+                        <span className="p-price">
+                          {isFlashSaleUpcoming ? formatMaskedFlashPrice(product.price) : formatPrice(product.price)}
+                        </span>
                         <span className="p-original">{formatPrice(product.originalPrice)}</span>
                       </div>
-                      <div className="progress-bar-container">
-                        <div className="progress-bar" style={{ width: `${product.soldPercent || 0}%` }}></div>
-                        <span className="progress-text">Đã bán {product.soldPercent || 0}%</span>
-                      </div>
+                      {isFlashSaleActive ? (
+                        <div className="progress-bar-container">
+                          <div className="progress-bar" style={{ width: `${product.soldPercent || 0}%` }}></div>
+                          <span className="progress-text">Đã bán {product.soldPercent || 0}%</span>
+                        </div>
+                      ) : (
+                        <button
+                          className={`btn-remind-flash ${remindedFlashProductIds.includes(getFlashReminderId(product)) ? 'is-reminded' : ''}`}
+                          type="button"
+                          onClick={(event) => {
+                            event.stopPropagation();
+                            handleFlashReminder(product);
+                          }}
+                        >
+                          {remindedFlashProductIds.includes(getFlashReminderId(product)) ? 'Đã nhắc' : 'Nhắc nhở tôi'}
+                        </button>
+                      )}
                     </div>
                   </div>
                 ))}
               </div>
 
+              {flashReminderNotice && <p className="flash-reminder-notice">{flashReminderNotice}</p>}
+
               {!isLoadingProducts && visibleFlashProducts.length === 0 && (
-                <p className="products-end-note">Chưa có sản phẩm flash sale đang chạy.</p>
+                <p className="products-end-note">
+                  {flashSale
+                    ? 'Chưa có sản phẩm flash sale trong đợt này.'
+                    : 'Chưa có lịch flash sale sắp tới.'}
+                </p>
               )}
 
               {hasMoreFlashProducts && (

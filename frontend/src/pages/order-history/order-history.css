@@ -12,6 +12,7 @@
   --clr-primary-dk:  #065f46;
   --clr-primary-lt:  #d1fae5;
   /* Status colors */
+  --clr-pending-payment-bg: #e0f2fe; --clr-pending-payment-fg: #0369a1;
   --clr-pending-bg:   #fef3c7; --clr-pending-fg:   #d97706;
   --clr-preparing-bg: #dcfce7; --clr-preparing-fg: #15803d;
   --clr-shipping-bg:  #d1fae5; --clr-shipping-fg:  #047857;
@@ -192,6 +193,7 @@ button { cursor: pointer; font-family: inherit; }
   border-radius: 50%; background: currentColor;
   flex-shrink: 0;
 }
+.status-badge.pending-payment { background: var(--clr-pending-payment-bg); color: var(--clr-pending-payment-fg); }
 .status-badge.pending   { background: var(--clr-pending-bg);   color: var(--clr-pending-fg); }
 .status-badge.preparing { background: var(--clr-preparing-bg); color: var(--clr-preparing-fg); }
 .status-badge.shipping  { background: var(--clr-shipping-bg);  color: var(--clr-shipping-fg); }

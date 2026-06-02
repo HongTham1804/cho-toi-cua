@@ -24,13 +24,36 @@ class FlashSaleController extends Controller
             ->where('status', '!=', 'active')
             ->update(['status' => 'active']);
 
+        FlashSale::query()
+            ->where('start_time', '>', $now)
+            ->where('status', '!=', 'upcoming')
+            ->update(['status' => 'upcoming']);
+
         $flashSales = Cache::remember('flash-sales:index:' . md5($request->fullUrl()), now()->addSeconds(30), function () use ($request) {
             return FlashSale::with([
                 'products.product.category',
                 'products.product.store',
             ])
             ->when($request->filled('status'), function ($query) use ($request) {
-                $query->where('status', $request->query('status'));
+                if ($request->query('status') === 'all') {
+                    return;
+                }
+
+                $statuses = collect(explode(',', (string) $request->query('status')))
+                    ->map(fn ($status) => trim($status))
+                    ->filter()
+                    ->values();
+
+                if ($statuses->isEmpty()) {
+                    return;
+                }
+
+                if ($statuses->count() > 1) {
+                    $query->whereIn('status', $statuses);
+                    return;
+                }
+
+                $query->where('status', $statuses->first());
             }, function ($query) {
                 $query->where('status', 'active');
             })

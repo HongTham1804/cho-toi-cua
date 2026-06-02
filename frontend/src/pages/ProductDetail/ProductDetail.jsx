@@ -168,7 +168,7 @@ export default function ProductDetail() {
 
   return (
     <div className="ctc-product-detail-page">
-      <CustomerHeader onMenuClick={() => setIsMenuOpen(true)} />
+      <CustomerHeader onMenuClick={() => setIsMenuOpen((current) => !current)} />
 
       {isMenuOpen && (
         <div className="modal-overlay-core" onClick={() => setIsMenuOpen(false)}>
@@ -183,6 +183,9 @@ export default function ProductDetail() {
               </Link>
               <Link to="/order-history" onClick={() => setIsMenuOpen(false)}>
                 <i className="fa-solid fa-receipt"></i> Đơn hàng của bạn
+              </Link>
+              <Link to="/wallet" onClick={() => setIsMenuOpen(false)}>
+                <i className="fa-solid fa-wallet"></i> Ví Chợ Tới Cửa
               </Link>
               <Link to="/account-settings" onClick={() => setIsMenuOpen(false)}>
                 <i className="fa-solid fa-gear"></i> Cài đặt tài khoản

@@ -1,5 +1,6 @@
 import './review.css';
 import { useEffect, useRef, useState } from "react";
+import { Link } from "react-router-dom";
 import { fetchReviewOrder, getOrderIdFromUrl, postReviews } from "./reviewApi.js";
 
 const STAR_HINTS = ["", "Rất tệ", "Tệ", "Bình thường", "Tốt", "Xuất sắc!"];
@@ -210,7 +211,7 @@ function Breadcrumb() {
       <div className="container">
         <nav aria-label="Breadcrumb">
           <ol className="breadcrumb">
-            <li><a href="#">Đơn hàng của bạn</a></li>
+            <li><Link to="/order-history">Đơn hàng của bạn</Link></li>
             <li aria-hidden="true">›</li>
             <li aria-current="page">Đánh giá sản phẩm</li>
           </ol>

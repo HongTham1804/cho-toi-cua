@@ -9,6 +9,7 @@ const Header = ({
   categoryValue = "Tất cả danh mục",
   categories = ["Tất cả danh mục"],
   onCategoryChange,
+  showCategoryFilter = true,
 }) => {
   return (
     <header className="top-header">
@@ -23,22 +24,24 @@ const Header = ({
           />
         </div>
 
-        <div className="category-filter">
-          <span>{categoryLabel}</span>
-          <div className="dropdown">
-            <select
-              value={categoryValue}
-              onChange={(event) => onCategoryChange?.(event.target.value)}
-            >
-              {categories.map((category) => (
-                <option key={category} value={category}>
-                  {category}
-                </option>
-              ))}
-            </select>
-            <FiChevronDown className="icon-chevron" />
+        {showCategoryFilter && (
+          <div className="category-filter">
+            <span>{categoryLabel}</span>
+            <div className="dropdown">
+              <select
+                value={categoryValue}
+                onChange={(event) => onCategoryChange?.(event.target.value)}
+              >
+                {categories.map((category) => (
+                  <option key={category} value={category}>
+                    {category}
+                  </option>
+                ))}
+              </select>
+              <FiChevronDown className="icon-chevron" />
+            </div>
           </div>
-        </div>
+        )}
       </div>
 
       <div className="header-right">

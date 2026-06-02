@@ -5,6 +5,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import DeliveryLocationModal from '../../components/DeliveryLocationModal/DeliveryLocationModal';
 import { addCartItem, readCartItems, writeCartItems } from '../../services/cartStorage';
 import { clearVoucherCache, fetchProducts, fetchStores, fetchUserVouchers, fetchVouchers } from '../../services/productApi';
+import { fetchWallet } from '../../services/walletApi';
 
 const API_BASE_URL = 'http://localhost:8000/api';
 const DEFAULT_CUSTOMER_ID = 4;
@@ -70,6 +71,9 @@ export default function ShoppingCart() {
   const [stores, setStores] = useState([]);
   const [isLocationModalOpen, setIsLocationModalOpen] = useState(false);
   const [deliveryLocation, setDeliveryLocation] = useState(() => readDeliveryLocation());
+  const [paymentMethod, setPaymentMethod] = useState('cod');
+  const [wallet, setWallet] = useState(null);
+  const [isWalletLoading, setIsWalletLoading] = useState(false);
   const primaryStoreId = cartItems[0]?.store_id || 1;
 
   useEffect(() => {
@@ -101,6 +105,27 @@ export default function ShoppingCart() {
       })
       .catch(() => {
         if (isMounted) setStores([]);
+      });
+
+    return () => {
+      isMounted = false;
+    };
+  }, []);
+
+  useEffect(() => {
+    let isMounted = true;
+    const userId = Number(getCurrentCustomer().id || DEFAULT_CUSTOMER_ID);
+
+    setIsWalletLoading(true);
+    fetchWallet({ userId })
+      .then((nextWallet) => {
+        if (isMounted) setWallet(nextWallet);
+      })
+      .catch(() => {
+        if (isMounted) setWallet(null);
+      })
+      .finally(() => {
+        if (isMounted) setIsWalletLoading(false);
       });
 
     return () => {
@@ -209,6 +234,11 @@ export default function ShoppingCart() {
       return;
     }
 
+    if (paymentMethod === 'wallet' && Number(wallet?.balance || 0) < total) {
+      setCheckoutError('Ví không đủ để trả đơn hàng này.');
+      return;
+    }
+
     const currentCustomer = getCurrentCustomer();
     const deliveryAddress =
       deliveryLocation.address?.trim() ||
@@ -223,7 +253,7 @@ export default function ShoppingCart() {
       delivery_address: deliveryAddress,
       delivery_latitude: deliveryLocation.lat,
       delivery_longitude: deliveryLocation.lng,
-      payment_method: 'cod',
+      payment_method: paymentMethod,
       note: orderNote.trim() || null,
       shipping_fee: shippingFee,
       items: cartItems.map((item) => ({
@@ -258,7 +288,13 @@ export default function ShoppingCart() {
       setSelectedDiscountVoucher(null);
       setSelectedFreeshipVoucher(null);
       setOrderNote('');
-      navigate('/order-history?status=pending');
+
+      if (paymentMethod === 'payos' && result.payment?.checkoutUrl) {
+        window.location.assign(result.payment.checkoutUrl);
+        return;
+      }
+
+      navigate(`/order-history?status=${paymentMethod === 'payos' ? 'pending_payment' : 'pending'}`);
     } catch (error) {
       setCheckoutError(error.message || 'Không thể tạo đơn hàng. Bạn kiểm tra backend/API rồi thử lại.');
     } finally {
@@ -290,6 +326,13 @@ export default function ShoppingCart() {
   const orderDiscount = calculateVoucherDiscount(selectedDiscountVoucher, subtotal, shippingFee);
   const finalShippingFee = Math.max(0, shippingFee - shippingDiscount);
   const total = Math.max(0, subtotal + finalShippingFee - orderDiscount);
+  const walletBalance = Number(wallet?.balance || 0);
+  const isWalletInsufficient = paymentMethod === 'wallet' && walletBalance < total;
+  const checkoutButtonLabel = isCheckingOut
+    ? 'Đang tạo đơn...'
+    : paymentMethod === 'payos'
+      ? 'Tạo đơn chờ chuyển khoản'
+      : 'Tiến hành đặt hàng';
 
   return (
     <div className="shopping-cart-wrapper">
@@ -558,6 +601,52 @@ export default function ShoppingCart() {
                 <i className="fa-solid fa-chevron-right"></i>
               </div>
 
+              <div className="payment-method-section">
+                <h4>Phương thức thanh toán</h4>
+                <div className="payment-method-list">
+                  <button
+                    type="button"
+                    className={`payment-method-card ${paymentMethod === 'cod' ? 'selected' : ''}`}
+                    onClick={() => setPaymentMethod('cod')}
+                  >
+                    <i className="fa-solid fa-box-open"></i>
+                    <span>
+                      <strong>Thanh toán khi nhận hàng</strong>
+                      <small>Trả tiền mặt sau khi nhận đơn.</small>
+                    </span>
+                  </button>
+                  <button
+                    type="button"
+                    className={`payment-method-card ${paymentMethod === 'payos' ? 'selected' : ''}`}
+                    onClick={() => setPaymentMethod('payos')}
+                  >
+                    <i className="fa-solid fa-qrcode"></i>
+                    <span>
+                      <strong>Chuyển khoản PayOS</strong>
+                      <small>Tạo QR thanh toán ở bước tiếp theo.</small>
+                    </span>
+                  </button>
+                  <button
+                    type="button"
+                    className={`payment-method-card ${paymentMethod === 'wallet' ? 'selected' : ''} ${isWalletInsufficient ? 'danger' : ''}`}
+                    onClick={() => setPaymentMethod('wallet')}
+                  >
+                    <i className="fa-solid fa-wallet"></i>
+                    <span>
+                      <strong>Ví Chợ Tới Cửa</strong>
+                      <small>
+                        {isWalletLoading
+                          ? 'Đang tải số dư...'
+                          : `Số dư ${formatCurrency(walletBalance)}`}
+                      </small>
+                    </span>
+                  </button>
+                </div>
+                {isWalletInsufficient && (
+                  <p className="wallet-insufficient-text">Ví không đủ để trả đơn hàng này.</p>
+                )}
+              </div>
+
               {/* Checkout Button */}
               {checkoutError && <p className="checkout-error">{checkoutError}</p>}
 
@@ -565,9 +654,9 @@ export default function ShoppingCart() {
                 className="btn-checkout"
                 type="button"
                 onClick={handleCheckout}
-                disabled={cartItems.length === 0 || isCheckingOut}
+                disabled={cartItems.length === 0 || isCheckingOut || isWalletInsufficient}
               >
-                <span>{isCheckingOut ? 'Đang tạo đơn...' : 'Tiến hành đặt hàng'}</span>
+                <span>{checkoutButtonLabel}</span>
                 <i className="fa-solid fa-arrow-right"></i>
               </button>
 

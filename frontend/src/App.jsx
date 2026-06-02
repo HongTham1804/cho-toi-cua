@@ -21,6 +21,7 @@ import LoggedInHomepage from "./pages/logged-in-homepage";
 import SupermarketDetails from "./pages/supermarket-details";
 import PartnerLogin from "./pages/PartnerLogin/PartnerLogin";
 import ShoppingCart from "./pages/shopping-cart";
+import WalletPage from "./pages/wallet";
 import SelectRole from "./pages/select-role";
 import UserDetail from "./pages/UserDetail/UserDetail";
 import AccountSettings from './pages/account-settings';
@@ -70,9 +71,9 @@ function App() {
   const [currentUser, setCurrentUser] = useState(() => getStoredAuthUser());
   const navigate = useNavigate();
 
-  const openCustomerMenu = () => {
+  const toggleCustomerMenu = () => {
     setCurrentUser(getStoredAuthUser());
-    setIsMenuOpen(true);
+    setIsMenuOpen((current) => !current);
   };
 
   useEffect(() => {
@@ -130,6 +131,9 @@ function App() {
               <Link to="/order-history" onClick={() => setIsMenuOpen(false)}>
                 <i className="fa-solid fa-receipt"></i> Đơn hàng của bạn
               </Link>
+              <Link to="/wallet" onClick={() => setIsMenuOpen(false)}>
+                <i className="fa-solid fa-wallet"></i> Ví Chợ Tới Cửa
+              </Link>
               <Link to="/account-settings" onClick={() => setIsMenuOpen(false)}>
                 <i className="fa-solid fa-gear"></i> Cài đặt tài khoản
               </Link>
@@ -146,21 +150,22 @@ function App() {
         <Route path="/guest-homepage" element={<GuestHomepage />} />
         <Route path="/select-role" element={<SelectRole />} />
 
-        <Route element={<CustomerLayout onMenuClick={openCustomerMenu} />}>
+        <Route element={<CustomerLayout onMenuClick={toggleCustomerMenu} />}>
           <Route path="/shopping-cart" element={<ShoppingCart />} />
           <Route path="/supermarket-details" element={<SupermarketDetails />} />
-          <Route path="/logged-in-homepage" element={<LoggedInHomepage onAccountClick={openCustomerMenu} />} />
+          <Route path="/logged-in-homepage" element={<LoggedInHomepage onAccountClick={toggleCustomerMenu} />} />
           <Route path="/order-history" element={<OrderHistory />} />
           <Route path="/order-history/:orderId" element={<OrderDetail />} />
           <Route path="/order-detail" element={<OrderDetail />} />
           <Route path="/order-detail/:orderId" element={<OrderDetail />} />
           <Route path="/notifications" element={<Notifications />} />
+          <Route path="/wallet" element={<WalletPage />} />
+          <Route path="/review" element={<Review />} />
           <Route path="/account-settings" element={<AccountSettings />} />
           <Route path="/favorite-products" element={lazyPage(FavoriteProducts)} />
         </Route>
 
         <Route path="/tracking" element={<Tracking />} />
-        <Route path="/review" element={<Review />} />
         <Route path="/product/:id" element={<ProductDetailRedirect />} />
         <Route path="/product-detail" element={<ProductDetail />} />
         <Route path="/product-detail/:id" element={<ProductDetail />} />

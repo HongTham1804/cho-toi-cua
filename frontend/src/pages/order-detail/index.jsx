@@ -4,6 +4,7 @@ import "./order-detail.css";
 import { cancelOrder, completeOrder, fetchOrderById, reorder } from "../order-history/api/order-history-api";
 
 const STATUS_LABELS = {
+  pending_payment: "Chờ thanh toán",
   pending: "Chờ xử lý",
   preparing: "Đang lấy hàng",
   shipping: "Đang giao",
@@ -104,7 +105,7 @@ export default function OrderDetail() {
 
   const detail = useMemo(() => (order ? buildDetail(order) : null), [order]);
   const isCompleted = order?.status === "completed";
-  const isCancellable = ["pending", "preparing"].includes(order?.status);
+  const isCancellable = ["pending_payment", "pending", "preparing"].includes(order?.status);
   const isShipping = order?.status === "shipping";
   const canConfirmReceived = isShipping && order?.shipment?.status === "arrived";
   const statusLabel = STATUS_LABELS[order?.status] ?? "Thông tin đơn";

@@ -7,6 +7,8 @@ use App\Models\AppNotification;
 use App\Models\Order;
 use App\Models\Product;
 use App\Models\Voucher;
+use App\Models\Wallet;
+use App\Services\PayosService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
@@ -92,6 +94,20 @@ class OrderController extends Controller
                     : 0;
                 $finalShippingFee = max(0, $shippingFee - $shippingDiscount);
                 $totalAmount = max(0, $subtotal + $finalShippingFee - $orderDiscount);
+                $paymentState = $this->initialPaymentState($data['payment_method']);
+                $wallet = null;
+
+                if ($paymentState['method'] === 'wallet') {
+                    $wallet = Wallet::firstOrCreate(
+                        ['user_id' => (int) $data['customer_id']],
+                        ['balance' => 0]
+                    );
+                    $wallet = Wallet::whereKey($wallet->id)->lockForUpdate()->firstOrFail();
+
+                    if ((float) $wallet->balance < $totalAmount) {
+                        throw new \Exception('Ví Chợ Tới Cửa không đủ để thanh toán đơn hàng.');
+                    }
+                }
 
                 $order = Order::create([
                     'customer_id' => $data['customer_id'],
@@ -104,9 +120,11 @@ class OrderController extends Controller
                     'delivery_address' => $data['delivery_address'] ?? $data['shipping_address'],
                     'delivery_latitude' => $data['delivery_latitude'] ?? null,
                     'delivery_longitude' => $data['delivery_longitude'] ?? null,
-                    'payment_method' => $data['payment_method'],
+                    'payment_method' => $paymentState['method'],
+                    'payment_status' => $paymentState['payment_status'],
+                    'paid_at' => $paymentState['paid_at'],
                     'note' => $data['note'] ?? null,
-                    'status' => 'pending',
+                    'status' => $paymentState['order_status'],
                 ]);
 
                 foreach ($itemsForOrder as $it) {
@@ -122,6 +140,19 @@ class OrderController extends Controller
                     $it['product']->decrement('stock', $it['quantity']);
                 }
 
+                if ($wallet) {
+                    $nextBalance = (float) $wallet->balance - $totalAmount;
+                    $wallet->update(['balance' => $nextBalance]);
+                    $wallet->transactions()->create([
+                        'order_id' => $order->id,
+                        'type' => 'payment',
+                        'amount' => -$totalAmount,
+                        'balance_after' => $nextBalance,
+                        'description' => "Thanh toán đơn hàng #{$order->id}",
+                        'metadata' => ['payment_method' => 'wallet'],
+                    ]);
+                }
+
                 foreach (array_filter([$discountVoucher, $shippingVoucher]) as $voucher) {
                     $voucher->increment('used_count');
                     $voucher->users()->updateExistingPivot($data['customer_id'], [
@@ -133,9 +164,16 @@ class OrderController extends Controller
                 return $order->load(['customer', 'store', 'shipper', 'shipment', 'details.product']);
             });
 
+            $payment = null;
+            if ($order->payment_method === 'payos') {
+                $payment = app(PayosService::class)->createPaymentLink($order);
+                $order->refresh();
+            }
+
             return response()->json([
                 'message' => 'Tạo đơn hàng thành công.',
                 'data' => $order,
+                'payment' => $payment,
             ], 201);
         } catch (\Throwable $e) {
             $message = $e->getMessage();
@@ -146,6 +184,32 @@ class OrderController extends Controller
                     : 'Không thể tạo đơn hàng: ' . $message,
             ], 400);
         }
+    }
+
+    private function initialPaymentState(string $paymentMethod): array
+    {
+        $method = $paymentMethod === 'bank_transfer' ? 'payos' : $paymentMethod;
+
+        return match ($method) {
+            'payos' => [
+                'method' => 'payos',
+                'payment_status' => 'pending',
+                'order_status' => 'pending_payment',
+                'paid_at' => null,
+            ],
+            'wallet' => [
+                'method' => 'wallet',
+                'payment_status' => 'paid',
+                'order_status' => 'pending',
+                'paid_at' => now(),
+            ],
+            default => [
+                'method' => 'cod',
+                'payment_status' => 'unpaid',
+                'order_status' => 'pending',
+                'paid_at' => null,
+            ],
+        };
     }
 
     private function resolveVoucher(int $voucherId, int $customerId, int $storeId, float $subtotal, array $allowedTypes): Voucher
@@ -217,9 +281,11 @@ class OrderController extends Controller
             ], 404);
         }
 
-        if (! in_array($order->status, ['pending', 'preparing'], true)) {
+        $order = $this->syncPayosPaymentBeforeCancel($order);
+
+        if (! in_array($order->status, ['pending_payment', 'pending', 'preparing'], true)) {
             return response()->json([
-                'message' => 'Chỉ có thể hủy đơn hàng đang chờ xử lý hoặc đang lấy hàng.',
+                'message' => 'Chỉ có thể hủy đơn hàng đang chờ thanh toán, chờ xử lý hoặc đang lấy hàng.',
             ], 422);
         }
 
@@ -230,8 +296,50 @@ class OrderController extends Controller
                 }
             }
 
+            if ($order->payment_status === 'paid' && ! $order->refunded_at) {
+                $wallet = Wallet::firstOrCreate(
+                    ['user_id' => (int) $order->customer_id],
+                    ['balance' => 0]
+                );
+                $wallet = Wallet::whereKey($wallet->id)->lockForUpdate()->firstOrFail();
+                $refundAmount = (float) $order->total_amount;
+                $nextBalance = (float) $wallet->balance + $refundAmount;
+
+                $wallet->update(['balance' => $nextBalance]);
+                $wallet->transactions()->create([
+                    'order_id' => $order->id,
+                    'type' => 'refund',
+                    'amount' => $refundAmount,
+                    'balance_after' => $nextBalance,
+                    'description' => "Hoàn tiền đơn hàng #{$order->id}",
+                    'metadata' => [
+                        'payment_method' => $order->payment_method,
+                        'payment_reference' => $order->payment_reference,
+                    ],
+                ]);
+
+                AppNotification::updateOrCreate(
+                    [
+                        'user_id' => $order->customer_id,
+                        'order_id' => $order->id,
+                        'type' => 'refund',
+                    ],
+                    [
+                        'title' => sprintf('Đã hoàn tiền đơn hàng #%s', str_pad((string) $order->id, 4, '0', STR_PAD_LEFT)),
+                        'message' => 'Tiền đã được hoàn vào Ví Chợ Tới Cửa của bạn để dùng cho đơn hàng tiếp theo.',
+                        'link' => '/wallet',
+                        'is_read' => false,
+                    ]
+                );
+
+                $order->payment_status = 'refunded';
+                $order->refunded_at = now();
+            }
+
             $order->update([
                 'status' => 'cancelled',
+                'payment_status' => $order->payment_status,
+                'refunded_at' => $order->refunded_at,
             ]);
 
             return $order->fresh()->load(['customer', 'store', 'shipper', 'shipment', 'details.product']);
@@ -241,6 +349,33 @@ class OrderController extends Controller
             'message' => 'Hủy đơn hàng thành công.',
             'data' => $order,
         ]);
+    }
+
+    private function syncPayosPaymentBeforeCancel(Order $order): Order
+    {
+        if ($order->payment_method !== 'payos' || $order->payment_status !== 'pending') {
+            return $order;
+        }
+
+        try {
+            $payos = app(PayosService::class);
+            $paymentInfo = $payos->getPaymentLinkInfo($order);
+
+            if (! $payos->isPaymentPaid($order, $paymentInfo)) {
+                return $order;
+            }
+
+            $order->update([
+                'payment_status' => 'paid',
+                'payment_reference' => $paymentInfo['paymentLinkId'] ?? $order->payment_reference,
+                'paid_at' => now(),
+                'status' => $order->status === 'pending_payment' ? 'pending' : $order->status,
+            ]);
+
+            return $order->fresh('details.product');
+        } catch (\Throwable) {
+            return $order;
+        }
     }
 
     public function arrived(int $id): JsonResponse

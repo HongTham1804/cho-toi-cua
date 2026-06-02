@@ -19,6 +19,10 @@ class Order extends Model
         'delivery_latitude',
         'delivery_longitude',
         'payment_method',
+        'payment_status',
+        'payment_reference',
+        'paid_at',
+        'refunded_at',
         'note',
         'status',
     ];
@@ -33,6 +37,8 @@ class Order extends Model
         'total_amount' => 'decimal:2',
         'delivery_latitude' => 'float',
         'delivery_longitude' => 'float',
+        'paid_at' => 'datetime',
+        'refunded_at' => 'datetime',
     ];
 
     public function details()

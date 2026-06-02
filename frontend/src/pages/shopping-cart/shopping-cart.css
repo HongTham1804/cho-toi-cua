@@ -465,6 +465,93 @@ body {
   margin-bottom: 12px;
 }
 
+.payment-method-section {
+  margin-bottom: 16px;
+}
+
+.payment-method-section h4 {
+  color: var(--text-black);
+  font-size: 14px;
+  font-weight: 700;
+  margin: 0 0 10px;
+}
+
+.payment-method-list {
+  display: grid;
+  gap: 10px;
+}
+
+.payment-method-card {
+  align-items: flex-start;
+  background: #ffffff;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  color: #334155;
+  cursor: pointer;
+  display: flex;
+  gap: 10px;
+  padding: 11px 12px;
+  text-align: left;
+  transition: border-color 0.2s ease, background-color 0.2s ease, box-shadow 0.2s ease;
+  width: 100%;
+}
+
+.payment-method-card:hover {
+  border-color: var(--green-primary);
+}
+
+.payment-method-card.selected {
+  background: #f0fdf6;
+  border-color: var(--green-primary);
+  box-shadow: 0 0 0 2px rgba(0, 108, 73, 0.08);
+}
+
+.payment-method-card.danger {
+  background: #fff1f2;
+  border-color: #fecaca;
+}
+
+.payment-method-card i {
+  align-items: center;
+  background: #ecfdf5;
+  border-radius: 6px;
+  color: var(--green-primary);
+  display: inline-flex;
+  flex-shrink: 0;
+  height: 34px;
+  justify-content: center;
+  width: 34px;
+}
+
+.payment-method-card.danger i {
+  background: #fee2e2;
+  color: #dc2626;
+}
+
+.payment-method-card span {
+  display: grid;
+  gap: 3px;
+}
+
+.payment-method-card strong {
+  color: #111827;
+  font-size: 13px;
+  line-height: 1.35;
+}
+
+.payment-method-card small {
+  color: #64748b;
+  font-size: 12px;
+  line-height: 1.35;
+}
+
+.wallet-insufficient-text {
+  color: #b91c1c;
+  font-size: 12px;
+  font-weight: 700;
+  margin: 8px 0 0;
+}
+
 /* Support Icons */
 .support-icons {
   display: flex;

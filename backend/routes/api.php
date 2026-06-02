@@ -8,6 +8,7 @@ use App\Http\Controllers\NotificationController;
 use App\Http\Controllers\OrderController;
 use App\Http\Controllers\PartnerOrderController;
 use App\Http\Controllers\PartnerProductController;
+use App\Http\Controllers\PayosController;
 use App\Http\Controllers\ProductController;
 use App\Http\Controllers\ProductImageController;
 use App\Http\Controllers\ReviewController;
@@ -15,6 +16,7 @@ use App\Http\Controllers\ShipperSimulationController;
 use App\Http\Controllers\StoreController;
 use App\Http\Controllers\TrackingController;
 use App\Http\Controllers\VoucherController;
+use App\Http\Controllers\WalletController;
 use Illuminate\Support\Facades\Route;
 
 Route::prefix('auth')->group(function () {
@@ -39,12 +41,17 @@ Route::get('/orders/{order}/review', [ReviewController::class, 'showOrder']);
 Route::post('/orders/{order}/reviews', [ReviewController::class, 'storeOrderReviews']);
 Route::patch('/orders/{id}/arrived', [OrderController::class, 'arrived']);
 Route::patch('/orders/{id}/complete', [OrderController::class, 'complete']);
+Route::post('/orders/{order}/payos-payment', [PayosController::class, 'create']);
 Route::get('/orders/{id}', [OrderController::class, 'show']);
 Route::patch('/orders/{id}/cancel', [OrderController::class, 'cancel']);
+Route::post('/payos/webhook', [PayosController::class, 'webhook']);
 
 Route::get('/notifications', [NotificationController::class, 'index']);
 Route::patch('/notifications/read-all', [NotificationController::class, 'markAllRead']);
 Route::patch('/notifications/{notification}/read', [NotificationController::class, 'markRead']);
+
+Route::get('/wallet', [WalletController::class, 'show']);
+Route::post('/wallet/top-up', [WalletController::class, 'topUp']);
 
 Route::apiResource('categories', CategoryController::class)->only(['index', 'show']);
 Route::apiResource('stores', StoreController::class)->only(['index', 'show']);

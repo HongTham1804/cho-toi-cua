@@ -206,8 +206,8 @@ class PromotionSeeder extends Seeder
         $startOfWeek = Carbon::now()->startOfWeek(Carbon::MONDAY);
 
         foreach ($weekdayNames as $dayNumber => $dayName) {
-            $startTime = $startOfWeek->copy()->addDays($dayNumber - 1)->setTime(7, 0);
-            $endTime = $startOfWeek->copy()->addDays($dayNumber - 1)->setTime(22, 0);
+            $startTime = $startOfWeek->copy()->addDays($dayNumber - 1)->setTime(10, 0);
+            $endTime = $startOfWeek->copy()->addDays($dayNumber - 1)->setTime(13, 0);
             $status = match (true) {
                 now()->lt($startTime) => 'upcoming',
                 now()->gt($endTime) => 'ended',

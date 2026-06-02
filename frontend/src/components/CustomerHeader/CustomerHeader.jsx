@@ -1,6 +1,6 @@
 import '@fortawesome/fontawesome-free/css/all.min.css';
 import logoMain from '../../assets/logo-main.png'; 
-import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { CART_CHANGED_EVENT, getCartTotalQuantity } from '../../services/cartStorage';
 import { fetchCategories, fetchProducts } from '../../services/productApi';
@@ -21,6 +21,7 @@ export default function CustomerHeader({ onMenuClick, onLoginClick, onRegisterCl
     const [searchValue, setSearchValue] = useState('');
     const [selectedCategory, setSelectedCategory] = useState(DEFAULT_CATEGORY);
     const [selectedProduct, setSelectedProduct] = useState(null);
+    const [isSearchDropdownOpen, setIsSearchDropdownOpen] = useState(false);
     const [isSearchFocused, setIsSearchFocused] = useState(false);
     const [cartQuantity, setCartQuantity] = useState(0);
     const [products, setProducts] = useState([]);
@@ -29,6 +30,7 @@ export default function CustomerHeader({ onMenuClick, onLoginClick, onRegisterCl
     const isGuest = variant === 'guest';
     const navigate = useNavigate();
     const location = useLocation();
+    const searchWrapperRef = useRef(null);
 
     const scopedStoreId = useMemo(() => {
       const params = new URLSearchParams(location.search);
@@ -61,8 +63,32 @@ export default function CustomerHeader({ onMenuClick, onLoginClick, onRegisterCl
       setProducts([]);
       setCategories([DEFAULT_CATEGORY]);
       setSelectedProduct(null);
+      setIsSearchDropdownOpen(false);
       setHasLoadedSearchData(false);
     }, [scopedStoreId]);
+
+    useEffect(() => {
+      if (isGuest) {
+        return undefined;
+      }
+
+      const handleDocumentPointerDown = (event) => {
+        if (searchWrapperRef.current?.contains(event.target)) {
+          return;
+        }
+
+        setIsSearchDropdownOpen(false);
+        setIsSearchFocused(false);
+      };
+
+      document.addEventListener('mousedown', handleDocumentPointerDown);
+      document.addEventListener('touchstart', handleDocumentPointerDown);
+
+      return () => {
+        document.removeEventListener('mousedown', handleDocumentPointerDown);
+        document.removeEventListener('touchstart', handleDocumentPointerDown);
+      };
+    }, [isGuest]);
 
     const loadSearchData = useCallback(() => {
       if (isGuest || hasLoadedSearchData) {
@@ -89,7 +115,7 @@ export default function CustomerHeader({ onMenuClick, onLoginClick, onRegisterCl
     }, [hasLoadedSearchData, isGuest, scopedStoreId]);
 
     const searchText = searchValue.trim().toLowerCase();
-    const isSearchOpen = !isGuest && (
+    const isSearchOpen = !isGuest && isSearchDropdownOpen && (
       Boolean(searchValue) ||
       selectedCategory !== DEFAULT_CATEGORY ||
       (isStoreScopedSearch && isSearchFocused)
@@ -151,6 +177,7 @@ export default function CustomerHeader({ onMenuClick, onLoginClick, onRegisterCl
 
       setSearchValue('');
       setSelectedProduct(null);
+      setIsSearchDropdownOpen(false);
       setSelectedCategory(DEFAULT_CATEGORY);
       navigate(`/product-detail/${productInSelectedStore.id}?store_id=${store.store_id}`, {
         state: {
@@ -165,6 +192,7 @@ export default function CustomerHeader({ onMenuClick, onLoginClick, onRegisterCl
       if (isStoreScopedSearch) {
         setSearchValue('');
         setSelectedProduct(null);
+        setIsSearchDropdownOpen(false);
         setSelectedCategory(DEFAULT_CATEGORY);
         navigate(`/product-detail/${product.id}?store_id=${scopedStoreId}`, {
           state: {
@@ -189,7 +217,7 @@ export default function CustomerHeader({ onMenuClick, onLoginClick, onRegisterCl
           <span className="logo-text">Chợ Tới Cửa</span>
         </div>
 
-        <div className="search-bar-wrapper">
+        <div className="search-bar-wrapper" ref={searchWrapperRef}>
           {!isGuest && (
             <select
               className="search-category-select"
@@ -198,9 +226,16 @@ export default function CustomerHeader({ onMenuClick, onLoginClick, onRegisterCl
                 loadSearchData();
                 setSelectedCategory(event.target.value);
                 setSelectedProduct(null);
+                setIsSearchDropdownOpen(true);
               }}
-              onFocus={loadSearchData}
-              onClick={loadSearchData}
+              onFocus={() => {
+                loadSearchData();
+                setIsSearchDropdownOpen(true);
+              }}
+              onClick={() => {
+                loadSearchData();
+                setIsSearchDropdownOpen(true);
+              }}
             >
               {categories.map((category) => (
                 <option key={category} value={category}>
@@ -218,10 +253,12 @@ export default function CustomerHeader({ onMenuClick, onLoginClick, onRegisterCl
               loadSearchData();
               setSearchValue(event.target.value);
               setSelectedProduct(null);
+              setIsSearchDropdownOpen(true);
             }}
             onFocus={() => {
               loadSearchData();
               setSelectedProduct(null);
+              setIsSearchDropdownOpen(true);
               setIsSearchFocused(true);
             }}
             onBlur={() => {
@@ -229,6 +266,7 @@ export default function CustomerHeader({ onMenuClick, onLoginClick, onRegisterCl
             }}
             onClick={() => {
               loadSearchData();
+              setIsSearchDropdownOpen(true);
               setIsSearchFocused(true);
             }}
           />

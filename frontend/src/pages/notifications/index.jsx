@@ -23,16 +23,24 @@ function App() {
   const [toast, setToast] = useState("");
 
   useEffect(() => {
+    let isMounted = true;
+
     async function loadNotifications() {
       try {
         const data = await fetchNotifications();
-        setNotifications(data);
+        if (isMounted) setNotifications(data);
       } finally {
-        setIsLoading(false);
+        if (isMounted) setIsLoading(false);
       }
     }
 
     loadNotifications();
+    const refreshTimer = window.setInterval(loadNotifications, 30 * 1000);
+
+    return () => {
+      isMounted = false;
+      window.clearInterval(refreshTimer);
+    };
   }, []);
 
   const unreadCount = notifications.filter((item) => !item.isRead).length;

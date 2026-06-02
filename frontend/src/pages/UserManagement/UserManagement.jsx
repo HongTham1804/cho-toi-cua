@@ -2,7 +2,7 @@ import { useState, useMemo, useEffect } from 'react';
 import Header from '../../components/Header/Header';
 import { usersData } from './mockData';
 import { 
-  FiDownload, FiUserPlus, FiFilter, FiMoreVertical, 
+  FiDownload, FiMoreVertical, 
   FiEdit2, FiLock, FiTrash2, FiEye, FiArrowUp, FiArrowDown,
   FiChevronLeft, FiChevronRight
 } from "react-icons/fi";
@@ -13,9 +13,6 @@ const UserManagement = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [roleFilter, setRoleFilter] = useState('all');
   const [statusFilter, setStatusFilter] = useState('all');
-  const [typeFilter, setTypeFilter] = useState('all');
-  const [isModalOpen, setIsModalOpen] = useState(false);
-  const [newUser, setNewUser] = useState({ name: '', email: '', phone: '', role: 'Khách hàng' });
   const [selectedUsers, setSelectedUsers] = useState([]);
   const [activeDropdown, setActiveDropdown] = useState(null);
   const [sortConfig, setSortConfig] = useState(null);
@@ -33,6 +30,11 @@ const UserManagement = () => {
     return () => clearTimeout(timer); // Dọn dẹp timer
   }, []);
 
+  const roleOptions = useMemo(
+    () => Array.from(new Set(users.map((user) => user.role).filter(Boolean))),
+    [users]
+  );
+
   const filteredUsers = users.filter((user) => {
     const matchSearch = 
       user.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -41,8 +43,7 @@ const UserManagement = () => {
       user.id.toLowerCase().includes(searchTerm.toLowerCase());
     const matchRole = roleFilter === 'all' || user.role === roleFilter;
     const matchStatus = statusFilter === 'all' || user.status === statusFilter;
-    const matchType = typeFilter === 'all' || user.roleType === typeFilter;
-    return matchSearch && matchRole && matchStatus && matchType;
+    return matchSearch && matchRole && matchStatus;
   });
 
   const sortedUsers = useMemo(() => {
@@ -72,25 +73,6 @@ const UserManagement = () => {
     let direction = 'asc';
     if (sortConfig && sortConfig.key === key && sortConfig.direction === 'asc') direction = 'desc';
     setSortConfig({ key, direction });
-  };
-
-  const handleResetFilters = () => {
-    setSearchTerm(''); setRoleFilter('all'); setStatusFilter('all'); setTypeFilter('all'); setSortConfig(null); setCurrentPage(1);
-  };
-
-  const handleAddUser = (e) => {
-    e.preventDefault();
-    const userToAdd = {
-      id: `#CU${Math.floor(Math.random() * 9000) + 1000}`,
-      name: newUser.name, email: newUser.email, phone: newUser.phone,
-      role: newUser.role, roleType: "MỚI", roleColor: "#004395",
-      badgeBg: "#D8E2FF", badgeColor: "#004395",
-      joinDate: new Date().toLocaleDateString('en-US', { month: 'short', day: '2-digit', year: 'numeric' }),
-      status: "Đang hoạt động", avatar: `https://i.pravatar.cc/150?u=${newUser.email}`
-    };
-    setUsers([userToAdd, ...users]);
-    setIsModalOpen(false);
-    setNewUser({ name: '', email: '', phone: '', role: 'Khách hàng' });
   };
 
   const handleSelectAll = (e) => {
@@ -127,6 +109,7 @@ const UserManagement = () => {
               setCurrentPage(1);
             }}
           placeholder="Tìm theo Tên, Email, Số điện thoại, ID..."
+          showCategoryFilter={false}
         />
         
         <div className="content-canvas">
@@ -137,7 +120,6 @@ const UserManagement = () => {
             </div>
             <div className="actions">
               <button className="btn-export"><FiDownload /> Xuất Excel</button>
-              <button className="btn-create" onClick={() => setIsModalOpen(true)}><FiUserPlus /> Tạo người dùng mới</button>
             </div>
           </div>
 
@@ -146,9 +128,9 @@ const UserManagement = () => {
               <label>Vai trò tài khoản</label>
               <select value={roleFilter} onChange={(e) => { setRoleFilter(e.target.value); setCurrentPage(1); }}>
                 <option value="all">Tất cả vai trò</option>
-                <option value="Quản trị viên">Quản trị viên</option>
-                <option value="Nhân viên giao hàng">Nhân viên giao hàng</option>
-                <option value="Khách hàng">Khách hàng</option>
+                {roleOptions.map((role) => (
+                  <option key={role} value={role}>{role}</option>
+                ))}
               </select>
             </div>
             <div className="filter-item">
@@ -159,16 +141,6 @@ const UserManagement = () => {
                 <option value="Bị khóa">Bị khóa</option>
               </select>
             </div>
-            <div className="filter-item">
-              <label>Loại thành viên</label>
-              <select value={typeFilter} onChange={(e) => { setTypeFilter(e.target.value); setCurrentPage(1); }}>
-                <option value="all">Tất cả các loại</option>
-                <option value="VIP">VIP</option>
-                <option value="THƯỜNG">THƯỜNG</option>
-                <option value="MỚI">MỚI</option>
-              </select>
-            </div>
-            <button className="btn-reset-filter" onClick={handleResetFilters}><FiFilter /> Đặt lại bộ lọc</button>
           </div>
 
           <div className="data-table-container">
@@ -188,7 +160,7 @@ const UserManagement = () => {
                     {sortConfig?.key === 'name' && (sortConfig.direction === 'asc' ? <FiArrowUp className="sort-icon" /> : <FiArrowDown className="sort-icon" />)}
                   </th>
                   <th>Thông tin liên hệ</th>
-                  <th>Vai trò & Loại</th>
+                  <th>Vai trò</th>
                   <th className="sortable" onClick={() => handleSort('joinDate')}>
                     Ngày tham gia
                     {sortConfig?.key === 'joinDate' && (sortConfig.direction === 'asc' ? <FiArrowUp className="sort-icon" /> : <FiArrowDown className="sort-icon" />)}
@@ -222,7 +194,6 @@ const UserManagement = () => {
                       <td>
                         <div className="skeleton-text-group">
                           <div className="skeleton-box" style={{ width: '100px' }}></div>
-                          <div className="skeleton-box" style={{ width: '50px', height: '14px' }}></div>
                         </div>
                       </td>
                       <td><div className="skeleton-box" style={{ width: '80px' }}></div></td>
@@ -254,9 +225,6 @@ const UserManagement = () => {
                       </td>
                       <td className="role-cell">
                         <div style={{ color: user.roleColor, fontWeight: 600 }}>{user.role}</div>
-                        <span className="badge" style={{ backgroundColor: user.badgeBg, color: user.badgeColor }}>
-                          {user.roleType}
-                        </span>
                       </td>
                       <td>{user.joinDate}</td>
                       <td>
@@ -325,30 +293,6 @@ const UserManagement = () => {
         </div>
       </main>
 
-      {isModalOpen && (
-        <div className="modal-overlay">
-          <div className="modal-content">
-            <h3>Thêm người dùng mới</h3>
-            <form onSubmit={handleAddUser}>
-              <div className="form-group"><label>Họ và Tên</label><input type="text" required placeholder="Nhập họ tên" value={newUser.name} onChange={(e) => setNewUser({...newUser, name: e.target.value})}/></div>
-              <div className="form-group"><label>Email</label><input type="email" required placeholder="name@example.com" value={newUser.email} onChange={(e) => setNewUser({...newUser, email: e.target.value})}/></div>
-              <div className="form-group"><label>Số điện thoại</label><input type="text" required placeholder="+84..." value={newUser.phone} onChange={(e) => setNewUser({...newUser, phone: e.target.value})}/></div>
-              <div className="form-group">
-                <label>Vai trò</label>
-                <select value={newUser.role} onChange={(e) => setNewUser({...newUser, role: e.target.value})}>
-                  <option value="Khách hàng">Khách hàng</option>
-                  <option value="Quản trị viên">Quản trị viên</option>
-                  <option value="Nhân viên giao hàng">Nhân viên giao hàng</option>
-                </select>
-              </div>
-              <div className="modal-actions">
-                <button type="button" className="btn-cancel" onClick={() => setIsModalOpen(false)}>Hủy bỏ</button>
-                <button type="submit" className="btn-save">Lưu thông tin</button>
-              </div>
-            </form>
-          </div>
-        </div>
-      )}
     </div>
   );
 };

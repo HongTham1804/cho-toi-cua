@@ -54,6 +54,13 @@ const formatProducts = (items = []) => {
   return `${names.slice(0, 2).join(", ")} (+${names.length - 2} sản phẩm)`;
 };
 
+const PAYMENT_METHOD_LABELS = {
+  cod: "Thanh toán khi nhận hàng",
+  payos: "Chuyển khoản PayOS",
+  bank_transfer: "Chuyển khoản PayOS",
+  wallet: "Ví Chợ Tới Cửa",
+};
+
 export const mapOrder = (order) => {
   const items = (order.details || [])
     .filter((detail) => detail.product?.name)
@@ -66,7 +73,10 @@ export const mapOrder = (order) => {
     customerName: order.customer?.name || "Khách hàng",
     customerPhone: order.customer?.phone || "",
     shippingAddress: order.shipping_address || order.customer?.address || "",
-    paymentMethod: order.payment_method || "Thanh toán khi nhận hàng",
+    paymentMethod: PAYMENT_METHOD_LABELS[order.payment_method] || order.payment_method || "Thanh toán khi nhận hàng",
+    paymentStatus: order.payment_status || "unpaid",
+    paidAt: order.paid_at,
+    paymentReference: order.payment_reference,
     note: order.note || "",
     shipper: order.shipper || null,
     shipment: order.shipment || null,

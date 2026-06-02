@@ -80,4 +80,9 @@ class User extends Authenticatable
     {
         return $this->hasMany(AppNotification::class);
     }
+
+    public function wallet()
+    {
+        return $this->hasOne(Wallet::class);
+    }
 }

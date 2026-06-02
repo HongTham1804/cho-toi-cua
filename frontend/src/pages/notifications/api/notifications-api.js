@@ -1,4 +1,10 @@
 import { getStoredAuthUser } from "../../../services/authApi";
+import {
+  getDueFlashSaleNotifications,
+  isFlashSaleReminderNotification,
+  markAllDueFlashSaleRemindersRead,
+  markFlashSaleReminderRead,
+} from "../../../services/flashSaleReminderStorage";
 
 const API_BASE_URL = "http://localhost:8000/api";
 
@@ -29,6 +35,7 @@ function mapNotification(item) {
     title: item.title || "Thong bao",
     message: item.message || "",
     time: formatNotificationTime(item.created_at),
+    createdAt: item.created_at || "",
     isRead: Boolean(item.is_read),
     link: item.link || "/notifications",
   };
@@ -50,10 +57,19 @@ export async function fetchNotifications() {
     throw new Error(payload.message || "Khong the tai thong bao.");
   }
 
-  return (payload.data || []).map(mapNotification);
+  const backendNotifications = (payload.data || []).map(mapNotification);
+  const flashSaleNotifications = getDueFlashSaleNotifications();
+
+  return [...flashSaleNotifications, ...backendNotifications]
+    .sort((first, second) => new Date(second.createdAt).getTime() - new Date(first.createdAt).getTime());
 }
 
 export async function markOneRead(id) {
+  if (isFlashSaleReminderNotification(id)) {
+    markFlashSaleReminderRead(id);
+    return;
+  }
+
   const response = await fetch(`${API_BASE_URL}/notifications/${id}/read`, {
     method: "PATCH",
     headers: {
@@ -71,6 +87,8 @@ export async function markOneRead(id) {
 
 export async function markAllRead() {
   const userId = getCurrentUserId();
+  markAllDueFlashSaleRemindersRead();
+
   const response = await fetch(`${API_BASE_URL}/notifications/read-all`, {
     method: "PATCH",
     headers: {

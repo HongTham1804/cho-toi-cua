@@ -6,6 +6,7 @@ import "./order-history.css";
 import { fetchOrders, reorder } from "./api/order-history-api";
 
 const STATUS_MAP = {
+  pending_payment: { label: "Chờ thanh toán", className: "pending-payment" },
   pending: { label: "Chờ xử lý", className: "pending" },
   preparing: { label: "Đang lấy hàng", className: "preparing" },
   shipping: { label: "Đang giao", className: "shipping" },
@@ -14,6 +15,7 @@ const STATUS_MAP = {
 };
 
 const TABS = [
+  { value: "pending_payment", label: "Chờ thanh toán" },
   { value: "all", label: "Tất cả" },
   { value: "pending", label: "Chờ xử lý" },
   { value: "preparing", label: "Đang lấy hàng" },
