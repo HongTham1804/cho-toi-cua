@@ -69,6 +69,7 @@ export const mapOrder = (order) => {
     paymentMethod: order.payment_method || "Thanh toán khi nhận hàng",
     note: order.note || "",
     shipper: order.shipper || null,
+    shipment: order.shipment || null,
     date: formatOrderDate(order.created_at),
     createdAt: order.created_at,
     products: formatProducts(items),
@@ -122,6 +123,22 @@ export async function cancelOrder(orderId) {
 
   if (!response.ok) {
     throw new Error(payload.message || "Không thể hủy đơn hàng.");
+  }
+
+  return mapOrder(payload.data);
+}
+
+export async function completeOrder(orderId) {
+  const response = await fetch(`${API_BASE_URL}/orders/${orderId}/complete`, {
+    method: "PATCH",
+    headers: { "Content-Type": "application/json" },
+    body: "{}",
+  });
+
+  const payload = await response.json().catch(() => ({}));
+
+  if (!response.ok) {
+    throw new Error(payload.message || "Khong the xac nhan da nhan hang.");
   }
 
   return mapOrder(payload.data);

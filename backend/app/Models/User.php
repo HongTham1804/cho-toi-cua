@@ -75,4 +75,9 @@ class User extends Authenticatable
     {
         return $this->hasMany(Store::class, 'partner_id');
     }
+
+    public function appNotifications(): HasMany
+    {
+        return $this->hasMany(AppNotification::class);
+    }
 }

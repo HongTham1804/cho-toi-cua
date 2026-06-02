@@ -19,4 +19,9 @@ class Shipper extends Model
     {
         return $this->hasMany(Order::class);
     }
+
+    public function shipments()
+    {
+        return $this->hasMany(Shipment::class);
+    }
 }

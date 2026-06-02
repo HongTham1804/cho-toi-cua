@@ -917,3 +917,65 @@ body {
 .btn-confirm-promo:hover {
   background-color: #005440;
 }
+
+.delivery-location-summary {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 12px 14px;
+  border: 1px dashed #f59e0b;
+  border-radius: 8px;
+  background: #fffbeb;
+  color: #3c4a42;
+  cursor: pointer;
+  margin-bottom: 16px;
+  transition: background-color 0.2s ease, border-color 0.2s ease;
+}
+
+.delivery-location-summary:hover {
+  background: #fef3c7;
+}
+
+.delivery-location-summary.selected {
+  background: #f0fdf6;
+  border-color: var(--green-primary);
+}
+
+.delivery-location-summary-left {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  min-width: 0;
+}
+
+.delivery-location-summary-left > i {
+  color: var(--green-primary);
+  font-size: 16px;
+  margin-top: 2px;
+}
+
+.delivery-location-summary strong {
+  display: block;
+  color: var(--text-black);
+  font-size: 13px;
+  font-weight: 700;
+  margin-bottom: 3px;
+}
+
+.delivery-location-summary p {
+  display: -webkit-box;
+  margin: 0;
+  color: #64748b;
+  font-size: 12px;
+  line-height: 1.4;
+  overflow: hidden;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+}
+
+.delivery-location-summary > .fa-chevron-right {
+  color: #94a3b8;
+  font-size: 12px;
+  flex-shrink: 0;
+}

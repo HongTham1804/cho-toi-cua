@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Http\Requests\StoreOrderRequest;
+use App\Models\AppNotification;
 use App\Models\Order;
 use App\Models\Product;
 use App\Models\Voucher;
@@ -17,7 +18,7 @@ class OrderController extends Controller
         $perPage = (int) $request->query('per_page', 15);
         $perPage = min(max($perPage, 1), 100);
 
-        $orders = Order::with(['customer', 'store', 'shipper', 'details.product'])
+        $orders = Order::with(['customer', 'store', 'shipper', 'shipment', 'details.product'])
             ->when($request->filled('customer_id'), function ($query) use ($request) {
                 $query->where('customer_id', $request->query('customer_id'));
             })
@@ -99,6 +100,9 @@ class OrderController extends Controller
                     'subtotal' => $subtotal,
                     'total_amount' => $totalAmount,
                     'shipping_address' => $data['shipping_address'],
+                    'delivery_address' => $data['delivery_address'] ?? $data['shipping_address'],
+                    'delivery_latitude' => $data['delivery_latitude'] ?? null,
+                    'delivery_longitude' => $data['delivery_longitude'] ?? null,
                     'payment_method' => $data['payment_method'],
                     'note' => $data['note'] ?? null,
                     'status' => 'pending',
@@ -124,7 +128,7 @@ class OrderController extends Controller
                     ]);
                 }
 
-                return $order->load(['customer', 'store', 'shipper', 'details.product']);
+                return $order->load(['customer', 'store', 'shipper', 'shipment', 'details.product']);
             });
 
             return response()->json([
@@ -187,7 +191,7 @@ class OrderController extends Controller
 
     public function show(int $id): JsonResponse
     {
-        $order = Order::with(['customer', 'store', 'shipper', 'details.product'])->find($id);
+        $order = Order::with(['customer', 'store', 'shipper', 'shipment', 'details.product'])->find($id);
 
         if (! $order) {
             return response()->json([
@@ -228,11 +232,116 @@ class OrderController extends Controller
                 'status' => 'cancelled',
             ]);
 
-            return $order->fresh()->load(['customer', 'store', 'shipper', 'details.product']);
+            return $order->fresh()->load(['customer', 'store', 'shipper', 'shipment', 'details.product']);
         });
 
         return response()->json([
             'message' => 'Hủy đơn hàng thành công.',
+            'data' => $order,
+        ]);
+    }
+
+    public function arrived(int $id): JsonResponse
+    {
+        $order = Order::with(['customer', 'store', 'shipper', 'shipment', 'details.product'])->find($id);
+
+        if (! $order) {
+            return response()->json([
+                'message' => 'Khong tim thay don hang.',
+            ], 404);
+        }
+
+        if ($order->status !== 'shipping') {
+            return response()->json([
+                'message' => 'Chi co the danh dau da den noi cho don dang giao.',
+            ], 422);
+        }
+
+        $order = DB::transaction(function () use ($order) {
+            if ($order->shipment) {
+                $order->shipment->update([
+                    'status' => 'arrived',
+                    'progress' => 100,
+                    'current_latitude' => $order->shipment->destination_latitude,
+                    'current_longitude' => $order->shipment->destination_longitude,
+                    'arrived_at' => $order->shipment->arrived_at ?? now(),
+                ]);
+            }
+
+            AppNotification::updateOrCreate(
+                [
+                    'user_id' => $order->customer_id,
+                    'order_id' => $order->id,
+                    'type' => 'delivery',
+                ],
+                [
+                    'title' => sprintf('Don hang #%s da den noi', str_pad((string) $order->id, 4, '0', STR_PAD_LEFT)),
+                    'message' => 'Don hang cua ban da den dia chi nhan hang. Vui long kiem tra va xac nhan da nhan duoc hang.',
+                    'link' => "/order-detail/{$order->id}",
+                    'is_read' => false,
+                ]
+            );
+
+            return $order->fresh()->load(['customer', 'store', 'shipper', 'shipment', 'details.product']);
+        });
+
+        return response()->json([
+            'message' => 'Don hang da den noi.',
+            'data' => $order,
+        ]);
+    }
+
+    public function complete(int $id): JsonResponse
+    {
+        $order = Order::with(['customer', 'store', 'shipper', 'shipment', 'details.product'])->find($id);
+
+        if (! $order) {
+            return response()->json([
+                'message' => 'Khong tim thay don hang.',
+            ], 404);
+        }
+
+        if ($order->status !== 'shipping') {
+            return response()->json([
+                'message' => 'Chi co the xac nhan da nhan hang cho don dang giao.',
+            ], 422);
+        }
+
+        $order = DB::transaction(function () use ($order) {
+            $order->update([
+                'status' => 'completed',
+            ]);
+
+            if ($order->shipment) {
+                $order->shipment->update([
+                    'status' => 'completed',
+                    'progress' => 100,
+                    'current_latitude' => $order->shipment->destination_latitude,
+                    'current_longitude' => $order->shipment->destination_longitude,
+                    'arrived_at' => $order->shipment->arrived_at ?? now(),
+                    'completed_at' => now(),
+                ]);
+            }
+
+            AppNotification::updateOrCreate(
+                [
+                    'user_id' => $order->customer_id,
+                    'order_id' => $order->id,
+                    'type' => 'success',
+                ],
+                [
+                    'title' => sprintf('Don hang #%s da hoan thanh', str_pad((string) $order->id, 4, '0', STR_PAD_LEFT)),
+                    'message' => 'Cam on ban da xac nhan da nhan hang. Hay danh gia san pham neu ban co thoi gian nhe.',
+                    'link' => "/order-detail/{$order->id}",
+                    'is_read' => false,
+                ]
+            );
+
+            return $order->fresh()->load(['customer', 'store', 'shipper', 'shipment', 'details.product']);
+        });
+
+        return response()->json([
+            'message' => 'Da xac nhan nhan hang thanh cong.',
             'data' => $order,
         ]);
     }

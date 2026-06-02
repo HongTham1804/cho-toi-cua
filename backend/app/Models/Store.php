@@ -17,6 +17,13 @@ class Store extends Model
         'business_type',
         'logo_url',
         'status',
+        'latitude',
+        'longitude',
+    ];
+
+    protected $casts = [
+        'latitude' => 'float',
+        'longitude' => 'float',
     ];
 
     public function partner()

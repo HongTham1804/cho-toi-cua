@@ -21,6 +21,8 @@ class StoreSeeder extends Seeder
                 'address' => 'Bách Hóa Xanh Lê Văn Chí, TP. Thủ Đức',
                 'logo_url' => 'logos/BHX.webp',
                 'status' => 'active',
+                'latitude' => 10.856496093453933,
+                'longitude' => 106.77405206796195,
             ],
             [
                 'id' => 2,
@@ -29,6 +31,8 @@ class StoreSeeder extends Seeder
                 'address' => 'WinMart Lê Văn Việt, TP. Thủ Đức',
                 'logo_url' => 'logos/Winmart.jpg',
                 'status' => 'active',
+                'latitude' => 10.845183433582347,
+                'longitude' => 106.7785716799879,
             ],
             [
                 'id' => 3,
@@ -37,6 +41,8 @@ class StoreSeeder extends Seeder
                 'address' => 'GO! Dĩ An, TP. Dĩ An',
                 'logo_url' => 'logos/GO.png',
                 'status' => 'active',
+                'latitude' => 10.889120952863461,
+                'longitude' => 106.77583425300035,
             ],
         ];
 

@@ -15,6 +15,9 @@ class Order extends Model
         'subtotal',
         'total_amount',
         'shipping_address',
+        'delivery_address',
+        'delivery_latitude',
+        'delivery_longitude',
         'payment_method',
         'note',
         'status',
@@ -28,6 +31,8 @@ class Order extends Model
         'shipping_fee' => 'decimal:2',
         'subtotal' => 'decimal:2',
         'total_amount' => 'decimal:2',
+        'delivery_latitude' => 'float',
+        'delivery_longitude' => 'float',
     ];
 
     public function details()
@@ -48,5 +53,10 @@ class Order extends Model
     public function shipper()
     {
         return $this->belongsTo(Shipper::class, 'shipper_id');
+    }
+
+    public function shipment()
+    {
+        return $this->hasOne(Shipment::class);
     }
 }

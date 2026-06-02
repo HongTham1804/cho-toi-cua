@@ -2,11 +2,13 @@ import React, { useEffect, useMemo, useState } from 'react';
 import './shopping-cart.css';
 import '@fortawesome/fontawesome-free/css/all.min.css';
 import { Link, useNavigate } from 'react-router-dom';
+import DeliveryLocationModal from '../../components/DeliveryLocationModal/DeliveryLocationModal';
 import { addCartItem, readCartItems, writeCartItems } from '../../services/cartStorage';
-import { clearVoucherCache, fetchProducts, fetchUserVouchers, fetchVouchers } from '../../services/productApi';
+import { clearVoucherCache, fetchProducts, fetchStores, fetchUserVouchers, fetchVouchers } from '../../services/productApi';
 
 const API_BASE_URL = 'http://localhost:8000/api';
 const DEFAULT_CUSTOMER_ID = 4;
+const DELIVERY_LOCATION_STORAGE_KEY = 'ctc_delivery_location';
 
 const getCurrentCustomer = () => {
   try {
@@ -17,6 +19,23 @@ const getCurrentCustomer = () => {
 };
 
 const formatCurrency = (value) => `${Number(value).toLocaleString('vi-VN')}₫`;
+
+const readDeliveryLocation = () => {
+  try {
+    const saved = JSON.parse(window.localStorage.getItem(DELIVERY_LOCATION_STORAGE_KEY));
+    if (!saved || !Number.isFinite(Number(saved.lat)) || !Number.isFinite(Number(saved.lng))) {
+      return null;
+    }
+
+    return {
+      address: saved.address || '',
+      lat: Number(saved.lat),
+      lng: Number(saved.lng),
+    };
+  } catch {
+    return null;
+  }
+};
 
 const isFreeshipVoucher = (voucher) => voucher.discount_type === 'freeship';
 
@@ -48,6 +67,9 @@ export default function ShoppingCart() {
   const [promoError, setPromoError] = useState('');
   const [promoCode, setPromoCode] = useState('');
   const [orderNote, setOrderNote] = useState('');
+  const [stores, setStores] = useState([]);
+  const [isLocationModalOpen, setIsLocationModalOpen] = useState(false);
+  const [deliveryLocation, setDeliveryLocation] = useState(() => readDeliveryLocation());
   const primaryStoreId = cartItems[0]?.store_id || 1;
 
   useEffect(() => {
@@ -69,6 +91,22 @@ export default function ShoppingCart() {
       isMounted = false;
     };
   }, [primaryStoreId]);
+
+  useEffect(() => {
+    let isMounted = true;
+
+    fetchStores()
+      .then((apiStores) => {
+        if (isMounted) setStores(apiStores);
+      })
+      .catch(() => {
+        if (isMounted) setStores([]);
+      });
+
+    return () => {
+      isMounted = false;
+    };
+  }, []);
 
   const cartItemIds = useMemo(
     () => new Set(cartItems.map((item) => String(item.id))),
@@ -165,14 +203,26 @@ export default function ShoppingCart() {
   const handleCheckout = async () => {
     if (cartItems.length === 0 || isCheckingOut) return;
 
+    if (!deliveryLocation?.lat || !deliveryLocation?.lng) {
+      setCheckoutError('');
+      setIsLocationModalOpen(true);
+      return;
+    }
+
     const currentCustomer = getCurrentCustomer();
+    const deliveryAddress =
+      deliveryLocation.address?.trim() ||
+      currentCustomer.address ||
+      'Thu Duc, TP.HCM';
     const payload = {
       customer_id: Number(currentCustomer.id || DEFAULT_CUSTOMER_ID),
       store_id: Number(primaryStoreId),
       voucher_id: selectedDiscountVoucher?.id,
       shipping_voucher_id: selectedFreeshipVoucher?.id,
-      shipping_address:
-        currentCustomer.address || 'Thu Duc, TP.HCM',
+      shipping_address: deliveryAddress,
+      delivery_address: deliveryAddress,
+      delivery_latitude: deliveryLocation.lat,
+      delivery_longitude: deliveryLocation.lng,
       payment_method: 'cod',
       note: orderNote.trim() || null,
       shipping_fee: shippingFee,
@@ -214,6 +264,22 @@ export default function ShoppingCart() {
     } finally {
       setIsCheckingOut(false);
     }
+  };
+
+  const handleConfirmDeliveryLocation = (nextLocation) => {
+    const normalizedLocation = {
+      address: nextLocation.address || '',
+      lat: Number(nextLocation.lat),
+      lng: Number(nextLocation.lng),
+    };
+
+    setDeliveryLocation(normalizedLocation);
+    window.localStorage.setItem(
+      DELIVERY_LOCATION_STORAGE_KEY,
+      JSON.stringify(normalizedLocation)
+    );
+    setIsLocationModalOpen(false);
+    setCheckoutError('');
   };
 
   // Calculate totals
@@ -469,6 +535,29 @@ export default function ShoppingCart() {
                 </div>
               )}
 
+              <div
+                className={`delivery-location-summary ${deliveryLocation ? 'selected' : ''}`}
+                onClick={() => setIsLocationModalOpen(true)}
+                role="button"
+                tabIndex={0}
+                onKeyDown={(event) => {
+                  if (event.key === 'Enter' || event.key === ' ') setIsLocationModalOpen(true);
+                }}
+              >
+                <div className="delivery-location-summary-left">
+                  <i className="fa-solid fa-location-dot"></i>
+                  <div>
+                    <strong>Vi tri nhan hang</strong>
+                    <p>
+                      {deliveryLocation
+                        ? deliveryLocation.address || `${deliveryLocation.lat.toFixed(5)}, ${deliveryLocation.lng.toFixed(5)}`
+                        : 'Bam de cap nhat vi tri tren ban do'}
+                    </p>
+                  </div>
+                </div>
+                <i className="fa-solid fa-chevron-right"></i>
+              </div>
+
               {/* Checkout Button */}
               {checkoutError && <p className="checkout-error">{checkoutError}</p>}
 
@@ -510,6 +599,15 @@ export default function ShoppingCart() {
           </section>
         )}
       </div>
+
+      {isLocationModalOpen && (
+        <DeliveryLocationModal
+          currentLocation={deliveryLocation}
+          stores={stores}
+          onClose={() => setIsLocationModalOpen(false)}
+          onConfirm={handleConfirmDeliveryLocation}
+        />
+      )}
 
     </div>
   );

@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { Link, useLocation, useNavigate, useParams } from "react-router-dom";
 import "./order-detail.css";
-import { cancelOrder, fetchOrderById, reorder } from "../order-history/api/order-history-api";
+import { cancelOrder, completeOrder, fetchOrderById, reorder } from "../order-history/api/order-history-api";
 
 const STATUS_LABELS = {
   pending: "Chờ xử lý",
@@ -76,6 +76,7 @@ export default function OrderDetail() {
   const [toast, setToast] = useState("");
   const [reordering, setReordering] = useState(false);
   const [cancelling, setCancelling] = useState(false);
+  const [completing, setCompleting] = useState(false);
 
   useEffect(() => {
     let active = true;
@@ -105,6 +106,7 @@ export default function OrderDetail() {
   const isCompleted = order?.status === "completed";
   const isCancellable = ["pending", "preparing"].includes(order?.status);
   const isShipping = order?.status === "shipping";
+  const canConfirmReceived = isShipping && order?.shipment?.status === "arrived";
   const statusLabel = STATUS_LABELS[order?.status] ?? "Thông tin đơn";
 
   function showToast(message) {
@@ -141,6 +143,21 @@ export default function OrderDetail() {
       showToast(error.message || "Không thể hủy đơn hàng. Vui lòng thử lại.");
     } finally {
       setCancelling(false);
+    }
+  }
+
+  async function handleCompleteOrder() {
+    if (!order || completing || !canConfirmReceived) return;
+
+    setCompleting(true);
+    try {
+      const updatedOrder = await completeOrder(order.id);
+      setOrder(updatedOrder);
+      showToast("Da xac nhan ban da nhan duoc hang.");
+    } catch (error) {
+      showToast(error.message || "Khong the xac nhan nhan hang. Vui long thu lai.");
+    } finally {
+      setCompleting(false);
     }
   }
 
@@ -261,9 +278,20 @@ export default function OrderDetail() {
               <Link className="od-btn od-btn-primary" to={`/tracking?orderId=${encodeURIComponent(order.id)}`}>
                 Theo dõi đơn
               </Link>
-              <button className="od-btn od-btn-disabled" type="button" disabled>
-                Không thể hủy
-              </button>
+              {canConfirmReceived ? (
+                <button
+                  className="od-btn od-btn-primary"
+                  type="button"
+                  disabled={completing}
+                  onClick={handleCompleteOrder}
+                >
+                  {completing ? "Đang xác nhận..." : "Đã nhận được hàng"}
+                </button>
+              ) : (
+                <button className="od-btn od-btn-disabled" type="button" disabled>
+                  Chờ shipper giao tới
+                </button>
+              )}
             </>
           ) : (
             <button className="od-btn od-btn-disabled" type="button" disabled>

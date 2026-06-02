@@ -1,64 +1,283 @@
-import './tracking.css';
-import { useEffect, useMemo, useState } from "react";
-import { fetchOrderTracking, getOrderIdFromUrl } from "./trackingApi.js";
+import "./tracking.css";
+import { useEffect, useMemo, useRef, useState } from "react";
+import { MapContainer, Marker, Polyline, Popup, TileLayer, useMap } from "react-leaflet";
+import L from "leaflet";
+import "leaflet/dist/leaflet.css";
+import "@fortawesome/fontawesome-free/css/all.min.css";
+import { fetchOrderTracking, fetchOsrmRoute, getOrderIdFromUrl, markOrderArrived } from "./trackingApi.js";
 
-function calcEtaMinutes(etaTime) {
-  if (!etaTime) return "?";
+const DEFAULT_CENTER = [10.856496093453933, 106.77405206796195];
+const SHIPPER_SIMULATION_MS = 90000;
+const SHIPPER_PROGRESS_CAP = 98;
 
-  try {
-    const now = new Date();
-    const [hours, minutes] = etaTime.split(":").map(Number);
-    const eta = new Date(now);
-    eta.setHours(hours, minutes, 0, 0);
-    const diff = Math.round((eta - now) / 60000);
-    return diff > 0 ? diff : "< 5";
-  } catch {
-    return "?";
+const storeIcon = L.divIcon({
+  className: "tracking-marker tracking-marker-store",
+  html: '<i class="fa-solid fa-store"></i>',
+  iconSize: [34, 34],
+  iconAnchor: [17, 30],
+  popupAnchor: [0, -26],
+});
+
+const homeIcon = L.divIcon({
+  className: "tracking-marker tracking-marker-home",
+  html: '<i class="fa-solid fa-house"></i>',
+  iconSize: [34, 34],
+  iconAnchor: [17, 30],
+  popupAnchor: [0, -26],
+});
+
+const shipperIcon = L.divIcon({
+  className: "tracking-marker tracking-marker-shipper",
+  html: '<i class="fa-solid fa-motorcycle"></i>',
+  iconSize: [38, 38],
+  iconAnchor: [19, 32],
+  popupAnchor: [0, -28],
+});
+
+function formatEta(seconds) {
+  if (!Number.isFinite(seconds) || seconds <= 0) {
+    return "-";
   }
+
+  const minutes = Math.max(1, Math.round(seconds / 60));
+  return `${minutes} phut`;
 }
 
-export default function App() {
-  const [order, setOrder] = useState(null);
+function formatDistance(meters) {
+  if (!Number.isFinite(meters) || meters <= 0) {
+    return "";
+  }
+
+  if (meters < 1000) {
+    return `${Math.round(meters)} m`;
+  }
+
+  return `${(meters / 1000).toFixed(1)} km`;
+}
+
+function formatTimelineTime(value) {
+  if (!value) {
+    return "";
+  }
+
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) {
+    return "";
+  }
+
+  return date.toLocaleTimeString("vi-VN", {
+    hour: "2-digit",
+    minute: "2-digit",
+  });
+}
+
+function pointToLatLng(point) {
+  return [point.lat, point.lng];
+}
+
+function clampProgress(value) {
+  const numeric = Number(value);
+
+  if (!Number.isFinite(numeric)) {
+    return 0;
+  }
+
+  return Math.min(100, Math.max(0, numeric));
+}
+
+function getRoutePosition(points, progress) {
+  if (!Array.isArray(points) || points.length === 0) {
+    return null;
+  }
+
+  if (points.length === 1) {
+    return points[0];
+  }
+
+  const targetProgress = clampProgress(progress);
+  const segmentLengths = [];
+  let totalLength = 0;
+
+  for (let index = 1; index < points.length; index += 1) {
+    const previous = points[index - 1];
+    const current = points[index];
+    const length = Math.hypot(current[0] - previous[0], current[1] - previous[1]);
+    segmentLengths.push(length);
+    totalLength += length;
+  }
+
+  if (totalLength === 0) {
+    return points[0];
+  }
+
+  let targetDistance = totalLength * (targetProgress / 100);
+
+  for (let index = 0; index < segmentLengths.length; index += 1) {
+    const length = segmentLengths[index];
+
+    if (targetDistance <= length || index === segmentLengths.length - 1) {
+      const previous = points[index];
+      const current = points[index + 1];
+      const ratio = length === 0 ? 0 : targetDistance / length;
+
+      return [
+        previous[0] + (current[0] - previous[0]) * ratio,
+        previous[1] + (current[1] - previous[1]) * ratio,
+      ];
+    }
+
+    targetDistance -= length;
+  }
+
+  return points[points.length - 1];
+}
+
+export default function Tracking() {
+  const [tracking, setTracking] = useState(null);
+  const [route, setRoute] = useState(null);
+  const [simulatedProgress, setSimulatedProgress] = useState(0);
   const [loading, setLoading] = useState(true);
+  const [routeLoading, setRouteLoading] = useState(false);
   const [error, setError] = useState("");
+  const arrivedSyncedRef = useRef(false);
 
   useEffect(() => {
     let active = true;
 
     async function loadTracking() {
       try {
-        const orderId = getOrderIdFromUrl() ?? "ORD-982374";
+        const orderId = getOrderIdFromUrl();
         const data = await fetchOrderTracking(orderId);
+
         if (!active) return;
-        setOrder(data);
+        setTracking(data);
+        setSimulatedProgress(Math.min(SHIPPER_PROGRESS_CAP, clampProgress(data.progress)));
+
+        if (data.origin && data.destination) {
+          setRouteLoading(true);
+          const osrmRoute = await fetchOsrmRoute(data.origin, data.destination);
+          if (!active) return;
+          setRoute(osrmRoute || {
+            points: [pointToLatLng(data.origin), pointToLatLng(data.destination)],
+            distanceMeters: null,
+            durationSeconds: null,
+            fallback: true,
+          });
+        }
       } catch (err) {
         if (!active) return;
-        setError(err.message || "Không thể tải trạng thái đơn hàng. Vui lòng thử lại.");
+        setError(err.message || "Khong the tai trang thai don hang. Vui long thu lai.");
       } finally {
-        if (active) setLoading(false);
+        if (active) {
+          setLoading(false);
+          setRouteLoading(false);
+        }
       }
     }
 
     loadTracking();
+
     return () => {
       active = false;
     };
   }, []);
 
-  const etaMinutes = useMemo(() => calcEtaMinutes(order?.eta), [order?.eta]);
+  useEffect(() => {
+    if (!tracking || tracking.order?.status !== "shipping" || !route?.points?.length) {
+      return undefined;
+    }
+
+    const startProgress = Math.min(SHIPPER_PROGRESS_CAP, clampProgress(tracking.progress));
+    const startedAt = performance.now();
+
+    setSimulatedProgress((current) => Math.max(current, startProgress));
+
+    const timerId = window.setInterval(() => {
+      const elapsed = performance.now() - startedAt;
+      const nextProgress = startProgress + (elapsed / SHIPPER_SIMULATION_MS) * 100;
+      const cappedProgress = Math.min(SHIPPER_PROGRESS_CAP, nextProgress);
+      setSimulatedProgress(cappedProgress);
+
+      if (cappedProgress >= SHIPPER_PROGRESS_CAP) {
+        window.clearInterval(timerId);
+      }
+    }, 500);
+
+    return () => window.clearInterval(timerId);
+  }, [route?.points, tracking]);
+
+  useEffect(() => {
+    if (
+      arrivedSyncedRef.current ||
+      !tracking?.order?.id ||
+      tracking.order?.status !== "shipping" ||
+      simulatedProgress < SHIPPER_PROGRESS_CAP
+    ) {
+      return undefined;
+    }
+
+    arrivedSyncedRef.current = true;
+
+    markOrderArrived(tracking.order.id)
+      .then(() => {
+        setTracking((current) => {
+          if (!current) return current;
+
+          return {
+            ...current,
+            shipment: {
+              ...(current.shipment || {}),
+              status: "arrived",
+              progress: 100,
+            },
+            progress: 100,
+          };
+        });
+        setSimulatedProgress(100);
+      })
+      .catch(() => {
+        arrivedSyncedRef.current = false;
+      });
+
+    return undefined;
+  }, [simulatedProgress, tracking]);
+
+  const etaText = useMemo(() => formatEta(route?.durationSeconds), [route?.durationSeconds]);
+  const distanceText = useMemo(() => formatDistance(route?.distanceMeters), [route?.distanceMeters]);
+  const shipperPosition = useMemo(() => {
+    const routePosition = getRoutePosition(route?.points, simulatedProgress);
+
+    if (routePosition) {
+      return {
+        lat: routePosition[0],
+        lng: routePosition[1],
+      };
+    }
+
+    return tracking?.current ?? null;
+  }, [route?.points, simulatedProgress, tracking?.current]);
 
   return (
     <div className="tracking-page">
       <main className="tracking-body" role="main">
-        <section className="col-left" aria-label="Bản đồ và lộ trình">
-          <EtaBanner eta={order?.eta} loading={loading} />
-          <MapPanel etaMinutes={etaMinutes} />
-          <RouteStrip destination={order?.customer?.address} loading={loading} />
+        <section className="col-left" aria-label="Ban do va lo trinh">
+          <EtaBanner eta={etaText} loading={loading || routeLoading} />
+          <MapPanel
+            tracking={tracking}
+            route={route}
+            loading={loading}
+            routeLoading={routeLoading}
+            distanceText={distanceText}
+            etaText={etaText}
+            shipperPosition={shipperPosition}
+            simulatedProgress={simulatedProgress}
+          />
+          <RouteStrip tracking={tracking} loading={loading} />
         </section>
 
-        <aside className="col-right" aria-label="Thông tin shipper và trạng thái">
-          <ShipperCard shipper={order?.shipper} loading={loading} />
-          <TimelinePanel steps={order?.steps ?? []} loading={loading} error={error} />
+        <aside className="col-right" aria-label="Thong tin shipper va trang thai">
+          <ShipperCard shipper={tracking?.shipper} loading={loading} />
+          <TimelinePanel steps={tracking?.steps ?? []} loading={loading} error={error} />
         </aside>
       </main>
     </div>
@@ -68,87 +287,164 @@ export default function App() {
 function EtaBanner({ eta, loading }) {
   return (
     <div className="eta-banner">
-      <p className="eta-label">Dự kiến giao</p>
-      <p className={`eta-time${loading ? " skeleton" : ""}`}>{loading ? "" : eta ?? "-"}</p>
+      <p className="eta-label">Du kien giao</p>
+      <p className={`eta-time${loading ? " skeleton" : ""}`}>{loading ? "" : eta}</p>
     </div>
   );
 }
 
-function MapPanel({ etaMinutes }) {
+function MapPanel({
+  tracking,
+  route,
+  loading,
+  routeLoading,
+  distanceText,
+  etaText,
+  shipperPosition,
+  simulatedProgress,
+}) {
+  const hasMap = tracking?.origin && tracking?.destination;
+  const routePoints = route?.points?.length ? route.points : [];
+  const isArrived = tracking?.shipment?.status === "arrived" || clampProgress(simulatedProgress) >= 100;
+  const progressLabel = isArrived ? 100 : Math.round(Math.min(SHIPPER_PROGRESS_CAP, clampProgress(simulatedProgress)));
+
   return (
-    <div className="map-wrapper" role="img" aria-label="Bản đồ lộ trình giao hàng">
-      <svg className="mock-map" viewBox="55 0 430 380" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMid slice" aria-hidden="true">
-        <rect width="500" height="380" fill="#e8ecef" />
-        <line x1="0" y1="70" x2="500" y2="70" stroke="#fff" strokeWidth="8" />
-        <line x1="0" y1="140" x2="500" y2="140" stroke="#fff" strokeWidth="8" />
-        <line x1="0" y1="210" x2="500" y2="210" stroke="#fff" strokeWidth="8" />
-        <line x1="0" y1="280" x2="500" y2="280" stroke="#fff" strokeWidth="8" />
-        <line x1="0" y1="330" x2="500" y2="330" stroke="#fff" strokeWidth="5" />
-        <line x1="80" y1="0" x2="80" y2="380" stroke="#fff" strokeWidth="8" />
-        <line x1="180" y1="0" x2="180" y2="380" stroke="#fff" strokeWidth="8" />
-        <line x1="300" y1="0" x2="300" y2="380" stroke="#fff" strokeWidth="8" />
-        <line x1="400" y1="0" x2="400" y2="380" stroke="#fff" strokeWidth="5" />
+    <div className="map-wrapper tracking-map-wrapper" aria-label="Ban do lo trinh giao hang">
+      {loading ? (
+        <div className="tracking-map-loading">Dang tai ban do...</div>
+      ) : hasMap ? (
+        <MapContainer
+          center={pointToLatLng(tracking.origin)}
+          zoom={14}
+          scrollWheelZoom
+          className="tracking-leaflet-map"
+        >
+          <TileLayer
+            attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
+            url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+          />
+          <MapBounds tracking={tracking} routePoints={routePoints} />
+          {routePoints.length > 0 && (
+            <Polyline
+              positions={routePoints}
+              pathOptions={{
+                color: route?.fallback ? "#0f7f58" : "#087348",
+                weight: 5,
+                opacity: 0.86,
+                dashArray: route?.fallback ? "10 8" : undefined,
+              }}
+            />
+          )}
+          <Marker position={pointToLatLng(tracking.origin)} icon={storeIcon}>
+            <Popup>
+              <strong>{tracking.origin.label || "Sieu thi"}</strong>
+              <br />
+              {tracking.origin.address}
+            </Popup>
+          </Marker>
+          <Marker position={pointToLatLng(tracking.destination)} icon={homeIcon}>
+            <Popup>
+              <strong>Vi tri nhan hang</strong>
+              <br />
+              {tracking.destination.address}
+            </Popup>
+          </Marker>
+          {shipperPosition && (
+            <Marker position={pointToLatLng(shipperPosition)} icon={shipperIcon}>
+              <Popup>
+                {tracking.shipper?.name || "Shipper"}
+                <br />
+                {isArrived ? "Da den noi" : `Dang giao: ${progressLabel}%`}
+              </Popup>
+            </Marker>
+          )}
+        </MapContainer>
+      ) : (
+        <div className="tracking-map-empty">
+          Don hang chua co toa do nhan hang nen chua the hien ban do.
+        </div>
+      )}
 
-        <rect x="90" y="80" width="80" height="50" rx="4" fill="#c8e6c9" opacity=".8" />
-        <rect x="190" y="150" width="100" height="55" rx="4" fill="#c8e6c9" opacity=".7" />
-        <rect x="90" y="220" width="60" height="55" rx="4" fill="#c8e6c9" opacity=".6" />
-        <rect x="310" y="80" width="80" height="120" rx="4" fill="#c8e6c9" opacity=".5" />
-
-        <polyline points="130,120 130,210 300,210 300,300 380,300" fill="none" stroke="#1a7a4a" strokeWidth="3" strokeDasharray="8 5" strokeLinecap="round" opacity=".9" />
-
-        <g transform="translate(150,110)" className="map-pin">
-          <rect x="-58" y="-24" width="108" height="28" rx="14" fill="#1a7a4a" />
-          <text x="-4" y="-6" textAnchor="middle" fill="#fff" fontSize="12" fontFamily="Inter,sans-serif" fontWeight="700">Siêu thị Tới Cửa</text>
-          <polygon points="0,4 -6,-4 6,-4" fill="#1a7a4a" transform="translate(0,14)" />
-        </g>
-
-        <g transform="translate(300,210)" className="map-pin shipper-pin">
-          <circle cx="0" cy="0" r="20" fill="#1a7a4a" opacity=".15" />
-          <circle cx="0" cy="0" r="14" fill="#1a7a4a" />
-          <text x="0" y="5" textAnchor="middle" fill="#fff" fontSize="13">🛵</text>
-        </g>
-
-        <g transform="translate(360,300)" className="map-pin">
-          <rect x="-44" y="-24" width="118" height="28" rx="14" fill="#fff" stroke="#1a7a4a" strokeWidth="2" />
-          <text x="15" y="-6" textAnchor="middle" fill="#1a7a4a" fontSize="12" fontFamily="Inter,sans-serif" fontWeight="700">Nhà của bạn</text>
-          <polygon points="0,4 -6,-4 6,-4" fill="#1a7a4a" transform="translate(0,14)" />
-        </g>
-      </svg>
-
-      <div className="map-label map-label-store">
-        <span>Chợ Tới Cửa</span>
-      </div>
-      <div className="map-label map-label-home">
-        <span>Nhà của bạn</span>
-      </div>
+      {hasMap && (
+        <>
+          <div className="map-label map-label-store">
+            <span>{tracking.origin.label || "Sieu thi"}</span>
+          </div>
+          <div className="map-label map-label-home">
+            <span>Nha cua ban</span>
+          </div>
+        </>
+      )}
 
       <div className="map-distance-badge">
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" aria-hidden="true">
-          <circle cx="12" cy="12" r="10" />
-          <polyline points="12 6 12 12 16 14" />
-        </svg>
-        <span>~{etaMinutes} phút</span>
+        <i className="fa-regular fa-clock" aria-hidden="true" />
+        <span>
+          {routeLoading
+            ? "Dang tinh duong..."
+            : [distanceText, etaText && etaText !== "-" ? etaText : ""].filter(Boolean).join(" - ") || "Dang cho route"}
+        </span>
       </div>
+
+      {hasMap && (
+        <div className="tracking-progress-card">
+          <div className="tracking-progress-row">
+            <span>Shipper dang di chuyen</span>
+            <strong>{progressLabel}%</strong>
+          </div>
+          <div className="tracking-progress-bar" aria-hidden="true">
+            <span style={{ width: `${progressLabel}%` }} />
+          </div>
+          {isArrived && (
+            <a className="tracking-arrived-link" href={`/order-detail/${tracking.order.id}`}>
+              Xac nhan da nhan hang
+            </a>
+          )}
+        </div>
+      )}
     </div>
   );
 }
 
-function RouteStrip({ destination, loading }) {
+function MapBounds({ tracking, routePoints }) {
+  const map = useMap();
+
+  useEffect(() => {
+    const points = routePoints.length > 0
+      ? routePoints
+      : [pointToLatLng(tracking.origin), pointToLatLng(tracking.destination)];
+
+    if (points.length < 2) {
+      map.setView(points[0] || DEFAULT_CENTER, 14);
+      return;
+    }
+
+    map.fitBounds(points, {
+      padding: [44, 44],
+      maxZoom: 16,
+    });
+  }, [map, routePoints, tracking.origin, tracking.destination]);
+
+  return null;
+}
+
+function RouteStrip({ tracking, loading }) {
   return (
     <div className="route-strip">
       <div className="route-point origin">
         <span className="route-dot dot-green"></span>
         <div>
-          <p className="route-label">Lấy hàng tại</p>
-          <p className="route-addr">Siêu thị Tới Cửa</p>
+          <p className="route-label">Lay hang tai</p>
+          <p className={`route-addr${loading ? " skeleton" : ""}`}>{loading ? "" : tracking?.origin?.label ?? "-"}</p>
         </div>
       </div>
       <div className="route-connector"></div>
       <div className="route-point destination">
         <span className="route-dot dot-home"></span>
         <div>
-          <p className="route-label">Giao đến</p>
-          <p className={`route-addr${loading ? " skeleton" : ""}`}>{loading ? "" : destination ?? "-"}</p>
+          <p className="route-label">Giao den</p>
+          <p className={`route-addr${loading ? " skeleton" : ""}`}>
+            {loading ? "" : tracking?.destination?.address ?? "-"}
+          </p>
         </div>
       </div>
     </div>
@@ -158,16 +454,20 @@ function RouteStrip({ destination, loading }) {
 function ShipperCard({ shipper, loading }) {
   return (
     <div className="shipper-card">
-      <img className="shipper-avatar" src={shipper?.avatar ?? "/assets/shipper.jpg"} alt={shipper?.name ? `Ảnh của shipper ${shipper.name}` : "Ảnh shipper"} />
+      <img
+        className="shipper-avatar"
+        src="/assets/shipper.jpg"
+        alt={shipper?.name ? `Anh cua shipper ${shipper.name}` : "Anh shipper"}
+      />
       <div className="shipper-info">
-        <p className="shipper-label">Shipper của bạn</p>
+        <p className="shipper-label">Shipper cua ban</p>
         <p className={`shipper-name${loading ? " skeleton" : ""}`}>{loading ? "" : shipper?.name ?? "-"}</p>
-        <p className="shipper-plate">{loading ? "Đang tải" : `Biển số: ${shipper?.plate ?? "-"}`}</p>
+        <p className="shipper-plate">
+          {loading ? "Dang tai" : `Bien so: ${shipper?.license_plate ?? "-"}`}
+        </p>
       </div>
-      <a className="btn-call" href={`tel:${shipper?.phone ?? "0900000000"}`} aria-label="Gọi cho shipper">
-        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-          <path d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07 19.5 19.5 0 01-6-6 19.79 19.79 0 01-3.07-8.67A2 2 0 014.11 2h3a2 2 0 012 1.72 12.84 12.84 0 00.7 2.81 2 2 0 01-.45 2.11L8.09 9.91a16 16 0 006 6l1.27-1.27a2 2 0 012.11-.45 12.84 12.84 0 002.81.7A2 2 0 0122 16.92z" />
-        </svg>
+      <a className="btn-call" href={`tel:${shipper?.phone ?? "0900000000"}`} aria-label="Goi cho shipper">
+        <i className="fa-solid fa-phone" aria-hidden="true" />
       </a>
     </div>
   );
@@ -176,14 +476,16 @@ function ShipperCard({ shipper, loading }) {
 function TimelinePanel({ steps, loading, error }) {
   return (
     <div className="timeline-section">
-      <h3 className="section-title">Trạng thái giao hàng</h3>
+      <h3 className="section-title">Trang thai giao hang</h3>
       <ol className="timeline" aria-live="polite">
         {error ? (
-          <li style={{ padding: "1rem", color: "#dc2626", fontSize: ".85rem", fontWeight: 500 }}>{error}</li>
+          <li className="tracking-error">{error}</li>
         ) : loading ? (
           <LoadingTimeline />
-        ) : (
+        ) : steps.length > 0 ? (
           steps.map((step) => <TimelineItem key={step.key} step={step} />)
+        ) : (
+          <li className="tracking-error">Chua co thong tin trang thai.</li>
         )}
       </ol>
     </div>
@@ -191,12 +493,14 @@ function TimelinePanel({ steps, loading, error }) {
 }
 
 function TimelineItem({ step }) {
+  const time = formatTimelineTime(step.time);
+
   return (
     <li className={`timeline-item${step.done ? " done" : ""}${step.active ? " active" : ""}`}>
       <div className="timeline-dot" aria-hidden="true"></div>
       <div className="timeline-content">
         <h4>{step.title}</h4>
-        <p>{step.time ? `${step.time} · ` : ""}{step.description}</p>
+        <p>{time ? `${time} - ` : ""}{step.description}</p>
       </div>
     </li>
   );
@@ -210,4 +514,3 @@ function LoadingTimeline() {
     </li>
   ));
 }
-

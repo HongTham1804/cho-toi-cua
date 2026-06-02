@@ -1057,3 +1057,187 @@ button { cursor: pointer; font-family: inherit; }
     padding-bottom: 28px;
   }
 }
+
+/* Real Leaflet tracking map */
+.tracking-page .tracking-map-wrapper {
+  background: #dde8f1;
+}
+
+.tracking-page .tracking-leaflet-map {
+  width: 100%;
+  height: 100%;
+  font-family: var(--font-base);
+}
+
+.tracking-page .tracking-map-loading,
+.tracking-page .tracking-map-empty {
+  width: 100%;
+  height: 100%;
+  display: grid;
+  place-items: center;
+  padding: 24px;
+  color: #334155;
+  font-size: 14px;
+  font-weight: 700;
+  text-align: center;
+  background: linear-gradient(180deg, #edf5fd 0%, #e8eef1 100%);
+}
+
+.tracking-page .tracking-marker {
+  display: grid;
+  place-items: center;
+  border-radius: 999px;
+  color: #fff;
+  box-shadow: 0 8px 18px rgba(15, 23, 42, .22);
+}
+
+.tracking-page .tracking-marker i {
+  font-size: 15px;
+  line-height: 1;
+}
+
+.tracking-page .tracking-marker-store {
+  background: #087348;
+  border: 3px solid #dff3e9;
+}
+
+.tracking-page .tracking-marker-home {
+  background: #ffffff;
+  color: #087348;
+  border: 3px solid #087348;
+}
+
+.tracking-page .tracking-marker-shipper {
+  background: #0f172a;
+  border: 3px solid #ffffff;
+  animation: tracking-shipper-pulse 1.8s ease-in-out infinite;
+}
+
+.tracking-page .leaflet-marker-icon.tracking-marker-shipper {
+  transition: transform 480ms linear;
+}
+
+.tracking-page .tracking-marker-shipper i {
+  animation: tracking-shipper-tilt 1.8s ease-in-out infinite;
+}
+
+.tracking-page .leaflet-container {
+  background: #dbeafe;
+}
+
+.tracking-page .leaflet-control-attribution {
+  font-size: 9px;
+}
+
+.tracking-page .map-distance-badge {
+  display: inline-flex;
+  z-index: 500;
+  max-width: calc(100% - 24px);
+  color: #0f172a;
+}
+
+.tracking-page .map-label {
+  z-index: 500;
+}
+
+.tracking-page .map-label span {
+  max-width: 190px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.tracking-page .route-strip {
+  display: flex;
+  width: min(455px, 100%);
+  border-radius: 8px;
+}
+
+.tracking-error {
+  padding: 14px;
+  color: #dc2626;
+  font-size: 13px;
+  font-weight: 700;
+  line-height: 1.5;
+}
+
+.tracking-progress-card {
+  position: absolute;
+  left: 12px;
+  bottom: 12px;
+  z-index: 500;
+  width: min(245px, calc(100% - 24px));
+  padding: 10px 12px;
+  border-radius: 10px;
+  background: rgba(255, 255, 255, .94);
+  box-shadow: 0 10px 22px rgba(15, 23, 42, .18);
+  border: 1px solid rgba(203, 213, 225, .9);
+}
+
+.tracking-progress-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  color: #172033;
+  font-size: 12px;
+  font-weight: 800;
+}
+
+.tracking-progress-row strong {
+  color: #087348;
+}
+
+.tracking-progress-bar {
+  height: 7px;
+  margin-top: 8px;
+  overflow: hidden;
+  border-radius: 999px;
+  background: #dbe5ef;
+}
+
+.tracking-progress-bar span {
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+  background: linear-gradient(90deg, #0f7f58, #22c55e);
+  transition: width 500ms linear;
+}
+
+.tracking-arrived-link {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  min-height: 34px;
+  margin-top: 10px;
+  border-radius: 8px;
+  background: #087348;
+  color: #fff;
+  font-size: 12px;
+  font-weight: 800;
+  box-shadow: 0 8px 16px rgba(8, 115, 72, .24);
+}
+
+.tracking-arrived-link:hover {
+  background: #075f3d;
+}
+
+@keyframes tracking-shipper-pulse {
+  0%, 100% {
+    box-shadow: 0 8px 18px rgba(15, 23, 42, .22);
+  }
+
+  50% {
+    box-shadow: 0 12px 24px rgba(15, 23, 42, .28);
+  }
+}
+
+@keyframes tracking-shipper-tilt {
+  0%, 100% {
+    transform: rotate(-6deg);
+  }
+
+  50% {
+    transform: rotate(6deg);
+  }
+}

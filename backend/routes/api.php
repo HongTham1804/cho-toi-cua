@@ -4,6 +4,7 @@ use App\Http\Controllers\AuthController;
 use App\Http\Controllers\CategoryController;
 use App\Http\Controllers\FavoriteProductController;
 use App\Http\Controllers\FlashSaleController;
+use App\Http\Controllers\NotificationController;
 use App\Http\Controllers\OrderController;
 use App\Http\Controllers\PartnerOrderController;
 use App\Http\Controllers\PartnerProductController;
@@ -11,6 +12,7 @@ use App\Http\Controllers\ProductController;
 use App\Http\Controllers\ProductImageController;
 use App\Http\Controllers\ShipperSimulationController;
 use App\Http\Controllers\StoreController;
+use App\Http\Controllers\TrackingController;
 use App\Http\Controllers\VoucherController;
 use Illuminate\Support\Facades\Route;
 
@@ -31,8 +33,15 @@ Route::prefix('auth')->group(function () {
 
 Route::get('/orders', [OrderController::class, 'index']);
 Route::post('/orders', [OrderController::class, 'checkout']);
+Route::get('/orders/{order}/tracking', [TrackingController::class, 'show']);
+Route::patch('/orders/{id}/arrived', [OrderController::class, 'arrived']);
+Route::patch('/orders/{id}/complete', [OrderController::class, 'complete']);
 Route::get('/orders/{id}', [OrderController::class, 'show']);
 Route::patch('/orders/{id}/cancel', [OrderController::class, 'cancel']);
+
+Route::get('/notifications', [NotificationController::class, 'index']);
+Route::patch('/notifications/read-all', [NotificationController::class, 'markAllRead']);
+Route::patch('/notifications/{notification}/read', [NotificationController::class, 'markRead']);
 
 Route::apiResource('categories', CategoryController::class)->only(['index', 'show']);
 Route::apiResource('stores', StoreController::class)->only(['index', 'show']);

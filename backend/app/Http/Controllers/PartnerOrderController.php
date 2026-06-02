@@ -3,9 +3,11 @@
 namespace App\Http\Controllers;
 
 use App\Models\Order;
+use App\Models\Shipment;
 use App\Models\Shipper;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 
 class PartnerOrderController extends Controller
 {
@@ -16,21 +18,23 @@ class PartnerOrderController extends Controller
         if (! $user || $user->role !== 'partner') {
             return response()->json([
                 'success' => false,
-                'message' => 'Bạn không có quyền truy cập đơn hàng của siêu thị.',
+                'message' => 'Ban khong co quyen truy cap don hang cua sieu thi.',
             ], 403);
         }
 
-        $stores = $user->stores()->select('id', 'name', 'address', 'status')->get();
+        $stores = $user->stores()
+            ->select('id', 'name', 'address', 'status', 'latitude', 'longitude')
+            ->get();
         $storeIds = $stores->pluck('id');
 
         if ($stores->isEmpty()) {
             return response()->json([
                 'success' => false,
-                'message' => 'Không tìm thấy siêu thị thuộc tài khoản đối tác này.',
+                'message' => 'Khong tim thay sieu thi thuoc tai khoan doi tac nay.',
             ], 404);
         }
 
-        $query = Order::with(['customer', 'store', 'shipper', 'details.product'])
+        $query = Order::with(['customer', 'store', 'shipper', 'shipment', 'details.product'])
             ->whereIn('store_id', $storeIds);
 
         if ($request->filled('store_id')) {
@@ -39,7 +43,7 @@ class PartnerOrderController extends Controller
             if (! $storeIds->contains($requestedStoreId)) {
                 return response()->json([
                     'success' => false,
-                    'message' => 'Bạn không có quyền xem đơn hàng của siêu thị này.',
+                    'message' => 'Ban khong co quyen xem don hang cua sieu thi nay.',
                 ], 403);
             }
 
@@ -73,7 +77,7 @@ class PartnerOrderController extends Controller
         if (! in_array($order->status, ['pending', 'preparing'], true)) {
             return response()->json([
                 'success' => false,
-                'message' => 'Chỉ có thể chuẩn bị đơn đang chờ xử lý.',
+                'message' => 'Chi co the chuan bi don dang cho xu ly.',
             ], 422);
         }
 
@@ -81,14 +85,15 @@ class PartnerOrderController extends Controller
             'status' => 'preparing',
         ]);
 
-        $order->refresh()->load(['customer', 'store', 'shipper', 'details.product']);
+        $order->refresh()->load(['customer', 'store', 'shipper', 'shipment', 'details.product']);
 
         return response()->json([
             'success' => true,
-            'message' => 'Siêu thị đang chuẩn bị hàng cho đơn này.',
+            'message' => 'Sieu thi dang chuan bi hang cho don nay.',
             'data' => [
                 'order' => $order,
                 'shipper' => $order->shipper,
+                'shipment' => $order->shipment,
             ],
         ]);
     }
@@ -104,37 +109,84 @@ class PartnerOrderController extends Controller
         if (! in_array($order->status, ['preparing', 'shipping'], true)) {
             return response()->json([
                 'success' => false,
-                'message' => 'Chỉ có thể chuyển đơn đang chờ bàn giao sang đang giao.',
+                'message' => 'Chi co the chuyen don dang cho ban giao sang dang giao.',
             ], 422);
         }
 
-        if (! $order->shipper_id) {
-            $shipper = Shipper::inRandomOrder()->first();
+        $order->loadMissing('store', 'shipper');
 
-            if (! $shipper) {
-                return response()->json([
-                    'success' => false,
-                    'message' => 'Chưa có shipper nào trong hệ thống.',
-                ], 400);
-            }
-
-            $order->shipper_id = $shipper->id;
+        if (! $order->store?->latitude || ! $order->store?->longitude) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Sieu thi chua co toa do de bat dau tracking.',
+            ], 422);
         }
 
-        $order->update([
-            'status' => 'shipping',
-        ]);
+        if (! $order->delivery_latitude || ! $order->delivery_longitude) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Don hang chua co vi tri nhan hang. Vui long tao don moi co cap nhat vi tri khach hang.',
+            ], 422);
+        }
 
-        $order->refresh()->load(['customer', 'store', 'shipper', 'details.product']);
+        try {
+            $order = DB::transaction(function () use ($order) {
+                if (! $order->shipper_id) {
+                    $shipper = Shipper::inRandomOrder()->first();
+
+                    if (! $shipper) {
+                        throw new \RuntimeException('Chua co shipper nao trong he thong.');
+                    }
+
+                    $order->shipper_id = $shipper->id;
+                }
+
+                $order->status = 'shipping';
+                $order->save();
+
+                $this->createOrUpdateShipment($order->fresh(['store', 'shipper']));
+
+                return $order->fresh(['customer', 'store', 'shipper', 'shipment', 'details.product']);
+            });
+        } catch (\RuntimeException $exception) {
+            return response()->json([
+                'success' => false,
+                'message' => $exception->getMessage(),
+            ], 400);
+        }
 
         return response()->json([
             'success' => true,
-            'message' => 'Shipper đã nhận đơn và bắt đầu giao hàng.',
+            'message' => 'Shipper da nhan don va bat dau giao hang.',
             'data' => [
                 'order' => $order,
                 'shipper' => $order->shipper,
+                'shipment' => $order->shipment,
             ],
         ]);
+    }
+
+    private function createOrUpdateShipment(Order $order): Shipment
+    {
+        return Shipment::updateOrCreate(
+            ['order_id' => $order->id],
+            [
+                'store_id' => $order->store_id,
+                'shipper_id' => $order->shipper_id,
+                'status' => 'shipping',
+                'progress' => 0,
+                'current_latitude' => $order->store->latitude,
+                'current_longitude' => $order->store->longitude,
+                'origin_latitude' => $order->store->latitude,
+                'origin_longitude' => $order->store->longitude,
+                'destination_latitude' => $order->delivery_latitude,
+                'destination_longitude' => $order->delivery_longitude,
+                'route_summary' => $order->store->name . ' -> ' . ($order->delivery_address ?: $order->shipping_address),
+                'started_at' => now(),
+                'arrived_at' => null,
+                'completed_at' => null,
+            ]
+        );
     }
 
     private function denyIfOrderIsNotOwnedByPartner(Request $request, Order $order): ?JsonResponse
@@ -144,7 +196,7 @@ class PartnerOrderController extends Controller
         if (! $user || $user->role !== 'partner') {
             return response()->json([
                 'success' => false,
-                'message' => 'Bạn không có quyền xử lý đơn hàng của siêu thị.',
+                'message' => 'Ban khong co quyen xu ly don hang cua sieu thi.',
             ], 403);
         }
 
@@ -153,7 +205,7 @@ class PartnerOrderController extends Controller
         if (! $storeIds->contains((int) $order->store_id)) {
             return response()->json([
                 'success' => false,
-                'message' => 'Bạn không có quyền xử lý đơn hàng của siêu thị này.',
+                'message' => 'Ban khong co quyen xu ly don hang cua sieu thi nay.',
             ], 403);
         }
 

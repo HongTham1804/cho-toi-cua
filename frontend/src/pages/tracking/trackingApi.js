@@ -1,68 +1,109 @@
-const MOCK_ORDER_TRACKING = {
-  orderId: "ORD-982374",
-  eta: "14:30",
-  status: "Đang giao hàng",
-  customer: {
-    address: "Căn hộ Sunhome, 12 Nguyễn Cửu Đàm",
-  },
-  shipper: {
-    name: "Nguyễn Văn A",
-    plate: "29A - 123.45",
-    avatar: "/assets/shipper.jpg",
-    phone: "0900000000",
-  },
-  currentLocation: {
-    lat: 10.762622,
-    lng: 106.660172,
-  },
-  destination: {
-    lat: 10.765,
-    lng: 106.68,
-  },
-  steps: [
-    {
-      key: "confirmed",
-      title: "Đã xác nhận",
-      time: "13:00",
-      description: "Siêu thị Tân Cúc đã nhận đơn",
-      done: true,
-    },
-    {
-      key: "pickup",
-      title: "Đang lấy hàng",
-      time: "13:15",
-      description: "Shipper đã lấy hàng thành công",
-      done: true,
-    },
-    {
-      key: "shipping",
-      title: "Đang giao hàng",
-      time: null,
-      description: "Shipper đang trên đường tới địa chỉ của bạn",
-      done: true,
-      active: true,
-    },
-    {
-      key: "completed",
-      title: "Hoàn thành",
-      time: null,
-      description: "Chờ nhận hàng",
-      done: false,
-    },
-  ],
-};
+const API_BASE_URL = "http://localhost:8000/api";
+const OSRM_BASE_URL = "https://router.project-osrm.org/route/v1/driving";
 
 export function getOrderIdFromUrl() {
   return new URLSearchParams(window.location.search).get("orderId");
 }
 
 export async function fetchOrderTracking(orderId) {
-  await new Promise((resolve) => setTimeout(resolve, 600));
+  if (!orderId) {
+    throw new Error("Khong tim thay ma don hang de theo doi.");
+  }
+
+  const normalizedOrderId = String(orderId).replace(/^ORD-/i, "").replace(/^0+/, "") || orderId;
+  const response = await fetch(`${API_BASE_URL}/orders/${encodeURIComponent(normalizedOrderId)}/tracking`);
+  const payload = await response.json().catch(() => ({}));
+
+  if (!response.ok) {
+    throw new Error(payload.message || "Khong the tai du lieu theo doi don hang.");
+  }
+
+  return normalizeTrackingPayload(payload.data);
+}
+
+export async function fetchOsrmRoute(origin, destination) {
+  if (!isPoint(origin) || !isPoint(destination)) {
+    return null;
+  }
+
+  const coordinates = `${origin.lng},${origin.lat};${destination.lng},${destination.lat}`;
+  const url = `${OSRM_BASE_URL}/${coordinates}?overview=full&geometries=geojson&steps=false`;
+  const response = await fetch(url);
+  const payload = await response.json().catch(() => ({}));
+
+  if (!response.ok || payload.code !== "Ok" || !payload.routes?.length) {
+    return null;
+  }
+
+  const route = payload.routes[0];
+
   return {
-    ...MOCK_ORDER_TRACKING,
-    orderId: orderId || MOCK_ORDER_TRACKING.orderId,
-    customer: { ...MOCK_ORDER_TRACKING.customer },
-    shipper: { ...MOCK_ORDER_TRACKING.shipper },
-    steps: MOCK_ORDER_TRACKING.steps.map((step) => ({ ...step })),
+    points: route.geometry.coordinates.map(([lng, lat]) => [lat, lng]),
+    distanceMeters: route.distance,
+    durationSeconds: route.duration,
   };
+}
+
+export async function markOrderArrived(orderId) {
+  if (!orderId) {
+    throw new Error("Khong tim thay ma don hang.");
+  }
+
+  const response = await fetch(`${API_BASE_URL}/orders/${encodeURIComponent(orderId)}/arrived`, {
+    method: "PATCH",
+    headers: {
+      "Content-Type": "application/json",
+      Accept: "application/json",
+    },
+    body: "{}",
+  });
+  const payload = await response.json().catch(() => ({}));
+
+  if (!response.ok) {
+    throw new Error(payload.message || "Khong the cap nhat don hang da den noi.");
+  }
+
+  return payload.data;
+}
+
+function normalizeTrackingPayload(data) {
+  const origin = normalizePoint(data?.route?.origin);
+  const destination = normalizePoint(data?.route?.destination);
+  const current = normalizePoint(data?.route?.current) || origin;
+  const shipmentProgress = Number(data?.shipment?.progress ?? 0);
+
+  return {
+    order: data?.order ?? null,
+    store: data?.store ?? null,
+    customer: data?.customer ?? null,
+    shipper: data?.shipper ?? null,
+    shipment: data?.shipment ?? null,
+    items: Array.isArray(data?.items) ? data.items : [],
+    canTrack: Boolean(data?.can_track && origin && destination),
+    origin,
+    destination,
+    current,
+    progress: Number.isFinite(shipmentProgress) ? shipmentProgress : 0,
+    steps: Array.isArray(data?.timeline) ? data.timeline : [],
+  };
+}
+
+function normalizePoint(point) {
+  const lat = Number(point?.lat);
+  const lng = Number(point?.lng);
+
+  if (!Number.isFinite(lat) || !Number.isFinite(lng)) {
+    return null;
+  }
+
+  return {
+    lat,
+    lng,
+    label: point?.label || "",
+    address: point?.address || "",
+  };
+}
+
+function isPoint(point) {
+  return Number.isFinite(Number(point?.lat)) && Number.isFinite(Number(point?.lng));
 }
