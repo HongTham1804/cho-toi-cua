@@ -223,7 +223,7 @@ export default function SupermarketDetails() {
         setVouchers([]);
         setFlashSale(null);
         setFlashSaleProducts([]);
-        setProductError('KhÃ´ng láº¥y Ä‘Æ°á»£c sáº£n pháº©m tá»« backend. Báº¡n hÃ£y cháº¡y Docker/Laravel API rá»“i seed database.');
+        setProductError('Không lấy được sản phẩm từ backend. Bạn hãy chạy Docker/Laravel API rồi seed database.');
       })
       .finally(() => {
         if (isMounted) setIsLoadingProducts(false);

@@ -243,6 +243,7 @@
   width: min(100%, 420px);
   max-height: calc(100vh - 56px);
   overflow-y: auto;
+  overflow-x: hidden;
   padding: 34px 28px 30px;
   border-radius: 8px;
   background: #ffffff;
@@ -319,6 +320,7 @@
   border: 1px solid #cbd5e1;
   border-radius: 2px;
   background: #ffffff;
+  box-sizing: border-box;
   transition: border-color 0.2s ease, box-shadow 0.2s ease;
 }
 
@@ -460,9 +462,9 @@
 
 .guest-otp-field input {
   text-align: center;
-  letter-spacing: 0;
-  font-size: 20px;
-  font-weight: 800;
+  letter-spacing: 0.08em;
+  font-size: 16px;
+  font-weight: 700;
 }
 
 .guest-register-login {
