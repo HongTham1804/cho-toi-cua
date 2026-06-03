@@ -5,30 +5,29 @@ import "./App.css";
 import Sidebar from "./components/Sidebar/Sidebar";
 import CustomerHeader from "./components/CustomerHeader/CustomerHeader";
 import Footer from "./components/Footer/Footer";
-import UserManagement from "./pages/UserManagement/UserManagement";
-import RegisterStore from "./pages/register-store";
-import Notifications from "./pages/notifications";
-import OrderHistory from "./pages/order-history";
-import OrderDetail from "./pages/order-detail";
-import Review from "./pages/review";
-import Tracking from "./pages/tracking";
-import OrderManagement from "./pages/order-management";
-import Inventory from "./pages/inventory";
-import ProductDetail from "./pages/ProductDetail/ProductDetail";
-import ProductManagement from "./pages/ProductManagement/ProductManagement";
 import GuestHomepage from "./pages/guest-homepage";
-import LoggedInHomepage from "./pages/logged-in-homepage";
-import SupermarketDetails from "./pages/supermarket-details";
 import PartnerLogin from "./pages/PartnerLogin/PartnerLogin";
 import AdminLogin from "./pages/admin-login";
-import ShoppingCart from "./pages/shopping-cart";
-import WalletPage from "./pages/wallet";
 import SelectRole from "./pages/select-role";
-import UserDetail from "./pages/UserDetail/UserDetail";
-import AccountSettings from './pages/account-settings';
 import { clearAuthSession, fetchCurrentUser, getStoredAuthUser } from "./services/authApi";
 import { getAdminToken } from "./services/adminAuthApi";
 
+const UserManagement = React.lazy(() => import("./pages/UserManagement/UserManagement"));
+const Notifications = React.lazy(() => import("./pages/notifications"));
+const OrderHistory = React.lazy(() => import("./pages/order-history"));
+const OrderDetail = React.lazy(() => import("./pages/order-detail"));
+const Review = React.lazy(() => import("./pages/review"));
+const Tracking = React.lazy(() => import("./pages/tracking"));
+const OrderManagement = React.lazy(() => import("./pages/order-management"));
+const Inventory = React.lazy(() => import("./pages/inventory"));
+const ProductDetail = React.lazy(() => import("./pages/ProductDetail/ProductDetail"));
+const ProductManagement = React.lazy(() => import("./pages/ProductManagement/ProductManagement"));
+const LoggedInHomepage = React.lazy(() => import("./pages/logged-in-homepage"));
+const SupermarketDetails = React.lazy(() => import("./pages/supermarket-details"));
+const ShoppingCart = React.lazy(() => import("./pages/shopping-cart"));
+const WalletPage = React.lazy(() => import("./pages/wallet"));
+const UserDetail = React.lazy(() => import("./pages/UserDetail/UserDetail"));
+const AccountSettings = React.lazy(() => import("./pages/account-settings"));
 const AdminDashboard = React.lazy(() => import("./pages/admin-dashboard"));
 const DeliveryManagement = React.lazy(() => import("./pages/quanlyvanchuyen"));
 const PartnerPricing = React.lazy(() => import("./pages/quanlydoitac-gia"));
@@ -157,47 +156,53 @@ function App() {
         <Route path="/select-role" element={<SelectRole />} />
 
         <Route element={<CustomerLayout onMenuClick={toggleCustomerMenu} />}>
-          <Route path="/shopping-cart" element={<ShoppingCart />} />
-          <Route path="/supermarket-details" element={<SupermarketDetails />} />
-          <Route path="/logged-in-homepage" element={<LoggedInHomepage onAccountClick={toggleCustomerMenu} />} />
-          <Route path="/order-history" element={<OrderHistory />} />
-          <Route path="/order-history/:orderId" element={<OrderDetail />} />
-          <Route path="/order-detail" element={<OrderDetail />} />
-          <Route path="/order-detail/:orderId" element={<OrderDetail />} />
-          <Route path="/notifications" element={<Notifications />} />
-          <Route path="/wallet" element={<WalletPage />} />
-          <Route path="/review" element={<Review />} />
-          <Route path="/account-settings" element={<AccountSettings />} />
+          <Route path="/shopping-cart" element={lazyPage(ShoppingCart)} />
+          <Route path="/supermarket-details" element={lazyPage(SupermarketDetails)} />
+          <Route
+            path="/logged-in-homepage"
+            element={(
+              <Suspense fallback={<div className="route-loading">Dang tai...</div>}>
+                <LoggedInHomepage onAccountClick={toggleCustomerMenu} />
+              </Suspense>
+            )}
+          />
+          <Route path="/order-history" element={lazyPage(OrderHistory)} />
+          <Route path="/order-history/:orderId" element={lazyPage(OrderDetail)} />
+          <Route path="/order-detail" element={lazyPage(OrderDetail)} />
+          <Route path="/order-detail/:orderId" element={lazyPage(OrderDetail)} />
+          <Route path="/notifications" element={lazyPage(Notifications)} />
+          <Route path="/wallet" element={lazyPage(WalletPage)} />
+          <Route path="/review" element={lazyPage(Review)} />
+          <Route path="/account-settings" element={lazyPage(AccountSettings)} />
           <Route path="/favorite-products" element={lazyPage(FavoriteProducts)} />
         </Route>
 
-        <Route path="/tracking" element={<Tracking />} />
+        <Route path="/tracking" element={lazyPage(Tracking)} />
         <Route path="/product/:id" element={<ProductDetailRedirect />} />
-        <Route path="/product-detail" element={<ProductDetail />} />
-        <Route path="/product-detail/:id" element={<ProductDetail />} />
+        <Route path="/product-detail" element={lazyPage(ProductDetail)} />
+        <Route path="/product-detail/:id" element={lazyPage(ProductDetail)} />
 
         {/* Partner routes */}
-        <Route path="/order-management" element={<OrderManagement />} />
-        <Route path="/order-mangement" element={<OrderManagement />} />
-        <Route path="/order-mangagement" element={<OrderManagement />} />
-        <Route path="/order-managment" element={<OrderManagement />} />
+        <Route path="/order-management" element={lazyPage(OrderManagement)} />
+        <Route path="/order-mangement" element={lazyPage(OrderManagement)} />
+        <Route path="/order-mangagement" element={lazyPage(OrderManagement)} />
+        <Route path="/order-managment" element={lazyPage(OrderManagement)} />
         <Route path="/partner-login" element={<PartnerLogin />} />
         <Route path="/admin-login" element={<AdminLogin />} />
-        <Route path="/register-store" element={<RegisterStore />} />
-        <Route path="/inventory" element={<Inventory />} />
+        <Route path="/inventory" element={lazyPage(Inventory)} />
        
         {/* Admin routes */}
         <Route element={<AdminProtectedRoute />}>
           <Route element={<AdminLayout />}>
             <Route path="/admin-dashboard" element={lazyPage(AdminDashboard)} />
-            <Route path="/product-management" element={<ProductManagement />} />
-            <Route path="/user-management" element={<UserManagement />} />
+            <Route path="/product-management" element={lazyPage(ProductManagement)} />
+            <Route path="/user-management" element={lazyPage(UserManagement)} />
             <Route path="/quanlydoitac-gia" element={lazyPage(PartnerPricing)} />
             <Route path="/quanlyvanchuyen" element={lazyPage(DeliveryManagement)} />
           </Route>
         </Route>
-        <Route path="/UserDetail" element={<UserDetail />} />
-        <Route path="/inventory" element={<Inventory />} />
+        <Route path="/UserDetail" element={lazyPage(UserDetail)} />
+        <Route path="/inventory" element={lazyPage(Inventory)} />
       </Routes>
     </div>
   );

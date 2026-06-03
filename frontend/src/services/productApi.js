@@ -205,6 +205,37 @@ export const fetchCategories = async () => {
   });
 };
 
+export const fetchStoreCatalog = async ({ storeId, userId } = {}) => {
+  const params = new URLSearchParams();
+  if (userId) params.set('user_id', String(userId));
+
+  const cacheKey = `store-catalog:${storeId}:${params.toString()}`;
+  return cachedRequest(cacheKey, 60 * 1000, async () => {
+    const query = params.toString();
+    const response = await fetch(`${API_BASE_URL}/stores/${storeId}/catalog${query ? `?${query}` : ''}`);
+
+    if (!response.ok) {
+      throw new Error('Kh?ng l?y ???c d? li?u si?u th?');
+    }
+
+    const payload = await response.json();
+    const data = payload.data || {};
+
+    return {
+      store: data.store || null,
+      categories: Array.isArray(data.categories)
+        ? data.categories.map((category) => ({
+            id: Number(category.id),
+            name: CATEGORY_NAME_MAP[category.name] || category.name,
+          }))
+        : [],
+      products: Array.isArray(data.products) ? data.products.map(mapApiProduct) : [],
+      vouchers: Array.isArray(data.vouchers) ? data.vouchers : [],
+      flashSales: Array.isArray(data.flash_sales) ? data.flash_sales : [],
+    };
+  });
+};
+
 export const fetchVouchers = async ({ storeId, userId } = {}) => {
   const params = new URLSearchParams();
 

@@ -8,11 +8,8 @@ import {
   saveFlashSaleReminder,
 } from '../../services/flashSaleReminderStorage';
 import {
-  fetchCategories,
   fetchFlashSales,
-  fetchProducts,
-  fetchStores,
-  fetchVouchers,
+  fetchStoreCatalog,
   mapApiProduct,
   saveVoucher,
 } from '../../services/productApi';
@@ -147,6 +144,25 @@ const getFlashSaleTiming = (flashSale, nowMs = Date.now()) => {
   };
 };
 
+const mapFlashSaleItems = (displayFlashSale) => {
+  const flashItems = displayFlashSale?.products || [];
+
+  return flashItems.map((item) => ({
+    ...mapApiProduct({
+      ...item.product,
+      is_flash_sale: true,
+      flash_sale_price: item.flash_sale_price,
+      original_price: item.original_price,
+      flash_sale_sold_percent: item.sold_percent,
+      flash_sale_remaining: item.remaining,
+      flash_sale_end_time: displayFlashSale?.end_time,
+    }),
+    flashSaleProductId: item.id,
+    soldPercent: item.sold_percent,
+    remaining: item.remaining,
+  }));
+};
+
 const SAFE_FIT_PRODUCT_NAMES = new Set([
   'Rau cải xanh VietGAP 500g',
   'Rau muống sạch bó 400g',
@@ -192,16 +208,36 @@ export default function SupermarketDetails() {
   useEffect(() => {
     let isMounted = true;
 
-    Promise.all([fetchStores(), fetchCategories()])
-      .then(([apiStores, apiCategories]) => {
+    setIsLoadingProducts(true);
+    setProductError('');
+    setProducts([]);
+    setVouchers([]);
+    setFlashSale(null);
+    setFlashSaleProducts([]);
+
+    fetchStoreCatalog({ storeId, userId: getCurrentCustomerId() })
+      .then((catalog) => {
         if (!isMounted) return;
-        setStore(apiStores.find((item) => Number(item.id) === storeId) || apiStores[0] || null);
-        setCategories([DEFAULT_CATEGORY, ...apiCategories.map((category) => category.name)]);
+        setStore(catalog.store || null);
+        setCategories([DEFAULT_CATEGORY, ...(catalog.categories || []).map((category) => category.name)]);
+        setProducts(catalog.products || []);
+        setVouchers(catalog.vouchers || []);
+        const displayFlashSale = getDisplayFlashSale(catalog.flashSales || []);
+        setFlashSale(displayFlashSale || null);
+        setFlashSaleProducts(mapFlashSaleItems(displayFlashSale));
       })
       .catch(() => {
         if (!isMounted) return;
         setStore(null);
         setCategories([DEFAULT_CATEGORY]);
+        setProducts([]);
+        setVouchers([]);
+        setFlashSale(null);
+        setFlashSaleProducts([]);
+        setProductError('KhÃ´ng láº¥y Ä‘Æ°á»£c sáº£n pháº©m tá»« backend. Báº¡n hÃ£y cháº¡y Docker/Laravel API rá»“i seed database.');
+      })
+      .finally(() => {
+        if (isMounted) setIsLoadingProducts(false);
       });
 
     return () => {
@@ -211,6 +247,8 @@ export default function SupermarketDetails() {
 
   useEffect(() => {
     let isMounted = true;
+
+    return undefined;
 
     setIsLoadingProducts(true);
     setProductError('');
@@ -236,7 +274,6 @@ export default function SupermarketDetails() {
 
   useEffect(() => {
     let isMounted = true;
-    let timerId = null;
     let refreshTimerId = null;
 
     setFlashSaleProducts([]);
@@ -249,21 +286,7 @@ export default function SupermarketDetails() {
           const displayFlashSale = getDisplayFlashSale(apiFlashSales);
           setFlashSale(displayFlashSale || null);
 
-          const flashItems = displayFlashSale?.products || [];
-          setFlashSaleProducts(flashItems.map((item) => ({
-            ...mapApiProduct({
-              ...item.product,
-              is_flash_sale: true,
-              flash_sale_price: item.flash_sale_price,
-              original_price: item.original_price,
-              flash_sale_sold_percent: item.sold_percent,
-              flash_sale_remaining: item.remaining,
-              flash_sale_end_time: displayFlashSale?.end_time,
-            }),
-            flashSaleProductId: item.id,
-            soldPercent: item.sold_percent,
-            remaining: item.remaining,
-          })));
+          setFlashSaleProducts(mapFlashSaleItems(displayFlashSale));
         })
         .catch(() => {
           if (!isMounted) return;
@@ -272,34 +295,30 @@ export default function SupermarketDetails() {
         });
     };
 
-    timerId = window.setTimeout(loadFlashSale, 120);
     refreshTimerId = window.setInterval(loadFlashSale, 60 * 1000);
 
     return () => {
       isMounted = false;
-      if (timerId) window.clearTimeout(timerId);
       if (refreshTimerId) window.clearInterval(refreshTimerId);
     };
   }, [storeId]);
 
   useEffect(() => {
     let isMounted = true;
-    let timerId = null;
+
+    return undefined;
 
     setVouchers([]);
-    timerId = window.setTimeout(() => {
-      fetchVouchers({ storeId, userId: getCurrentCustomerId() })
-        .then((apiVouchers) => {
-          if (isMounted) setVouchers(apiVouchers);
-        })
-        .catch(() => {
-          if (isMounted) setVouchers([]);
-        });
-    }, 260);
+    fetchVouchers({ storeId, userId: getCurrentCustomerId() })
+      .then((apiVouchers) => {
+        if (isMounted) setVouchers(apiVouchers);
+      })
+      .catch(() => {
+        if (isMounted) setVouchers([]);
+      });
 
     return () => {
       isMounted = false;
-      if (timerId) window.clearTimeout(timerId);
     };
   }, [storeId]);
 

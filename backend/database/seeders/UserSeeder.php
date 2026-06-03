@@ -51,15 +51,29 @@ class UserSeeder extends Seeder
             );
         }
 
-        $users = [
-            [
+        $fixedPartnerEmails = array_values(array_filter(array_column($fixedPartners, 'email')));
+        if ($fixedPartnerEmails !== []) {
+            User::where('role', 'partner')
+                ->whereNotIn('email', $fixedPartnerEmails)
+                ->delete();
+        }
+
+        $adminPassword = env('ADMIN_PASSWORD');
+        $users = [];
+
+        if (! blank($adminPassword)) {
+            $users[] = [
                 'name' => env('ADMIN_NAME', 'Admin'),
                 'email' => env('ADMIN_EMAIL', 'admin@example.com'),
                 'phone' => env('ADMIN_PHONE', '0901234567'),
                 'address' => 'TP.HCM',
                 'role' => 'admin',
-                'password' => env('ADMIN_PASSWORD', 'chotoicua12345@@'),
-            ],
+                'password' => $adminPassword,
+            ];
+        }
+
+        $users = [
+            ...$users,
             [
                 'name' => 'Nguyen Van A',
                 'email' => 'customer@example.com',

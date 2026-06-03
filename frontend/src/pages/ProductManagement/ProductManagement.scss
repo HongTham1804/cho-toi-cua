@@ -88,15 +88,21 @@ $color-danger: #BA1A1A; // <--- THÊM DÒNG NÀY VÀO
     justify-content: space-between;
     align-items: center;
     padding: 0 32px;
-    height: 64px;
+    min-height: 64px;
+    height: auto;
     background: $color-bg;
     border-bottom: 1px solid $color-border;
+    gap: 20px;
+    row-gap: 12px;
+    flex-wrap: wrap;
 
     .header-left {
       display: flex;
       align-items: center;
       gap: 24px;
       flex-wrap: wrap;
+      row-gap: 10px;
+      padding: 10px 0;
 
       .search-box {
         position: relative;
@@ -115,6 +121,7 @@ $color-danger: #BA1A1A; // <--- THÊM DÒNG NÀY VÀO
         align-items: center;
         gap: 8px;
         color: $color-text-muted;
+        white-space: nowrap;
 
         .dropdown {
           position: relative;
@@ -127,6 +134,7 @@ $color-danger: #BA1A1A; // <--- THÊM DÒNG NÀY VÀO
             appearance: none; background: transparent; border: none;
             padding: 8px 32px 8px 12px; font-family: $font-family; font-size: 16px;
             color: $color-text-dark; cursor: pointer; outline: none;
+            min-width: 180px;
           }
           .icon-chevron { position: absolute; right: 8px; pointer-events: none; color: $color-text-dark; }
         }
@@ -135,6 +143,7 @@ $color-danger: #BA1A1A; // <--- THÊM DÒNG NÀY VÀO
 
     .header-right {
       display: flex; align-items: center; gap: 16px;
+      margin-left: auto;
       .notification { position: relative; cursor: pointer; padding: 8px; color: $color-text-muted; .dot-red { position: absolute; top: 8px; right: 8px; width: 8px; height: 8px; background: #BA1A1A; border: 2px solid $color-bg; border-radius: 50%; } }
       .divider { width: 1px; height: 32px; background: $color-border; }
       .user-profile {
@@ -197,6 +206,11 @@ $color-danger: #BA1A1A; // <--- THÊM DÒNG NÀY VÀO
         }
 
         .badge {
+          display: inline-flex;
+          align-items: center;
+          width: max-content;
+          max-width: none;
+          white-space: nowrap;
           padding: 4px 12px; border-radius: 12px; font-size: 13px; font-weight: 600;
           &.badge-green { background: rgba(16, 185, 129, 0.2); color: #00422B; }
           &.badge-blue { background: rgba(33, 112, 228, 0.2); color: #0058BE; }

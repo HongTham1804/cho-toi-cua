@@ -53,9 +53,9 @@ class StoreSeeder extends Seeder
         ];
 
         foreach ($stores as $store) {
-            Store::updateOrCreate(['id' => $store['id']], $store);
+            Store::withTrashed()->updateOrCreate(['id' => $store['id']], $store)->restore();
         }
 
-        Store::whereNotIn('id', [1, 2, 3])->update(['status' => 'inactive']);
+        Store::whereNotIn('id', [1, 2, 3])->delete();
     }
 }

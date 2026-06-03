@@ -273,10 +273,7 @@ const PartnerLogin = () => {
 
             <div className="form-footer">
               <p>
-                Chưa có tài khoản đối tác?{' '}
-                <Link to="/register-store" className="register-link">
-                  Đăng ký ngay
-                </Link>
+                Chưa có tài khoản đối tác? Vui lòng liên hệ với chúng tôi để được hỗ trợ.
               </p>
             </div>
           </div>

@@ -13,27 +13,41 @@ class FlashSaleController extends Controller
     {
         $now = now();
 
-        FlashSale::query()
-            ->where('end_time', '<', $now)
-            ->where('status', '!=', 'ended')
-            ->update(['status' => 'ended']);
+        Cache::remember('flash-sales:status-sync:' . $now->format('YmdHi'), now()->addSeconds(70), function () use ($now) {
+            FlashSale::query()
+                ->where('end_time', '<', $now)
+                ->where('status', '!=', 'ended')
+                ->update(['status' => 'ended']);
 
-        FlashSale::query()
-            ->where('start_time', '<=', $now)
-            ->where('end_time', '>=', $now)
-            ->where('status', '!=', 'active')
-            ->update(['status' => 'active']);
+            FlashSale::query()
+                ->where('start_time', '<=', $now)
+                ->where('end_time', '>=', $now)
+                ->where('status', '!=', 'active')
+                ->update(['status' => 'active']);
 
-        FlashSale::query()
-            ->where('start_time', '>', $now)
-            ->where('status', '!=', 'upcoming')
-            ->update(['status' => 'upcoming']);
+            FlashSale::query()
+                ->where('start_time', '>', $now)
+                ->where('status', '!=', 'upcoming')
+                ->update(['status' => 'upcoming']);
+
+            return true;
+        });
 
         $flashSales = Cache::remember('flash-sales:index:' . md5($request->fullUrl()), now()->addSeconds(30), function () use ($request) {
+            $storeId = $request->filled('store_id') ? (int) $request->query('store_id') : null;
+
             return FlashSale::with([
+                'products' => function ($query) use ($storeId) {
+                    if ($storeId) {
+                        $query->whereHas('product', fn ($productQuery) => $productQuery->where('store_id', $storeId));
+                    }
+                },
                 'products.product.category',
                 'products.product.store',
             ])
+            ->when($storeId, function ($query) use ($storeId) {
+                $query->whereHas('products.product', fn ($productQuery) => $productQuery->where('store_id', $storeId));
+            })
             ->when($request->filled('status'), function ($query) use ($request) {
                 if ($request->query('status') === 'all') {
                     return;

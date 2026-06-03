@@ -95,7 +95,7 @@ function mapApiOrder(order) {
 }
 
 async function fetchOrders() {
-  const response = await fetch(`${API_BASE_URL}/partner/orders?per_page=100`, {
+  const response = await fetch(`${API_BASE_URL}/partner/orders?per_page=50`, {
     headers: getPartnerHeaders(),
   });
 

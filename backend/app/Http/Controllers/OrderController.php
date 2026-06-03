@@ -20,8 +20,16 @@ class OrderController extends Controller
     {
         $perPage = (int) $request->query('per_page', 15);
         $perPage = min(max($perPage, 1), 100);
+        $relations = $request->boolean('summary')
+            ? [
+                'customer:id,name,phone,address',
+                'store:id,name,address',
+                'shipper:id,name,phone,license_plate',
+                'shipment',
+            ]
+            : ['customer', 'store', 'shipper', 'shipment', 'details.product'];
 
-        $orders = Order::with(['customer', 'store', 'shipper', 'shipment', 'details.product'])
+        $orders = Order::with($relations)
             ->when($request->filled('customer_id'), function ($query) use ($request) {
                 $query->where('customer_id', $request->query('customer_id'));
             })
@@ -29,7 +37,19 @@ class OrderController extends Controller
                 $query->where('store_id', $request->query('store_id'));
             })
             ->when($request->filled('status'), function ($query) use ($request) {
-                $query->where('status', $request->query('status'));
+                $statuses = collect(explode(',', (string) $request->query('status')))
+                    ->map(fn ($status) => trim($status))
+                    ->filter()
+                    ->values();
+
+                if ($statuses->count() > 1) {
+                    $query->whereIn('status', $statuses);
+                    return;
+                }
+
+                if ($statuses->isNotEmpty()) {
+                    $query->where('status', $statuses->first());
+                }
             })
             ->latest()
             ->paginate($perPage);

@@ -70,7 +70,7 @@ function mapOrderToDelivery(order) {
 }
 
 async function fetchRealDeliveries() {
-  const response = await fetch(`${API_BASE_URL}/orders?per_page=100`);
+  const response = await fetch(`${API_BASE_URL}/orders?per_page=50&summary=1&status=shipping,completed`);
 
   if (!response.ok) {
     throw new Error('Không lấy được dữ liệu vận chuyển.');

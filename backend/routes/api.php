@@ -32,7 +32,7 @@ Route::prefix('auth')->group(function () {
     Route::post('/forgot-password/verify-otp', [AuthController::class, 'verifyForgotPasswordOtp']);
     Route::post('/forgot-password/reset', [AuthController::class, 'resetForgotPassword']);
     Route::post('/login', [AuthController::class, 'login']);
-    Route::middleware('auth:sanctum')->get('/admin/me', [AuthController::class, 'adminMe']);
+    Route::middleware(['auth:sanctum', 'role:admin'])->get('/admin/me', [AuthController::class, 'adminMe']);
     Route::middleware('auth:sanctum')->get('/me', [AuthController::class, 'me']);
     Route::middleware('auth:sanctum')->patch('/profile', [AuthController::class, 'updateProfile']);
 });
@@ -57,17 +57,24 @@ Route::get('/wallet', [WalletController::class, 'show']);
 Route::post('/wallet/top-up', [WalletController::class, 'topUp']);
 
 Route::apiResource('categories', CategoryController::class)->only(['index', 'show']);
+Route::get('/stores/{store}/catalog', [StoreController::class, 'catalog']);
 Route::apiResource('stores', StoreController::class)->only(['index', 'show']);
 Route::get('/product-images/{slug}.svg', [ProductImageController::class, 'show']);
-Route::apiResource('products', ProductController::class);
-Route::middleware('auth:sanctum')->prefix('partner')->group(function () {
+Route::apiResource('products', ProductController::class)->only(['index', 'show']);
+Route::middleware(['auth:sanctum', 'role:admin,partner'])->group(function () {
+    Route::post('/products', [ProductController::class, 'store']);
+    Route::put('/products/{product}', [ProductController::class, 'update']);
+    Route::patch('/products/{product}', [ProductController::class, 'update']);
+    Route::delete('/products/{product}', [ProductController::class, 'destroy']);
+});
+Route::middleware(['auth:sanctum', 'role:partner'])->prefix('partner')->group(function () {
     Route::get('/orders', [PartnerOrderController::class, 'index']);
     Route::match(['post', 'patch'], '/orders/{order}/prepare', [PartnerOrderController::class, 'prepare']);
     Route::match(['post', 'patch'], '/orders/{order}/start-delivery', [PartnerOrderController::class, 'startDelivery']);
     Route::get('/products', [PartnerProductController::class, 'index']);
     Route::patch('/products/{product}', [PartnerProductController::class, 'update']);
 });
-Route::middleware('auth:sanctum')->prefix('admin/users')->group(function () {
+Route::middleware(['auth:sanctum', 'role:admin'])->prefix('admin/users')->group(function () {
     Route::get('/', [AdminUserController::class, 'index']);
     Route::get('/{type}/{id}', [AdminUserController::class, 'show']);
     Route::patch('/{type}/{id}/lock', [AdminUserController::class, 'lock']);

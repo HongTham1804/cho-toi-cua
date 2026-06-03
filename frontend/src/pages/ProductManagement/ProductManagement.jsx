@@ -9,6 +9,7 @@ import {
   Trash2,
   X,
 } from 'lucide-react';
+import { getAdminToken } from '../../services/adminAuthApi';
 import './ProductManagement.scss';
 
 const API_BASE_URL = 'http://localhost:8000/api';
@@ -85,10 +86,12 @@ const mapProduct = (product) => {
 };
 
 const requestJson = async (url, options = {}) => {
+  const token = getAdminToken();
   const response = await fetch(url, {
     ...options,
     headers: {
       'Content-Type': 'application/json',
+      ...(token ? { Authorization: `Bearer ${token}` } : {}),
       ...(options.headers || {}),
     },
   });

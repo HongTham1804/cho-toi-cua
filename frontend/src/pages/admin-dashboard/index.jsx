@@ -41,7 +41,7 @@ const fetchApiList = async (path, message) => {
 
 const fetchAllOrders = async () => {
   const perPage = 100;
-  const firstResponse = await fetch(`${API_BASE_URL}/orders?per_page=${perPage}&page=1`);
+  const firstResponse = await fetch(`${API_BASE_URL}/orders?per_page=${perPage}&summary=1&page=1`);
 
   if (!firstResponse.ok) {
     throw new Error("Không thể tải dữ liệu đơn hàng.");
@@ -56,7 +56,7 @@ const fetchAllOrders = async () => {
   const nextPages = Array.from({ length: lastPage - 1 }, (_, index) => index + 2);
   const pagePayloads = await Promise.all(
     nextPages.map(async (page) => {
-      const response = await fetch(`${API_BASE_URL}/orders?per_page=${perPage}&page=${page}`);
+      const response = await fetch(`${API_BASE_URL}/orders?per_page=${perPage}&summary=1&page=${page}`);
 
       if (!response.ok) {
         throw new Error("Không thể tải đầy đủ dữ liệu đơn hàng.");
