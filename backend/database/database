@@ -1,0 +1,184 @@
+-- Cấu hình Database
+CREATE DATABASE IF NOT EXISTS supermarket_delivery_db CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+USE supermarket_delivery_db;
+
+-- Bảng users: Tài khoản người dùng (Admin, Customer, Partner)
+CREATE TABLE IF NOT EXISTS users (
+    id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+    name VARCHAR(255) NOT NULL,
+    email VARCHAR(255) NOT NULL UNIQUE,
+    password VARCHAR(255) NOT NULL,
+    phone VARCHAR(20) NULL,
+    address TEXT NULL,
+    role ENUM('admin', 'customer', 'partner') NOT NULL DEFAULT 'customer',
+    created_at TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+) ENGINE=InnoDB;
+
+-- Bảng shippers: Thông tin tài xế ảo để hiển thị
+CREATE TABLE IF NOT EXISTS shippers (
+    id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+    name VARCHAR(255) NOT NULL,
+    phone VARCHAR(20) NOT NULL,
+    license_plate VARCHAR(50) NOT NULL,
+    created_at TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+) ENGINE=InnoDB;
+
+-- Bảng stores: Cửa hàng / Siêu thị đối tác
+CREATE TABLE IF NOT EXISTS stores (
+    id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+    partner_id BIGINT UNSIGNED NOT NULL,
+    name VARCHAR(255) NOT NULL,
+    address TEXT NOT NULL,
+    logo_url VARCHAR(255) NULL,
+    status VARCHAR(50) DEFAULT 'active',
+    deleted_at TIMESTAMP NULL DEFAULT NULL,
+    created_at TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    
+    CONSTRAINT fk_stores_partner FOREIGN KEY (partner_id) REFERENCES users(id) ON DELETE CASCADE
+) ENGINE=InnoDB;
+
+-- Bảng categories: Danh mục ngành hàng
+CREATE TABLE IF NOT EXISTS categories (
+    id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+    name VARCHAR(255) NOT NULL,
+    slug VARCHAR(255) NOT NULL UNIQUE,
+    image_url VARCHAR(255) NULL,
+    created_at TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+) ENGINE=InnoDB;
+
+-- Bảng products: Chi tiết từng mặt hàng
+CREATE TABLE IF NOT EXISTS products (
+    id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+    store_id BIGINT UNSIGNED NOT NULL,
+    category_id BIGINT UNSIGNED NOT NULL,
+    name VARCHAR(255) NOT NULL,
+    original_price DECIMAL(12, 2) NOT NULL,
+    markup_percentage DECIMAL(5, 2) DEFAULT 0.00,
+    markup_fixed DECIMAL(12, 2) DEFAULT 0.00,
+    price DECIMAL(12, 2) NOT NULL,
+    discount_price DECIMAL(12, 2) NULL,
+    stock INT NOT NULL DEFAULT 0,
+    image_url VARCHAR(255) NULL,
+    description TEXT NULL,
+    deleted_at TIMESTAMP NULL DEFAULT NULL,
+    created_at TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    
+    CONSTRAINT fk_products_store FOREIGN KEY (store_id) REFERENCES stores(id) ON DELETE CASCADE,
+    CONSTRAINT fk_products_category FOREIGN KEY (category_id) REFERENCES categories(id) ON DELETE CASCADE
+) ENGINE=InnoDB;
+
+
+-- Bảng vouchers: Mã giảm giá của siêu thị
+CREATE TABLE IF NOT EXISTS vouchers (
+    id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+    store_id BIGINT UNSIGNED NOT NULL,
+    code VARCHAR(50) NOT NULL UNIQUE,
+    discount_amount DECIMAL(12, 2) NOT NULL,
+    discount_type ENUM('fixed', 'percentage') NOT NULL DEFAULT 'fixed',
+    usage_limit INT NOT NULL DEFAULT 0,
+    used_count INT NOT NULL DEFAULT 0,
+    min_order_value DECIMAL(12, 2) DEFAULT 0.00,
+    start_date DATETIME NOT NULL,
+    end_date DATETIME NOT NULL,
+    deleted_at TIMESTAMP NULL DEFAULT NULL,
+    created_at TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    
+    CONSTRAINT fk_vouchers_store FOREIGN KEY (store_id) REFERENCES stores(id) ON DELETE CASCADE
+) ENGINE=InnoDB;
+
+-- Bảng user_vouchers: Ví lưu mã giảm giá của khách hàng (N-N)
+CREATE TABLE IF NOT EXISTS user_vouchers (
+    id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+    user_id BIGINT UNSIGNED NOT NULL,
+    voucher_id BIGINT UNSIGNED NOT NULL,
+    is_used BOOLEAN NOT NULL DEFAULT FALSE,
+    created_at TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    
+    CONSTRAINT fk_uservouchers_user FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
+    CONSTRAINT fk_uservouchers_voucher FOREIGN KEY (voucher_id) REFERENCES vouchers(id) ON DELETE CASCADE
+) ENGINE=InnoDB;
+
+-- Bảng flash_sales: Các chiến dịch Giờ vàng
+CREATE TABLE IF NOT EXISTS flash_sales (
+    id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+    name VARCHAR(255) NOT NULL,
+    start_time DATETIME NOT NULL,
+    end_time DATETIME NOT NULL,
+    status ENUM('upcoming', 'active', 'ended') NOT NULL DEFAULT 'upcoming',
+    created_at TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+) ENGINE=InnoDB;
+
+-- Bảng flash_sale_products: Sản phẩm tham gia Giờ vàng (N-N)
+CREATE TABLE IF NOT EXISTS flash_sale_products (
+    id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+    flash_sale_id BIGINT UNSIGNED NOT NULL,
+    product_id BIGINT UNSIGNED NOT NULL,
+    flash_sale_price DECIMAL(12, 2) NOT NULL,
+    quantity INT NOT NULL DEFAULT 0,
+    sold INT NOT NULL DEFAULT 0,
+    created_at TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    
+    CONSTRAINT fk_fsproducts_flash_sale FOREIGN KEY (flash_sale_id) REFERENCES flash_sales(id) ON DELETE CASCADE,
+    CONSTRAINT fk_fsproducts_product FOREIGN KEY (product_id) REFERENCES products(id) ON DELETE CASCADE
+) ENGINE=InnoDB;
+
+
+-- Bảng orders: Đơn hàng tổng quát
+CREATE TABLE IF NOT EXISTS orders (
+    id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+    customer_id BIGINT UNSIGNED NOT NULL,
+    store_id BIGINT UNSIGNED NOT NULL,
+    shipper_id BIGINT UNSIGNED NULL,
+    voucher_id BIGINT UNSIGNED NULL,
+    shipping_fee DECIMAL(12, 2) NOT NULL DEFAULT 0.00,
+    subtotal DECIMAL(12, 2) NOT NULL,
+    total_amount DECIMAL(12, 2) NOT NULL,
+    shipping_address TEXT NOT NULL,
+    payment_method VARCHAR(50) NOT NULL,
+    status ENUM('Chờ xử lý', 'Đang lấy hàng', 'Đang giao', 'Hoàn thành', 'Đã hủy') NOT NULL DEFAULT 'Chờ xử lý',
+    created_at TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    
+    CONSTRAINT fk_orders_customer FOREIGN KEY (customer_id) REFERENCES users(id) ON DELETE RESTRICT,
+    CONSTRAINT fk_orders_store FOREIGN KEY (store_id) REFERENCES stores(id) ON DELETE RESTRICT,
+    CONSTRAINT fk_orders_shipper FOREIGN KEY (shipper_id) REFERENCES shippers(id) ON DELETE SET NULL,
+    CONSTRAINT fk_orders_voucher FOREIGN KEY (voucher_id) REFERENCES vouchers(id) ON DELETE SET NULL
+) ENGINE=InnoDB;
+
+-- Bảng order_details: Chi tiết các món hàng trong đơn (N-N)
+CREATE TABLE IF NOT EXISTS order_details (
+    id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+    order_id BIGINT UNSIGNED NOT NULL,
+    product_id BIGINT UNSIGNED NOT NULL,
+    quantity INT NOT NULL DEFAULT 1,
+    unit_price DECIMAL(12, 2) NOT NULL,
+    original_price DECIMAL(12, 2) NOT NULL,
+    is_flash_sale BOOLEAN NOT NULL DEFAULT FALSE,
+    created_at TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    
+    CONSTRAINT fk_details_order FOREIGN KEY (order_id) REFERENCES orders(id) ON DELETE CASCADE,
+    CONSTRAINT fk_details_product FOREIGN KEY (product_id) REFERENCES products(id) ON DELETE RESTRICT
+) ENGINE=InnoDB;
+
+-- Bảng reviews: Đánh giá và bình luận sản phẩm (N-N)
+CREATE TABLE IF NOT EXISTS reviews (
+    id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+    user_id BIGINT UNSIGNED NOT NULL,
+    product_id BIGINT UNSIGNED NOT NULL,
+    rating TINYINT UNSIGNED NOT NULL CHECK (rating BETWEEN 1 AND 5),
+    comment TEXT NULL,
+    created_at TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP,
+    
+    CONSTRAINT fk_reviews_user FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
+    CONSTRAINT fk_reviews_product FOREIGN KEY (product_id) REFERENCES products(id) ON DELETE CASCADE
+) ENGINE=InnoDB;
