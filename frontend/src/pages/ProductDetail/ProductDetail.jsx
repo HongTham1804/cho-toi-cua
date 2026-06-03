@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { Link, useLocation, useNavigate, useParams } from 'react-router-dom';
 import CustomerHeader from '../../components/CustomerHeader/CustomerHeader';
+import Footer from '../../components/Footer/Footer';
 import { addCartItem } from '../../services/cartStorage';
 import {
   addFavoriteProduct,
@@ -146,7 +147,7 @@ export default function ProductDetail() {
 
       await addFavoriteProduct(product.id);
       setIsFavorite(true);
-      navigate('/favorite-products');
+      setCartNotice('Đã lưu sản phẩm vào danh sách yêu thích.');
     } catch (favoriteError) {
       setCartNotice(favoriteError.message || 'Không thể cập nhật sản phẩm yêu thích.');
     } finally {
@@ -215,6 +216,17 @@ export default function ProductDetail() {
       )}
 
       {!isLoading && hasProduct && (
+        <>
+        <div className="ctc-product-detail-top">
+          <Link
+            to={storeDetailUrl || '/logged-in-homepage'}
+            className="ctc-product-continue-link"
+          >
+            <i className="fa-solid fa-arrow-left" />
+            Tiếp tục mua sắm
+          </Link>
+        </div>
+
         <main className="ctc-product-detail">
           <section className="ctc-product-media" aria-label="Ảnh sản phẩm">
             <div
@@ -332,6 +344,7 @@ export default function ProductDetail() {
             </div>
           </section>
         </main>
+        </>
       )}
 
       {hasProduct && isReviewModalOpen && (
@@ -340,6 +353,8 @@ export default function ProductDetail() {
           onClose={() => setIsReviewModalOpen(false)}
         />
       )}
+
+      <Footer />
     </div>
   );
 }

@@ -12,9 +12,9 @@ class UserSeeder extends Seeder
     {
         $users = [
             [
-                'name' => 'Admin',
-                'email' => 'admin@example.com',
-                'phone' => '0901234567',
+                'name' => env('ADMIN_NAME', 'Admin'),
+                'email' => env('ADMIN_EMAIL', 'admin@example.com'),
+                'phone' => env('ADMIN_PHONE', '0901234567'),
                 'address' => 'TP.HCM',
                 'role' => 'admin',
             ],
@@ -81,7 +81,7 @@ class UserSeeder extends Seeder
                 ['email' => $user['email']],
                 [
                     ...$user,
-                    'password' => Hash::make($user['role'] === 'admin' ? 'chotoicua12345@@' : '123456'),
+                    'password' => Hash::make($user['role'] === 'admin' ? env('ADMIN_PASSWORD', 'chotoicua12345@@') : '123456'),
                 ]
             );
         }
