@@ -10,6 +10,7 @@ import {
   Users,
   Wallet,
 } from "lucide-react";
+import { getAdminToken } from "../../services/adminAuthApi";
 
 const API_BASE_URL = "http://localhost:8000/api";
 const REPORT_FONT_FAMILY = '"Segoe UI", "Arial", sans-serif';
@@ -28,8 +29,19 @@ const normalizeApiList = (payload) => {
 
 const getLastPage = (payload) => Number(payload?.data?.last_page || 1);
 
+const adminHeaders = () => {
+  const token = getAdminToken();
+
+  return token ? { Authorization: `Bearer ${token}` } : {};
+};
+
 const fetchApiList = async (path, message) => {
-  const response = await fetch(`${API_BASE_URL}${path}`);
+  const response = await fetch(`${API_BASE_URL}${path}`, {
+    headers: {
+      Accept: "application/json",
+      ...adminHeaders(),
+    },
+  });
 
   if (!response.ok) {
     throw new Error(message);
@@ -41,7 +53,12 @@ const fetchApiList = async (path, message) => {
 
 const fetchAllOrders = async () => {
   const perPage = 100;
-  const firstResponse = await fetch(`${API_BASE_URL}/orders?per_page=${perPage}&page=1`);
+  const firstResponse = await fetch(`${API_BASE_URL}/orders?per_page=${perPage}&page=1`, {
+    headers: {
+      Accept: "application/json",
+      ...adminHeaders(),
+    },
+  });
 
   if (!firstResponse.ok) {
     throw new Error("Không thể tải dữ liệu đơn hàng.");
@@ -56,7 +73,12 @@ const fetchAllOrders = async () => {
   const nextPages = Array.from({ length: lastPage - 1 }, (_, index) => index + 2);
   const pagePayloads = await Promise.all(
     nextPages.map(async (page) => {
-      const response = await fetch(`${API_BASE_URL}/orders?per_page=${perPage}&page=${page}`);
+      const response = await fetch(`${API_BASE_URL}/orders?per_page=${perPage}&page=${page}`, {
+        headers: {
+          Accept: "application/json",
+          ...adminHeaders(),
+        },
+      });
 
       if (!response.ok) {
         throw new Error("Không thể tải đầy đủ dữ liệu đơn hàng.");

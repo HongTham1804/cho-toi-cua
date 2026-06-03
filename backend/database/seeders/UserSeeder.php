@@ -54,11 +54,11 @@ class UserSeeder extends Seeder
         $users = [
             [
                 'name' => 'Admin',
-                'email' => 'admin@example.com',
+                'email' => env('ADMIN_EMAIL'),
                 'phone' => '0901234567',
                 'address' => 'TP.HCM',
                 'role' => 'admin',
-                'password' => 'chotoicua12345@@',
+                'password' => env('ADMIN_PASSWORD'),
             ],
             [
                 'name' => 'Nguyen Van A',
@@ -111,6 +111,10 @@ class UserSeeder extends Seeder
         ];
 
         foreach ($users as $user) {
+            if (blank($user['email']) || blank($user['password'])) {
+                continue;
+            }
+
             User::updateOrCreate(
                 ['email' => $user['email']],
                 [

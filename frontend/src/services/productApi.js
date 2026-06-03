@@ -3,6 +3,14 @@ const API_ORIGIN = API_BASE_URL.replace(/\/api$/, '');
 const CACHE_PREFIX = 'ctc-api-cache:';
 const pendingRequests = new Map();
 
+const getAuthToken = () => window.localStorage.getItem('auth_token');
+
+const authHeaders = () => {
+  const token = getAuthToken();
+
+  return token ? { Authorization: `Bearer ${token}` } : {};
+};
+
 const readCache = (key) => {
   try {
     const cached = JSON.parse(window.sessionStorage.getItem(`${CACHE_PREFIX}${key}`));
@@ -205,11 +213,10 @@ export const fetchCategories = async () => {
   });
 };
 
-export const fetchVouchers = async ({ storeId, userId } = {}) => {
+export const fetchVouchers = async ({ storeId } = {}) => {
   const params = new URLSearchParams();
 
   if (storeId) params.set('store_id', String(storeId));
-  if (userId) params.set('user_id', String(userId));
 
   const cacheKey = `vouchers:${params.toString()}`;
   return cachedRequest(cacheKey, 2 * 60 * 1000, async () => {
@@ -224,13 +231,14 @@ export const fetchVouchers = async ({ storeId, userId } = {}) => {
   });
 };
 
-export const saveVoucher = async ({ voucherId, userId }) => {
+export const saveVoucher = async ({ voucherId }) => {
   const response = await fetch(`${API_BASE_URL}/vouchers/${voucherId}/save`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
+      ...authHeaders(),
     },
-    body: JSON.stringify({ user_id: userId }),
+    body: '{}',
   });
 
   const payload = await response.json().catch(() => ({}));
@@ -243,13 +251,14 @@ export const saveVoucher = async ({ voucherId, userId }) => {
   return payload.data;
 };
 
-export const unsaveVoucher = async ({ voucherId, userId }) => {
+export const unsaveVoucher = async ({ voucherId }) => {
   const response = await fetch(`${API_BASE_URL}/vouchers/${voucherId}/save`, {
     method: 'DELETE',
     headers: {
       'Content-Type': 'application/json',
+      ...authHeaders(),
     },
-    body: JSON.stringify({ user_id: userId }),
+    body: '{}',
   });
 
   const payload = await response.json().catch(() => ({}));
@@ -262,15 +271,19 @@ export const unsaveVoucher = async ({ voucherId, userId }) => {
   return payload.data;
 };
 
-export const fetchUserVouchers = async ({ userId, storeId } = {}) => {
+export const fetchUserVouchers = async ({ storeId } = {}) => {
   const params = new URLSearchParams();
 
-  if (userId) params.set('user_id', String(userId));
   if (storeId) params.set('store_id', String(storeId));
 
-  const cacheKey = `user-vouchers:${params.toString()}`;
+  const cacheKey = `user-vouchers:${getAuthToken() || 'guest'}:${params.toString()}`;
   return cachedRequest(cacheKey, 2 * 60 * 1000, async () => {
-    const response = await fetch(`${API_BASE_URL}/user-vouchers?${params.toString()}`);
+    const response = await fetch(`${API_BASE_URL}/user-vouchers?${params.toString()}`, {
+      headers: {
+        Accept: 'application/json',
+        ...authHeaders(),
+      },
+    });
 
     if (!response.ok) {
       throw new Error('Kh?ng l?y ???c v? voucher');

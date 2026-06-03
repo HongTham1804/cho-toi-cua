@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import './index.css';
 import { Search, ChevronDown, MapPin, User } from 'lucide-react';
+import { getAdminToken } from '../../services/adminAuthApi';
 
 const API_BASE_URL = 'http://localhost:8000/api';
 
@@ -70,7 +71,13 @@ function mapOrderToDelivery(order) {
 }
 
 async function fetchRealDeliveries() {
-  const response = await fetch(`${API_BASE_URL}/orders?per_page=100`);
+  const token = getAdminToken();
+  const response = await fetch(`${API_BASE_URL}/orders?per_page=100`, {
+    headers: {
+      Accept: 'application/json',
+      ...(token ? { Authorization: `Bearer ${token}` } : {}),
+    },
+  });
 
   if (!response.ok) {
     throw new Error('Không lấy được dữ liệu vận chuyển.');

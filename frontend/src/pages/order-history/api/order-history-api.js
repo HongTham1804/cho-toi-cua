@@ -1,11 +1,15 @@
 import { addCartItem } from "../../../services/cartStorage";
-import { getStoredAuthUser } from "../../../services/authApi";
+import { getAuthToken } from "../../../services/authApi";
 import { mapApiProduct } from "../../../services/productApi";
 
 const API_BASE_URL = "http://localhost:8000/api";
 const API_ORIGIN = API_BASE_URL.replace(/\/api$/, "");
 
-const getCurrentCustomerId = () => Number(getStoredAuthUser()?.id || 0);
+const authHeaders = () => {
+  const token = getAuthToken();
+
+  return token ? { Authorization: `Bearer ${token}` } : {};
+};
 
 const normalizePageItems = (payload) => {
   if (Array.isArray(payload?.data?.data)) return payload.data.data;
@@ -98,19 +102,17 @@ export const mapOrder = (order) => {
 
 export async function fetchOrders(status = "all") {
   const params = new URLSearchParams({ per_page: "100" });
-  const customerId = getCurrentCustomerId();
-
-  if (!customerId) {
-    return [];
-  }
-
-  params.set("customer_id", String(customerId));
 
   if (status && status !== "all") {
     params.set("status", status);
   }
 
-  const response = await fetch(`${API_BASE_URL}/orders?${params.toString()}`);
+  const response = await fetch(`${API_BASE_URL}/orders?${params.toString()}`, {
+    headers: {
+      Accept: "application/json",
+      ...authHeaders(),
+    },
+  });
 
   if (!response.ok) {
     throw new Error("Không thể tải danh sách đơn hàng.");
@@ -123,11 +125,12 @@ export async function fetchOrders(status = "all") {
 }
 
 export async function fetchOrderById(orderId) {
-  const customerId = getCurrentCustomerId();
-  const params = new URLSearchParams();
-  if (customerId) params.set("customer_id", String(customerId));
-
-  const response = await fetch(`${API_BASE_URL}/orders/${orderId}?${params.toString()}`);
+  const response = await fetch(`${API_BASE_URL}/orders/${orderId}`, {
+    headers: {
+      Accept: "application/json",
+      ...authHeaders(),
+    },
+  });
 
   if (!response.ok) {
     throw new Error("Không thể lấy chi tiết đơn hàng.");
@@ -138,13 +141,9 @@ export async function fetchOrderById(orderId) {
 }
 
 export async function cancelOrder(orderId) {
-  const customerId = getCurrentCustomerId();
-  const params = new URLSearchParams();
-  if (customerId) params.set("customer_id", String(customerId));
-
-  const response = await fetch(`${API_BASE_URL}/orders/${orderId}/cancel?${params.toString()}`, {
+  const response = await fetch(`${API_BASE_URL}/orders/${orderId}/cancel`, {
     method: "PATCH",
-    headers: { "Content-Type": "application/json" },
+    headers: { "Content-Type": "application/json", ...authHeaders() },
     body: "{}",
   });
 
@@ -158,13 +157,9 @@ export async function cancelOrder(orderId) {
 }
 
 export async function completeOrder(orderId) {
-  const customerId = getCurrentCustomerId();
-  const params = new URLSearchParams();
-  if (customerId) params.set("customer_id", String(customerId));
-
-  const response = await fetch(`${API_BASE_URL}/orders/${orderId}/complete?${params.toString()}`, {
+  const response = await fetch(`${API_BASE_URL}/orders/${orderId}/complete`, {
     method: "PATCH",
-    headers: { "Content-Type": "application/json" },
+    headers: { "Content-Type": "application/json", ...authHeaders() },
     body: "{}",
   });
 

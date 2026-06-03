@@ -11,12 +11,10 @@ class WalletController extends Controller
 {
     public function show(Request $request): JsonResponse
     {
-        $data = $request->validate([
-            'user_id' => ['required', 'integer', 'exists:users,id'],
-        ]);
+        $user = $request->user();
 
         $wallet = Wallet::firstOrCreate(
-            ['user_id' => (int) $data['user_id']],
+            ['user_id' => (int) $user->id],
             ['balance' => 0]
         );
 
@@ -29,13 +27,13 @@ class WalletController extends Controller
     public function topUp(Request $request): JsonResponse
     {
         $data = $request->validate([
-            'user_id' => ['required', 'integer', 'exists:users,id'],
             'amount' => ['required', 'numeric', 'min:1000'],
         ]);
+        $user = $request->user();
 
-        $wallet = DB::transaction(function () use ($data) {
+        $wallet = DB::transaction(function () use ($data, $user) {
             $wallet = Wallet::firstOrCreate(
-                ['user_id' => (int) $data['user_id']],
+                ['user_id' => (int) $user->id],
                 ['balance' => 0]
             );
             $wallet = Wallet::whereKey($wallet->id)->lockForUpdate()->firstOrFail();

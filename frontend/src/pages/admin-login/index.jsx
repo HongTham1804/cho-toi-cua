@@ -59,7 +59,7 @@ export default function AdminLogin() {
                 <input
                   id="admin-identifier"
                   type="text"
-                  placeholder="admin@example.com"
+                  placeholder="Email quan tri"
                   value={identifier}
                   onChange={(event) => setIdentifier(event.target.value)}
                   required

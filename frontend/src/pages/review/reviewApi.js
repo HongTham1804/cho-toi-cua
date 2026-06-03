@@ -2,6 +2,14 @@ const API_BASE_URL = "http://localhost:8000/api";
 const API_ORIGIN = API_BASE_URL.replace(/\/api$/, "");
 const CACHE_PREFIX = "ctc-api-cache:";
 
+const getAuthToken = () => window.localStorage.getItem("auth_token");
+
+const authHeaders = () => {
+  const token = getAuthToken();
+
+  return token ? { Authorization: `Bearer ${token}` } : {};
+};
+
 export function getOrderIdFromUrl() {
   return new URLSearchParams(window.location.search).get("orderId");
 }
@@ -48,7 +56,12 @@ export async function fetchReviewOrder(orderId) {
     throw new Error("Không tìm thấy mã đơn hàng để đánh giá.");
   }
 
-  const response = await fetch(`${API_BASE_URL}/orders/${encodeURIComponent(normalizedId)}/review`);
+  const response = await fetch(`${API_BASE_URL}/orders/${encodeURIComponent(normalizedId)}/review`, {
+    headers: {
+      Accept: "application/json",
+      ...authHeaders(),
+    },
+  });
   const payload = await response.json().catch(() => ({}));
 
   if (!response.ok) {
@@ -86,6 +99,7 @@ export async function postReviews(orderId, anonymous, reviews) {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
+      ...authHeaders(),
     },
     body: JSON.stringify({
       anonymous,

@@ -6,10 +6,11 @@ use App\Http\Requests\AssignShipperRequest;
 use App\Models\Order;
 use App\Models\Shipper;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
 
 class ShipperSimulationController extends Controller
 {
-    public function index(): JsonResponse
+    public function index(Request $request): JsonResponse
     {
         $shippers = Shipper::latest()->get();
 
@@ -28,6 +29,15 @@ class ShipperSimulationController extends Controller
                 'success' => false,
                 'message' => 'Không tìm thấy đơn hàng.',
             ], 404);
+        }
+
+        $user = $request->user();
+
+        if ($user?->role === 'partner' && ! $user->stores()->whereKey($order->store_id)->exists()) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Ban khong co quyen gan shipper cho don hang cua sieu thi nay.',
+            ], 403);
         }
 
         $shipper = $request->filled('shipper_id')

@@ -1,5 +1,13 @@
 const API_BASE_URL = 'http://localhost:8000/api';
 
+const getAuthToken = () => window.localStorage.getItem('auth_token');
+
+const authHeaders = () => {
+  const token = getAuthToken();
+
+  return token ? { Authorization: `Bearer ${token}` } : {};
+};
+
 const normalizeWallet = (wallet = {}) => ({
   id: wallet.id,
   userId: Number(wallet.user_id || wallet.userId || 0),
@@ -17,9 +25,9 @@ const normalizeWallet = (wallet = {}) => ({
     : [],
 });
 
-export async function fetchWallet({ userId }) {
-  const response = await fetch(`${API_BASE_URL}/wallet?user_id=${encodeURIComponent(userId)}`, {
-    headers: { Accept: 'application/json' },
+export async function fetchWallet() {
+  const response = await fetch(`${API_BASE_URL}/wallet`, {
+    headers: { Accept: 'application/json', ...authHeaders() },
   });
   const payload = await response.json().catch(() => ({}));
 
@@ -30,14 +38,15 @@ export async function fetchWallet({ userId }) {
   return normalizeWallet(payload.data);
 }
 
-export async function topUpWallet({ userId, amount }) {
+export async function topUpWallet({ amount }) {
   const response = await fetch(`${API_BASE_URL}/wallet/top-up`, {
     method: 'POST',
     headers: {
       Accept: 'application/json',
       'Content-Type': 'application/json',
+      ...authHeaders(),
     },
-    body: JSON.stringify({ user_id: userId, amount }),
+    body: JSON.stringify({ amount }),
   });
   const payload = await response.json().catch(() => ({}));
 

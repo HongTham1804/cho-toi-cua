@@ -11,8 +11,16 @@ use Illuminate\Support\Facades\DB;
 
 class PayosController extends Controller
 {
-    public function create(Order $order, PayosService $payos): JsonResponse
+    public function create(Request $request, Order $order, PayosService $payos): JsonResponse
     {
+        $user = $request->user();
+
+        if ($user?->role !== 'admin' && (int) $order->customer_id !== (int) $user?->id) {
+            return response()->json([
+                'message' => 'Ban khong co quyen tao thanh toan cho don hang nay.',
+            ], 403);
+        }
+
         if ($order->payment_method !== 'payos') {
             return response()->json([
                 'message' => 'Đơn hàng này không dùng thanh toán PayOS.',

@@ -13,7 +13,7 @@ class VoucherController extends Controller
     public function index(Request $request): JsonResponse
     {
         return Cache::remember('vouchers:index:' . md5($request->fullUrl()), now()->addSeconds(30), function () use ($request) {
-        $userId = $request->query('user_id') ? (int) $request->query('user_id') : null;
+        $userId = $request->user()?->id;
         $savedVoucherStates = $this->savedVoucherStates($userId);
 
         $vouchers = Voucher::with('store')
@@ -37,10 +37,6 @@ class VoucherController extends Controller
 
     public function save(Request $request, Voucher $voucher): JsonResponse
     {
-        $data = $request->validate([
-            'user_id' => ['required', 'exists:users,id'],
-        ]);
-
         if (! $voucher->isActive()) {
             return response()->json([
                 'message' => 'Voucher đã hết hạn hoặc hết lượt sử dụng.',
@@ -53,7 +49,7 @@ class VoucherController extends Controller
             ], 422);
         }
 
-        $user = User::findOrFail($data['user_id']);
+        $user = $request->user();
         $existingVoucher = $user->vouchers()
             ->where('vouchers.id', $voucher->id)
             ->first();
@@ -77,11 +73,7 @@ class VoucherController extends Controller
 
     public function unsave(Request $request, Voucher $voucher): JsonResponse
     {
-        $data = $request->validate([
-            'user_id' => ['required', 'exists:users,id'],
-        ]);
-
-        $user = User::findOrFail($data['user_id']);
+        $user = $request->user();
         $existingVoucher = $user->vouchers()
             ->where('vouchers.id', $voucher->id)
             ->first();
@@ -105,11 +97,10 @@ class VoucherController extends Controller
     {
         return Cache::remember('user-vouchers:index:' . md5($request->fullUrl()), now()->addSeconds(30), function () use ($request) {
         $data = $request->validate([
-            'user_id' => ['required', 'exists:users,id'],
             'store_id' => ['nullable', 'exists:stores,id'],
         ]);
 
-        $user = User::findOrFail($data['user_id']);
+        $user = $request->user();
 
         $vouchers = $user->vouchers()
             ->with('store')

@@ -1,9 +1,7 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import './wallet.css';
-import { getStoredAuthUser } from '../../services/authApi';
 import { fetchWallet, topUpWallet } from '../../services/walletApi';
 
-const DEFAULT_CUSTOMER_ID = 4;
 const QUICK_AMOUNTS = [50000, 100000, 200000];
 
 const formatCurrency = (value) => `${Number(value || 0).toLocaleString('vi-VN')}đ`;
@@ -15,8 +13,6 @@ const transactionLabels = {
 };
 
 export default function WalletPage() {
-  const currentUser = useMemo(() => getStoredAuthUser() || {}, []);
-  const userId = Number(currentUser.id || DEFAULT_CUSTOMER_ID);
   const [wallet, setWallet] = useState(null);
   const [topUpAmount, setTopUpAmount] = useState(100000);
   const [isLoading, setIsLoading] = useState(true);
@@ -28,7 +24,7 @@ export default function WalletPage() {
     setError('');
 
     try {
-      setWallet(await fetchWallet({ userId }));
+      setWallet(await fetchWallet());
     } catch (err) {
       setError(err.message || 'Không thể lấy ví.');
     } finally {
@@ -47,7 +43,7 @@ export default function WalletPage() {
     setError('');
 
     try {
-      setWallet(await topUpWallet({ userId, amount: Number(amount) }));
+      setWallet(await topUpWallet({ amount: Number(amount) }));
       setTopUpAmount(Number(amount));
     } catch (err) {
       setError(err.message || 'Không thể nạp ví.');
