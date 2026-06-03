@@ -58,8 +58,8 @@ export default function AdminLogin() {
                 <UserRound size={18} />
                 <input
                   id="admin-identifier"
-                  type="text"
-                  placeholder="Email quan tri"
+                  type="email"
+                  placeholder="admin@example.com"
                   value={identifier}
                   onChange={(event) => setIdentifier(event.target.value)}
                   required
