@@ -1,0 +1,240 @@
+.admin-login-page {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 40px 20px;
+  background: #f7faf8;
+  font-family: "Be Vietnam Pro", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+}
+
+.admin-login-card {
+  width: min(980px, 100%);
+  min-height: 520px;
+  display: grid;
+  grid-template-columns: 1.05fr 0.95fr;
+  background: #ffffff;
+  border: 1px solid #d7e2da;
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 24px 70px rgba(15, 23, 42, 0.12);
+}
+
+.admin-login-brand {
+  position: relative;
+  min-height: 520px;
+  background:
+    linear-gradient(135deg, rgba(0, 108, 73, 0.58), rgba(6, 95, 70, 0.42)),
+    url("https://images.unsplash.com/photo-1542838132-92c53300491e?q=80&w=1400&auto=format&fit=crop");
+  background-size: cover;
+  background-position: center;
+}
+
+.admin-login-brand-overlay {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.08), rgba(0, 43, 29, 0.32));
+}
+
+.admin-login-corner-logo {
+  position: absolute;
+  z-index: 2;
+  top: 26px;
+  left: 30px;
+  width: 64px;
+  height: 64px;
+  object-fit: contain;
+  padding: 10px;
+  border-radius: 14px;
+  background: #ffffff;
+  border: 0;
+  box-shadow: 0 12px 28px rgba(0, 48, 32, 0.18);
+}
+
+.admin-login-brand-content {
+  position: relative;
+  z-index: 1;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  padding: 42px;
+  color: #ffffff;
+}
+
+.admin-login-brand h1 {
+  margin: 0 0 12px;
+  font-size: 42px;
+  line-height: 1.05;
+  font-weight: 800;
+}
+
+.admin-login-brand p {
+  max-width: 420px;
+  margin: 0;
+  font-size: 17px;
+  line-height: 1.6;
+  color: rgba(255, 255, 255, 0.9);
+}
+
+.admin-login-form-panel {
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+  padding: 76px 44px 44px;
+}
+
+.admin-login-heading span {
+  display: inline-block;
+  margin-bottom: 10px;
+  color: #007a55;
+  font-size: 13px;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.admin-login-heading h2 {
+  margin: 0;
+  color: #102033;
+  font-size: 34px;
+  line-height: 1.15;
+}
+
+.admin-login-heading p {
+  margin: 10px 0 28px;
+  color: #5b6b63;
+  font-size: 15px;
+  line-height: 1.5;
+}
+
+.admin-login-form {
+  display: grid;
+  gap: 16px;
+  margin-top: 28px;
+}
+
+.admin-login-field {
+  display: grid;
+  gap: 8px;
+  color: #102033;
+  font-weight: 700;
+  font-size: 13px;
+}
+
+.admin-login-input-wrap {
+  min-height: 48px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 0 16px;
+  border: 1px solid #bdcec4;
+  border-radius: 8px;
+  background: #f8fbf9;
+  color: #66756f;
+}
+
+.admin-login-input-wrap:focus-within {
+  border-color: #007a55;
+  box-shadow: 0 0 0 4px rgba(0, 122, 85, 0.12);
+}
+
+.admin-login-input-wrap input {
+  flex: 1;
+  min-width: 0;
+  border: 0;
+  outline: 0;
+  box-shadow: none;
+  appearance: none;
+  font: inherit;
+  font-weight: 600;
+  color: #102033;
+  background: transparent;
+}
+
+.admin-login-input-wrap input:focus {
+  outline: 0;
+  box-shadow: none;
+}
+
+.admin-login-input-wrap input::placeholder {
+  color: #9aa6a1;
+}
+
+.admin-login-eye {
+  border: 0;
+  background: transparent;
+  color: #007a55;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.admin-login-remember {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: #4b5c55;
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.admin-login-remember input {
+  width: 16px;
+  height: 16px;
+  accent-color: #007a55;
+}
+
+.admin-login-error {
+  margin: 0;
+  padding: 11px 13px;
+  color: #b91c1c;
+  background: #fee2e2;
+  border: 1px solid #fecaca;
+  border-radius: 8px;
+  font-size: 13px;
+  line-height: 1.45;
+}
+
+.admin-login-submit {
+  min-height: 48px;
+  border: 0;
+  border-radius: 8px;
+  background: #007a55;
+  color: #ffffff;
+  font: inherit;
+  font-weight: 800;
+  cursor: pointer;
+  transition: transform 0.18s ease, box-shadow 0.18s ease, background 0.18s ease;
+}
+
+.admin-login-submit:hover:not(:disabled) {
+  background: #006c49;
+  transform: translateY(-1px);
+  box-shadow: 0 12px 24px rgba(0, 108, 73, 0.22);
+}
+
+.admin-login-submit:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+}
+
+@media (max-width: 780px) {
+  .admin-login-card {
+    grid-template-columns: 1fr;
+  }
+
+  .admin-login-brand {
+    min-height: 260px;
+  }
+
+  .admin-login-brand-content,
+  .admin-login-form-panel {
+    padding: 28px;
+  }
+
+  .admin-login-form {
+    margin-top: 22px;
+  }
+}

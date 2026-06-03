@@ -408,6 +408,48 @@ class AuthController extends Controller
         ]);
     }
 
+    public function adminLogin(Request $request): JsonResponse
+    {
+        $validated = $request->validate([
+            'identifier' => ['required', 'string'],
+            'password' => ['required', 'string'],
+        ], [
+            'identifier.required' => 'Vui lòng nhập email hoặc số điện thoại.',
+            'password.required' => 'Vui lòng nhập mật khẩu.',
+        ]);
+
+        $identifier = $validated['identifier'];
+        $field = filter_var($identifier, FILTER_VALIDATE_EMAIL) ? 'email' : 'phone';
+        $user = User::where($field, $identifier)->first();
+
+        if (! $user || ! Hash::check($validated['password'], $user->password) || $user->role !== 'admin') {
+            return response()->json([
+                'message' => 'Thông tin đăng nhập quản trị không đúng.',
+            ], 422);
+        }
+
+        return response()->json([
+            'message' => 'Đăng nhập quản trị thành công.',
+            'token' => $user->createToken('admin-web')->plainTextToken,
+            'user' => $user,
+        ]);
+    }
+
+    public function adminMe(Request $request): JsonResponse
+    {
+        $user = $request->user();
+
+        if (! $user || $user->role !== 'admin') {
+            return response()->json([
+                'message' => 'Bạn không có quyền truy cập trang quản trị.',
+            ], 403);
+        }
+
+        return response()->json([
+            'user' => $user,
+        ]);
+    }
+
     public function sendForgotPasswordOtp(Request $request): JsonResponse
     {
         $validated = $request->validate([

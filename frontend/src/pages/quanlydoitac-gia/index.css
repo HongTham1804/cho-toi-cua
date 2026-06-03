@@ -109,8 +109,7 @@
   background-color: #e2e8f0;
 }
 
-.ctc-admin-avatar,
-.ctc-partner-avatar {
+.ctc-admin-avatar {
   object-fit: cover;
   border-radius: 50%;
   border: 1px solid #e2e8f0;
@@ -279,6 +278,11 @@
   background-color: #d1fae5;
 }
 
+.ctc-badge-muted {
+  color: #64748b;
+  background-color: #f1f5f9;
+}
+
 .ctc-border-green {
   border: 1px solid #a7f3d0;
 }
@@ -349,9 +353,23 @@
   gap: 10px;
 }
 
-.ctc-partner-avatar {
-  width: 38px;
-  height: 38px;
+.ctc-partner-logo-frame {
+  width: 64px;
+  height: 64px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+}
+
+.ctc-partner-logo {
+  width: 52px;
+  height: 52px;
+  object-fit: contain;
+  display: block;
 }
 
 .ctc-partner-name {
@@ -391,6 +409,23 @@
 
 .ctc-star-icon {
   color: #d97706;
+}
+
+.ctc-rating-link {
+  color: #0f172a;
+  text-decoration: none;
+}
+
+.ctc-rating-link:hover {
+  color: #047857;
+  text-decoration: underline;
+}
+
+.ctc-empty-cell {
+  padding: 28px 16px;
+  color: #64748b;
+  text-align: center;
+  font-weight: 700;
 }
 
 .ctc-btn-icon-action {

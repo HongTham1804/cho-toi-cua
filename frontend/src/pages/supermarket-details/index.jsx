@@ -57,6 +57,15 @@ const isStoreOpenNow = (date = new Date()) => {
   return hour >= 7 && hour < 22;
 };
 
+const formatStoreRating = (store) => {
+  const reviewCount = Number(store?.review_count || 0);
+  const averageRating = Number(store?.average_rating || 0);
+
+  if (!reviewCount || !averageRating) return '⭐ Chưa có đánh giá';
+
+  return `⭐ ${averageRating.toFixed(1)} (${reviewCount.toLocaleString('vi-VN')} đánh giá)`;
+};
+
 const formatPrice = (price) => `${Number(price).toLocaleString('vi-VN')}đ`;
 
 const formatShortMoney = (value) => `${Math.round(Number(value) / 1000)}K`;
@@ -440,7 +449,7 @@ export default function SupermarketDetails() {
             <div className="shop-detail-text">
               <h1>{store?.name || 'Đang tải siêu thị'}</h1>
               <div className="shop-meta">
-                <span>⭐ 4.8 (2k+ đánh giá)</span>
+                <span>{formatStoreRating(store)}</span>
                 <span>•</span>
                 <span>07:00 - 22:00</span>
                 <span>•</span>

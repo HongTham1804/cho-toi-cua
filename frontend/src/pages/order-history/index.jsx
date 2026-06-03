@@ -15,8 +15,8 @@ const STATUS_MAP = {
 };
 
 const TABS = [
-  { value: "pending_payment", label: "Chờ thanh toán" },
   { value: "all", label: "Tất cả" },
+  { value: "pending_payment", label: "Chờ thanh toán" },
   { value: "pending", label: "Chờ xử lý" },
   { value: "preparing", label: "Đang lấy hàng" },
   { value: "shipping", label: "Đang giao" },

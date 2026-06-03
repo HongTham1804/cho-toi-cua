@@ -298,6 +298,13 @@
   background-color: #F5FBF8;
 }
 
+.ctc-empty-cell {
+  padding: 32px 24px;
+  color: #64748B;
+  text-align: center;
+  font-weight: 600;
+}
+
 .ctc-shopper-profile {
   display: flex;
   align-items: center;

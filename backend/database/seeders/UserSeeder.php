@@ -81,7 +81,7 @@ class UserSeeder extends Seeder
                 ['email' => $user['email']],
                 [
                     ...$user,
-                    'password' => Hash::make('123456'),
+                    'password' => Hash::make($user['role'] === 'admin' ? 'chotoicua12345@@' : '123456'),
                 ]
             );
         }

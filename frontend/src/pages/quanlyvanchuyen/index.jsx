@@ -1,6 +1,8 @@
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import './index.css';
-import { Search, Bell, ChevronDown, MapPin, User } from 'lucide-react';
+import { Search, ChevronDown, MapPin, User } from 'lucide-react';
+
+const API_BASE_URL = 'http://localhost:8000/api';
 
 const STORE_SYSTEMS = [
   'GO! Dĩ An',
@@ -9,111 +11,133 @@ const STORE_SYSTEMS = [
 ];
 
 const DELIVERY_STATUSES = [
-  'Chờ xử lý',
-  'Đang lấy hàng',
-  'Đang giao',
-  'Đã hoàn thành',
-  'Đã hủy',
-];
-
-const DELIVERIES = [
-    {
-      orderId: '#ORD-9821',
-      shopper: { name: 'Trần Thị B', phone: '0901234567' },
-      route: { from: 'GO! Dĩ An', to: '123 Nguyễn Trãi, Q.1' },
-      status: 'Chờ xử lý',
-      statusClass: 'status-pending',
-      time: '10:30, 24/10'
-    },
-    {
-      orderId: '#ORD-9822',
-      shopper: { name: 'Nguyễn Văn E', phone: '0912345678' },
-      route: { from: 'WinMart Lê Văn Việt', to: '12 Lê Văn Việt, TP. Thủ Đức' },
-      status: 'Đang lấy hàng',
-      statusClass: 'status-picking',
-      time: '10:45, 24/10'
-    },
-    {
-      orderId: '#ORD-9823',
-      shopper: { name: 'Lê Thị G', phone: '0934567890' },
-      route: { from: 'Bách Hóa Xanh Lê Văn Chí', to: '45 Võ Văn Ngân, TP. Thủ Đức' },
-      status: 'Đang giao',
-      statusClass: 'status-shipping',
-      time: '11:00, 24/10'
-    },
-    {
-      orderId: '#ORD-9824',
-      shopper: { name: 'Chưa phân công', phone: '-' },
-      shopperStyle: 'shopper-unassigned',
-      route: { from: 'GO! Dĩ An', to: '456 Huỳnh Tấn Phát, Q.7' },
-      status: 'Chờ xử lý',
-      statusClass: 'status-pending',
-      time: '11:15, 24/10'
-    },
-    {
-      orderId: '#ORD-9825',
-      shopper: { name: 'Phạm Quốc Huy', phone: '0908877665' },
-      route: { from: 'WinMart Lê Văn Việt', to: '789 Tô Hiến Thành, Q.10' },
-      status: 'Đang lấy hàng',
-      statusClass: 'status-picking',
-      time: '11:30, 24/10'
-    },
-    {
-      orderId: '#ORD-9826',
-      shopper: { name: 'Đỗ Minh Khang', phone: '0977112233' },
-      route: { from: 'Bách Hóa Xanh Lê Văn Chí', to: '321 Trần Hưng Đạo, Q.1' },
-      status: 'Đang giao',
-      statusClass: 'status-shipping',
-      time: '12:00, 24/10'
-    },
-    {
-      orderId: '#ORD-9827',
-      shopper: { name: 'Mai Anh Thư', phone: '0922123456' },
-      route: { from: 'GO! Dĩ An', to: '22 Phạm Văn Đồng, TP. Thủ Đức' },
-      status: 'Đã hoàn thành',
-      statusClass: 'status-completed',
-      time: '12:20, 24/10'
-    },
-    {
-      orderId: '#ORD-9828',
-      shopper: { name: 'Trần Đức Nam', phone: '0933001122' },
-      route: { from: 'WinMart Lê Văn Việt', to: '88 Xa Lộ Hà Nội, TP. Thủ Đức' },
-      status: 'Đã hủy',
-      statusClass: 'status-cancelled',
-      time: '12:45, 24/10'
-    },
-    {
-      orderId: '#ORD-9829',
-      shopper: { name: 'Vũ Hoàng Long', phone: '0911223344' },
-      route: { from: 'Bách Hóa Xanh Lê Văn Chí', to: '17 Man Thiện, TP. Thủ Đức' },
-      status: 'Đã hoàn thành',
-      statusClass: 'status-completed',
-      time: '13:00, 24/10'
-    },
-    {
-      orderId: '#ORD-9830',
-      shopper: { name: 'Chưa phân công', phone: '-' },
-      shopperStyle: 'shopper-unassigned',
-      route: { from: 'GO! Dĩ An', to: '9 Hoàng Diệu 2, TP. Thủ Đức' },
-      status: 'Chờ xử lý',
-      statusClass: 'status-pending',
-      time: '13:15, 24/10'
-    },
+  { value: 'shipping', label: 'Đang giao', className: 'status-shipping' },
+  { value: 'completed', label: 'Đã hoàn thành', className: 'status-completed' },
 ];
 
 const PAGE_SIZE = 5;
 
+function normalizeOrders(payload) {
+  if (Array.isArray(payload?.data?.data)) return payload.data.data;
+  if (Array.isArray(payload?.data)) return payload.data;
+  return [];
+}
+
+function formatOrderId(id) {
+  return `#ORD-${String(id).padStart(4, '0')}`;
+}
+
+function formatDate(value) {
+  if (!value) return '';
+
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return '';
+
+  return new Intl.DateTimeFormat('vi-VN', {
+    hour: '2-digit',
+    minute: '2-digit',
+    day: '2-digit',
+    month: '2-digit',
+  }).format(date);
+}
+
+function statusMeta(status) {
+  return DELIVERY_STATUSES.find((item) => item.value === status) || DELIVERY_STATUSES[0];
+}
+
+function mapOrderToDelivery(order) {
+  const status = statusMeta(order.status);
+  const shipper = order.shipper || {};
+
+  return {
+    orderId: formatOrderId(order.id),
+    rawOrderId: String(order.id),
+    searchableOrderId: `${order.id} ${formatOrderId(order.id)}`.toLowerCase(),
+    shopper: {
+      name: shipper.name || 'Chưa phân công',
+      phone: shipper.phone || '-',
+    },
+    shopperStyle: shipper.name ? '' : 'ctc-shopper-unassigned',
+    route: {
+      from: order.store?.name || 'Siêu thị',
+      to: order.delivery_address || order.shipping_address || order.customer?.address || 'Đang cập nhật địa chỉ',
+    },
+    status: status.label,
+    statusValue: status.value,
+    statusClass: status.className,
+    time: formatDate(order.created_at),
+  };
+}
+
+async function fetchRealDeliveries() {
+  const response = await fetch(`${API_BASE_URL}/orders?per_page=100`);
+
+  if (!response.ok) {
+    throw new Error('Không lấy được dữ liệu vận chuyển.');
+  }
+
+  const payload = await response.json();
+
+  return normalizeOrders(payload)
+    .filter((order) => ['shipping', 'completed'].includes(order.status))
+    .map(mapOrderToDelivery);
+}
+
 export default function DeliveryManagement() {
   const [selectedStore, setSelectedStore] = useState('all');
   const [selectedStatus, setSelectedStatus] = useState('all');
+  const [searchQuery, setSearchQuery] = useState('');
   const [currentPage, setCurrentPage] = useState(1);
+  const [deliveries, setDeliveries] = useState([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [errorMessage, setErrorMessage] = useState('');
+
+  useEffect(() => {
+    let isMounted = true;
+
+    async function loadDeliveries({ silent = false } = {}) {
+      if (!silent) setIsLoading(true);
+      try {
+        const nextDeliveries = await fetchRealDeliveries();
+        if (!isMounted) return;
+
+        setDeliveries(nextDeliveries);
+        setErrorMessage('');
+      } catch (error) {
+        if (!isMounted) return;
+        setErrorMessage(error.message || 'Không lấy được dữ liệu vận chuyển.');
+      } finally {
+        if (isMounted && !silent) setIsLoading(false);
+      }
+    }
+
+    loadDeliveries();
+    const refreshTimer = window.setInterval(() => loadDeliveries({ silent: true }), 10000);
+
+    return () => {
+      isMounted = false;
+      window.clearInterval(refreshTimer);
+    };
+  }, []);
+
   const filteredDeliveries = useMemo(() => {
-    return DELIVERIES.filter((delivery) => {
+    const keyword = searchQuery.trim().toLowerCase();
+
+    return deliveries.filter((delivery) => {
       const matchesStore = selectedStore === 'all' || delivery.route.from === selectedStore;
-      const matchesStatus = selectedStatus === 'all' || delivery.status === selectedStatus;
-      return matchesStore && matchesStatus;
+      const matchesStatus = selectedStatus === 'all' || delivery.statusValue === selectedStatus;
+      const matchesSearch =
+        !keyword ||
+        delivery.searchableOrderId.includes(keyword) ||
+        delivery.shopper.name.toLowerCase().includes(keyword) ||
+        delivery.shopper.phone.toLowerCase().includes(keyword) ||
+        delivery.route.from.toLowerCase().includes(keyword) ||
+        delivery.route.to.toLowerCase().includes(keyword);
+
+      return matchesStore && matchesStatus && matchesSearch;
     });
-  }, [selectedStatus, selectedStore]);
+  }, [deliveries, searchQuery, selectedStatus, selectedStore]);
+
   const totalPages = Math.max(1, Math.ceil(filteredDeliveries.length / PAGE_SIZE));
   const safePage = Math.min(currentPage, totalPages);
   const startIndex = (safePage - 1) * PAGE_SIZE;
@@ -131,17 +155,23 @@ export default function DeliveryManagement() {
     setCurrentPage(1);
   }
 
+  function handleSearchChange(value) {
+    setSearchQuery(value);
+    setCurrentPage(1);
+  }
+
   return (
     <div className="ctc-admin-container">
-      {/* Top Navigation Header */}
       <header className="ctc-top-header">
         <div className="ctc-header-left">
           <div className="ctc-search-box">
             <span className="ctc-search-icon"><Search size={18} /></span>
             <input
               type="text"
-              placeholder="Tìm kiếm chuyến xe, mã đơn, shopper..."
+              placeholder="Tìm kiếm mã đơn, shipper, siêu thị..."
               className="ctc-search-input"
+              value={searchQuery}
+              onChange={(event) => handleSearchChange(event.target.value)}
             />
           </div>
 
@@ -155,7 +185,7 @@ export default function DeliveryManagement() {
               >
                 <option value="all">Tất cả trạng thái</option>
                 {DELIVERY_STATUSES.map((status) => (
-                  <option key={status} value={status}>{status}</option>
+                  <option key={status.value} value={status.value}>{status.label}</option>
                 ))}
               </select>
               <ChevronDown size={16} className="ctc-chevron" />
@@ -181,21 +211,18 @@ export default function DeliveryManagement() {
         </div>
 
         <div className="ctc-header-actions">
-          <button className="ctc-icon-btn" type="button"><Bell size={20} /></button>
-          <div className="ctc-divider-v"></div>
           <div className="ctc-user-info">
             <span className="ctc-user-name">Admin</span>
             <span className="ctc-user-role">Quản lý chợ</span>
           </div>
-          <img 
+          <img
             src="https://i.pravatar.cc/150?img=11"
-            alt="Admin Profile" 
+            alt="Admin Profile"
             className="ctc-admin-avatar"
           />
         </div>
       </header>
 
-      {/* Main Panel Content */}
       <main className="ctc-main-content">
         <div className="ctc-page-header">
           <div>
@@ -204,7 +231,6 @@ export default function DeliveryManagement() {
           </div>
         </div>
 
-        {/* Core Data Table Grid */}
         <div className="ctc-table-card">
           <div className="ctc-table-responsive">
             <table className="ctc-data-table">
@@ -218,8 +244,26 @@ export default function DeliveryManagement() {
                 </tr>
               </thead>
               <tbody>
-                {pagedDeliveries.map((delivery, index) => (
-                  <tr key={index}>
+                {isLoading && (
+                  <tr>
+                    <td colSpan="5" className="ctc-empty-cell">Đang tải dữ liệu vận chuyển...</td>
+                  </tr>
+                )}
+
+                {!isLoading && errorMessage && (
+                  <tr>
+                    <td colSpan="5" className="ctc-empty-cell">{errorMessage}</td>
+                  </tr>
+                )}
+
+                {!isLoading && !errorMessage && pagedDeliveries.length === 0 && (
+                  <tr>
+                    <td colSpan="5" className="ctc-empty-cell">Chưa có đơn đang giao hoặc đã hoàn thành.</td>
+                  </tr>
+                )}
+
+                {!isLoading && !errorMessage && pagedDeliveries.map((delivery) => (
+                  <tr key={delivery.rawOrderId}>
                     <td className="font-bold text-emerald">{delivery.orderId}</td>
                     <td>
                       <div className="ctc-shopper-profile">
@@ -227,7 +271,7 @@ export default function DeliveryManagement() {
                           <User size={14} />
                         </div>
                         <div>
-                          <div className={`ctc-shopper-name ${delivery.shopperStyle || ""}`}>{delivery.shopper.name}</div>
+                          <div className={`ctc-shopper-name ${delivery.shopperStyle}`}>{delivery.shopper.name}</div>
                           {delivery.shopper.phone !== '-' && <div className="ctc-shopper-phone">{delivery.shopper.phone}</div>}
                         </div>
                       </div>
@@ -254,7 +298,6 @@ export default function DeliveryManagement() {
             </table>
           </div>
 
-          {/* Pagination Toolbar */}
           <div className="ctc-table-pagination">
             <div className="ctc-pagination-info">
               Hiển thị {visibleStart}-{visibleEnd} trong số {filteredDeliveries.length} chuyến giao hàng

@@ -25,11 +25,13 @@ Route::prefix('auth')->group(function () {
     Route::post('/partner/register/send-otp', [AuthController::class, 'sendPartnerRegisterOtp']);
     Route::post('/partner/register/verify-otp', [AuthController::class, 'verifyPartnerRegisterOtp']);
     Route::post('/partner/login', [AuthController::class, 'partnerLogin']);
+    Route::post('/admin/login', [AuthController::class, 'adminLogin']);
     Route::post('/forgot-password/send-otp', [AuthController::class, 'sendForgotPasswordOtp']);
     Route::post('/partner/forgot-password/send-otp', [AuthController::class, 'sendPartnerForgotPasswordOtp']);
     Route::post('/forgot-password/verify-otp', [AuthController::class, 'verifyForgotPasswordOtp']);
     Route::post('/forgot-password/reset', [AuthController::class, 'resetForgotPassword']);
     Route::post('/login', [AuthController::class, 'login']);
+    Route::middleware('auth:sanctum')->get('/admin/me', [AuthController::class, 'adminMe']);
     Route::middleware('auth:sanctum')->get('/me', [AuthController::class, 'me']);
     Route::middleware('auth:sanctum')->patch('/profile', [AuthController::class, 'updateProfile']);
 });

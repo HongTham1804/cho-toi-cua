@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Store;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Database\Eloquent\Builder;
 
 class StoreController extends Controller
 {
@@ -13,6 +14,11 @@ class StoreController extends Controller
             'success' => true,
             'data' => Store::query()
                 ->where('status', 'active')
+                ->withCount([
+                    'reviews as review_count',
+                    'orders as completed_orders_count' => fn (Builder $query) => $query->where('status', 'completed'),
+                ])
+                ->withAvg('reviews as average_rating', 'rating')
                 ->orderBy('id')
                 ->get(),
         ]);
@@ -22,6 +28,11 @@ class StoreController extends Controller
     {
         $store = Store::query()
             ->where('status', 'active')
+            ->withCount([
+                'reviews as review_count',
+                'orders as completed_orders_count' => fn (Builder $query) => $query->where('status', 'completed'),
+            ])
+            ->withAvg('reviews as average_rating', 'rating')
             ->find($id);
 
         if (! $store) {

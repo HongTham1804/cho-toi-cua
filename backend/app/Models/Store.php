@@ -30,4 +30,19 @@ class Store extends Model
     {
         return $this->belongsTo(User::class, 'partner_id');
     }
+
+    public function products()
+    {
+        return $this->hasMany(Product::class);
+    }
+
+    public function orders()
+    {
+        return $this->hasMany(Order::class);
+    }
+
+    public function reviews()
+    {
+        return $this->hasManyThrough(Review::class, Product::class);
+    }
 }

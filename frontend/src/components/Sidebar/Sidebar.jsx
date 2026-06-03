@@ -5,10 +5,10 @@ import {
   LayoutDashboard,
   LogOut,
   Package,
-  Settings,
   Truck,
   Users,
 } from "lucide-react";
+import { clearAdminSession } from "../../services/adminAuthApi";
 import "./Sidebar.scss";
 
 const navItems = [
@@ -24,7 +24,8 @@ export default function Sidebar() {
 
   const handleLogout = () => {
     if (window.confirm("Bạn có chắc chắn muốn đăng xuất khỏi trang quản trị không?")) {
-      navigate("/select-role", { replace: true });
+      clearAdminSession();
+      navigate("/admin-login", { replace: true });
     }
   };
 
@@ -51,15 +52,6 @@ export default function Sidebar() {
       </nav>
 
       <div className="admin-sidebar__footer">
-        <NavLink
-          to="/settings"
-          className={({ isActive }) =>
-            isActive ? "admin-sidebar__item active" : "admin-sidebar__item"
-          }
-        >
-          <Settings size={20} />
-          <span>Cài đặt</span>
-        </NavLink>
         <button type="button" className="admin-sidebar__item" onClick={handleLogout}>
           <LogOut size={20} />
           <span>Đăng xuất</span>

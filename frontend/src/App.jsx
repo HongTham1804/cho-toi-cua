@@ -20,12 +20,14 @@ import GuestHomepage from "./pages/guest-homepage";
 import LoggedInHomepage from "./pages/logged-in-homepage";
 import SupermarketDetails from "./pages/supermarket-details";
 import PartnerLogin from "./pages/PartnerLogin/PartnerLogin";
+import AdminLogin from "./pages/admin-login";
 import ShoppingCart from "./pages/shopping-cart";
 import WalletPage from "./pages/wallet";
 import SelectRole from "./pages/select-role";
 import UserDetail from "./pages/UserDetail/UserDetail";
 import AccountSettings from './pages/account-settings';
 import { clearAuthSession, fetchCurrentUser, getStoredAuthUser } from "./services/authApi";
+import { getAdminToken } from "./services/adminAuthApi";
 
 const AdminDashboard = React.lazy(() => import("./pages/admin-dashboard"));
 const DeliveryManagement = React.lazy(() => import("./pages/quanlyvanchuyen"));
@@ -64,6 +66,10 @@ function AdminLayout() {
       </div>
     </div>
   );
+}
+
+function AdminProtectedRoute() {
+  return getAdminToken() ? <Outlet /> : <Navigate to="/admin-login" replace />;
 }
 
 function App() {
@@ -176,16 +182,19 @@ function App() {
         <Route path="/order-mangagement" element={<OrderManagement />} />
         <Route path="/order-managment" element={<OrderManagement />} />
         <Route path="/partner-login" element={<PartnerLogin />} />
+        <Route path="/admin-login" element={<AdminLogin />} />
         <Route path="/register-store" element={<RegisterStore />} />
         <Route path="/inventory" element={<Inventory />} />
        
         {/* Admin routes */}
-        <Route element={<AdminLayout />}>
-          <Route path="/admin-dashboard" element={lazyPage(AdminDashboard)} />
-          <Route path="/product-management" element={<ProductManagement />} />
-          <Route path="/user-management" element={<UserManagement />} />
-          <Route path="/quanlydoitac-gia" element={lazyPage(PartnerPricing)} />
-          <Route path="/quanlyvanchuyen" element={lazyPage(DeliveryManagement)} />
+        <Route element={<AdminProtectedRoute />}>
+          <Route element={<AdminLayout />}>
+            <Route path="/admin-dashboard" element={lazyPage(AdminDashboard)} />
+            <Route path="/product-management" element={<ProductManagement />} />
+            <Route path="/user-management" element={<UserManagement />} />
+            <Route path="/quanlydoitac-gia" element={lazyPage(PartnerPricing)} />
+            <Route path="/quanlyvanchuyen" element={lazyPage(DeliveryManagement)} />
+          </Route>
         </Route>
         <Route path="/UserDetail" element={<UserDetail />} />
         <Route path="/inventory" element={<Inventory />} />
