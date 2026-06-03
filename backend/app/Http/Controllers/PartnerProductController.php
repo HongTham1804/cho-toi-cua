@@ -12,7 +12,7 @@ class PartnerProductController extends Controller
     {
         $user = $request->user();
 
-        if (! $user || $user->role !== 'partner') {
+        if (! $this->isConfiguredPartner($user)) {
             return response()->json([
                 'success' => false,
                 'message' => 'Bạn không có quyền truy cập kho của siêu thị.',
@@ -60,7 +60,7 @@ class PartnerProductController extends Controller
     {
         $user = $request->user();
 
-        if (! $user || $user->role !== 'partner') {
+        if (! $this->isConfiguredPartner($user)) {
             return response()->json([
                 'success' => false,
                 'message' => 'Bạn không có quyền cập nhật kho của siêu thị.',
@@ -102,5 +102,23 @@ class PartnerProductController extends Controller
             'success' => true,
             'data' => $product->fresh(['category', 'store']),
         ]);
+    }
+
+    private function isConfiguredPartner($user): bool
+    {
+        if (! $user || $user->role !== 'partner') {
+            return false;
+        }
+
+        $emails = array_values(array_filter(array_map(
+            fn ($email) => strtolower(trim((string) $email)),
+            [
+                env('PARTNER_BHX_EMAIL'),
+                env('PARTNER_WINMART_EMAIL'),
+                env('PARTNER_GO_EMAIL'),
+            ]
+        )));
+
+        return $emails === [] || in_array(strtolower($user->email), $emails, true);
     }
 }

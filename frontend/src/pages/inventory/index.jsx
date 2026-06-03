@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import "@fortawesome/fontawesome-free/css/all.min.css";
 import {
@@ -57,6 +57,36 @@ export default function Inventory() {
       isMounted = false;
     };
   }, []);
+
+  const refreshInventory = useCallback(async () => {
+    try {
+      const { store: apiStore, products: apiProducts } = await fetchPartnerProducts();
+      setStore(apiStore);
+      setProducts(apiProducts);
+      setIsOpen(apiStore?.status !== "inactive");
+      setPageError("");
+    } catch {
+      // Silent refresh keeps the current table visible if the API is briefly unavailable.
+    }
+  }, []);
+
+  useEffect(() => {
+    const refreshOnFocus = () => {
+      if (document.visibilityState === "visible") {
+        refreshInventory();
+      }
+    };
+    const refreshTimer = window.setInterval(refreshInventory, 30000);
+
+    document.addEventListener("visibilitychange", refreshOnFocus);
+    window.addEventListener("focus", refreshOnFocus);
+
+    return () => {
+      window.clearInterval(refreshTimer);
+      document.removeEventListener("visibilitychange", refreshOnFocus);
+      window.removeEventListener("focus", refreshOnFocus);
+    };
+  }, [refreshInventory]);
 
   function showToast(msg, type = "success") {
     setToast({ msg, type });

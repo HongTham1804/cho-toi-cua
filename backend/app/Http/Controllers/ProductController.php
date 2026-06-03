@@ -24,7 +24,16 @@ class ProductController extends Controller
 
         // 1. Xử lý Tìm kiếm & Lọc (Filter) theo yêu cầu
         if ($request->has('search') && $request->search != '') {
-            $query->where('name', 'like', '%' . $request->search . '%');
+            $search = trim((string) $request->search);
+            $searchId = preg_replace('/\D+/', '', $search);
+
+            $query->where(function ($query) use ($search, $searchId) {
+                $query->where('name', 'like', '%' . $search . '%');
+
+                if ($searchId !== '') {
+                    $query->orWhere('id', (int) $searchId);
+                }
+            });
         }
 
         if ($request->has('category_id') && $request->category_id != '') {
@@ -33,6 +42,19 @@ class ProductController extends Controller
 
         if ($request->has('store_id') && $request->store_id != '') {
             $query->where('store_id', $request->store_id);
+        }
+
+        if ($request->has('stock_status') && $request->stock_status != '') {
+            if ($request->stock_status === 'available') {
+                $query->where('is_active', true)->where('stock', '>', 0);
+            }
+
+            if ($request->stock_status === 'out_of_stock') {
+                $query->where(function ($query) {
+                    $query->where('is_active', false)
+                        ->orWhere('stock', '<=', 0);
+                });
+            }
         }
 
         if ($request->has('min_price') && $request->min_price != '') {
@@ -115,9 +137,11 @@ class ProductController extends Controller
     public function store(StoreProductRequest $request)
     {
         $product = Product::create($request->validated());
+        Cache::flush();
+
         return response()->json([
             'success' => true,
-            'data' => $product
+            'data' => $product->load(['category', 'store'])
         ], 201);
     }
 
@@ -182,9 +206,11 @@ class ProductController extends Controller
         }
 
         $product->update($request->validated());
+        Cache::flush();
+
         return response()->json([
             'success' => true,
-            'data' => $product
+            'data' => $product->fresh()->load(['category', 'store'])
         ]);
     }
 
@@ -204,6 +230,8 @@ class ProductController extends Controller
         }
 
         $product->delete();
+        Cache::flush();
+
         return response()->json([
             'success' => true,
             'message' => 'Đã xóa mềm sản phẩm thành công'

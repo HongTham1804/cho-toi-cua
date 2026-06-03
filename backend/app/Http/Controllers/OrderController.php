@@ -255,9 +255,13 @@ class OrderController extends Controller
         return min($subtotal, (float) $voucher->discount_amount);
     }
 
-    public function show(int $id): JsonResponse
+    public function show(Request $request, int $id): JsonResponse
     {
         $order = Order::with(['customer', 'store', 'shipper', 'shipment', 'details.product'])->find($id);
+
+        if ($guard = $this->guardCustomerOrder($order, $request)) {
+            return $guard;
+        }
 
         if (! $order) {
             return response()->json([
@@ -271,9 +275,13 @@ class OrderController extends Controller
         ]);
     }
 
-    public function cancel(int $id): JsonResponse
+    public function cancel(Request $request, int $id): JsonResponse
     {
         $order = Order::with(['details.product'])->find($id);
+
+        if ($guard = $this->guardCustomerOrder($order, $request)) {
+            return $guard;
+        }
 
         if (! $order) {
             return response()->json([
@@ -428,9 +436,13 @@ class OrderController extends Controller
         ]);
     }
 
-    public function complete(int $id): JsonResponse
+    public function complete(Request $request, int $id): JsonResponse
     {
         $order = Order::with(['customer', 'store', 'shipper', 'shipment', 'details.product'])->find($id);
+
+        if ($guard = $this->guardCustomerOrder($order, $request)) {
+            return $guard;
+        }
 
         if (! $order) {
             return response()->json([
@@ -481,5 +493,20 @@ class OrderController extends Controller
             'message' => 'Đã xác nhận nhận hàng thành công.',
             'data' => $order,
         ]);
+    }
+
+    private function guardCustomerOrder(?Order $order, Request $request): ?JsonResponse
+    {
+        if (! $order || ! $request->filled('customer_id')) {
+            return null;
+        }
+
+        if ((int) $order->customer_id === (int) $request->query('customer_id')) {
+            return null;
+        }
+
+        return response()->json([
+            'message' => 'Bạn không có quyền xem hoặc thao tác đơn hàng này.',
+        ], 403);
     }
 }

@@ -81,6 +81,7 @@
 
 .dashboard-refresh-btn,
 .dashboard-export-btn,
+.dashboard-export-menu button,
 .dashboard-icon-btn,
 .dashboard-link-btn,
 .dashboard-segmented button,
@@ -112,10 +113,49 @@
   background: #ecfdf5;
 }
 
+.dashboard-refresh-btn:disabled {
+  cursor: not-allowed;
+  opacity: 0.72;
+}
+
 .dashboard-export-btn {
   color: #334155;
   background: #ffffff;
   border: 1px solid #cbd5e1;
+}
+
+.dashboard-export-wrap {
+  position: relative;
+}
+
+.dashboard-export-menu {
+  position: absolute;
+  top: calc(100% + 8px);
+  right: 0;
+  z-index: 5;
+  min-width: 142px;
+  padding: 6px;
+  background: #ffffff;
+  border: 1px solid #cbd5e1;
+  border-radius: 6px;
+  box-shadow: 0 14px 30px rgba(15, 23, 42, 0.12);
+}
+
+.dashboard-export-menu button {
+  width: 100%;
+  min-height: 34px;
+  padding: 0 10px;
+  color: #334155;
+  background: transparent;
+  border-radius: 4px;
+  text-align: left;
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.dashboard-export-menu button:hover {
+  color: var(--dashboard-primary-dark);
+  background: #ecfdf5;
 }
 
 .dashboard-icon-btn {
@@ -171,6 +211,13 @@
   letter-spacing: 0;
 }
 
+.dashboard-data-error {
+  margin: 8px 0 0;
+  color: #b91c1c;
+  font-size: 12px;
+  font-weight: 700;
+}
+
 .dashboard-stat-grid {
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));
@@ -184,6 +231,19 @@
   background: var(--dashboard-card);
   border: 1px solid var(--dashboard-border);
   border-radius: 6px;
+}
+
+.dashboard-stat-card--clickable {
+  cursor: pointer;
+  transition: border-color 150ms ease, box-shadow 150ms ease, transform 150ms ease;
+}
+
+.dashboard-stat-card--clickable:hover,
+.dashboard-stat-card--clickable:focus-visible {
+  border-color: #10b981;
+  box-shadow: 0 10px 24px rgba(15, 23, 42, 0.08);
+  outline: none;
+  transform: translateY(-1px);
 }
 
 .dashboard-stat-top {
@@ -254,9 +314,7 @@
 }
 
 .dashboard-main-grid {
-  display: grid;
-  grid-template-columns: minmax(0, 2fr) minmax(280px, 0.95fr);
-  gap: 20px;
+  display: block;
 }
 
 .dashboard-chart-card,
@@ -337,7 +395,15 @@
   flex-direction: column;
   align-items: center;
   justify-content: flex-end;
-  gap: 10px;
+  gap: 8px;
+}
+
+.dashboard-bar-column strong {
+  min-height: 18px;
+  color: #475569;
+  font-size: 11px;
+  font-weight: 700;
+  text-align: center;
 }
 
 .dashboard-bar-track {
