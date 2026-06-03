@@ -25,6 +25,8 @@ import SelectRole from "./pages/select-role";
 import UserDetail from "./pages/UserDetail/UserDetail";
 import AccountSettings from './pages/account-settings';
 
+
+
 const AdminDashboard = React.lazy(() => import("./pages/admin-dashboard"));
 const DeliveryManagement = React.lazy(() => import("./pages/quanlyvanchuyen"));
 const PartnerPricing = React.lazy(() => import("./pages/quanlydoitac-gia"));

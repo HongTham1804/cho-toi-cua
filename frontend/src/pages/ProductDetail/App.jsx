@@ -9,7 +9,7 @@ const App = () => {
     <BrowserRouter>
       {/* Navbar có thể đặt ở đây để nó hiển thị trên mọi trang */}
       <nav style={{ padding: '15px', background: '#333', color: 'white' }}>
-        <h2>Hệ thống Giao hàng Classic</h2>
+        <h2>Hệ thống Giao hàng</h2>
       </nav>
 
       <Routes>
@@ -23,5 +23,5 @@ const App = () => {
     </BrowserRouter>
   );
 };
-
+ 
 export default App;
