@@ -4,11 +4,16 @@ namespace App\Http\Controllers;
 
 use App\Models\Order;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
 
 class TrackingController extends Controller
 {
-    public function show(Order $order): JsonResponse
+    public function show(Request $request, Order $order): JsonResponse
     {
+        if ($guard = $this->guardOrderAccess($request, $order)) {
+            return $guard;
+        }
+
         $order->loadMissing([
             'customer',
             'store',
@@ -219,5 +224,32 @@ class TrackingController extends Controller
         }
 
         return true;
+    }
+
+    private function guardOrderAccess(Request $request, Order $order): ?JsonResponse
+    {
+        $user = $request->user();
+
+        if (! $user) {
+            return response()->json([
+                'message' => 'Vui long dang nhap de theo doi don hang.',
+            ], 401);
+        }
+
+        if ($user->role === 'admin') {
+            return null;
+        }
+
+        if ($user->role === 'customer' && (int) $order->customer_id === (int) $user->id) {
+            return null;
+        }
+
+        if ($user->role === 'partner' && $user->stores()->whereKey($order->store_id)->exists()) {
+            return null;
+        }
+
+        return response()->json([
+            'message' => 'Ban khong co quyen theo doi don hang nay.',
+        ], 403);
     }
 }

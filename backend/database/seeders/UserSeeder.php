@@ -125,6 +125,10 @@ class UserSeeder extends Seeder
         ];
 
         foreach ($users as $user) {
+            if (blank($user['email']) || blank($user['password'])) {
+                continue;
+            }
+
             User::updateOrCreate(
                 ['email' => $user['email']],
                 [

@@ -10,10 +10,10 @@ class NotificationController extends Controller
 {
     public function index(Request $request): JsonResponse
     {
-        $userId = $request->integer('user_id');
+        $user = $request->user();
 
         $notifications = AppNotification::query()
-            ->when($userId, fn ($query) => $query->where('user_id', $userId))
+            ->when($user?->role !== 'admin', fn ($query) => $query->where('user_id', $user->id))
             ->latest()
             ->limit(100)
             ->get();
@@ -24,8 +24,16 @@ class NotificationController extends Controller
         ]);
     }
 
-    public function markRead(AppNotification $notification): JsonResponse
+    public function markRead(Request $request, AppNotification $notification): JsonResponse
     {
+        $user = $request->user();
+
+        if ($user?->role !== 'admin' && (int) $notification->user_id !== (int) $user?->id) {
+            return response()->json([
+                'message' => 'Ban khong co quyen cap nhat thong bao nay.',
+            ], 403);
+        }
+
         $notification->update([
             'is_read' => true,
         ]);
@@ -38,10 +46,10 @@ class NotificationController extends Controller
 
     public function markAllRead(Request $request): JsonResponse
     {
-        $userId = $request->integer('user_id');
+        $user = $request->user();
 
         AppNotification::query()
-            ->when($userId, fn ($query) => $query->where('user_id', $userId))
+            ->when($user?->role !== 'admin', fn ($query) => $query->where('user_id', $user->id))
             ->where('is_read', false)
             ->update(['is_read' => true]);
 

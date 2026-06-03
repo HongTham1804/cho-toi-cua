@@ -4,6 +4,7 @@ import '@fortawesome/fontawesome-free/css/all.min.css';
 import { Link, useNavigate } from 'react-router-dom';
 import DeliveryLocationModal from '../../components/DeliveryLocationModal/DeliveryLocationModal';
 import { addCartItem, readCartItems, writeCartItems } from '../../services/cartStorage';
+import { getAuthToken, getStoredAuthUser } from '../../services/authApi';
 import {
   clearProductCache,
   clearVoucherCache,
@@ -15,16 +16,9 @@ import {
 import { fetchWallet } from '../../services/walletApi';
 
 const API_BASE_URL = 'http://localhost:8000/api';
-const DEFAULT_CUSTOMER_ID = 4;
 const DELIVERY_LOCATION_STORAGE_KEY = 'ctc_delivery_location';
 
-const getCurrentCustomer = () => {
-  try {
-    return JSON.parse(window.localStorage.getItem('auth_user')) || {};
-  } catch {
-    return {};
-  }
-};
+const getCurrentCustomer = () => getStoredAuthUser() || {};
 
 const formatCurrency = (value) => `${Number(value).toLocaleString('vi-VN')}₫`;
 
@@ -121,10 +115,8 @@ export default function ShoppingCart() {
 
   useEffect(() => {
     let isMounted = true;
-    const userId = Number(getCurrentCustomer().id || DEFAULT_CUSTOMER_ID);
-
     setIsWalletLoading(true);
-    fetchWallet({ userId })
+    fetchWallet()
       .then((nextWallet) => {
         if (isMounted) setWallet(nextWallet);
       })
@@ -178,11 +170,10 @@ export default function ShoppingCart() {
   const loadSavedVouchers = async () => {
     try {
       setPromoError('');
-      const userId = Number(getCurrentCustomer().id || DEFAULT_CUSTOMER_ID);
-      let vouchers = await fetchUserVouchers({ userId, storeId: primaryStoreId });
+      let vouchers = await fetchUserVouchers({ storeId: primaryStoreId });
 
       if (vouchers.length === 0) {
-        const allStoreVouchers = await fetchVouchers({ storeId: primaryStoreId, userId });
+        const allStoreVouchers = await fetchVouchers({ storeId: primaryStoreId });
         vouchers = allStoreVouchers.filter((voucher) => voucher.is_saved && !voucher.is_used);
       }
       setSavedVouchers(vouchers);
@@ -247,12 +238,18 @@ export default function ShoppingCart() {
     }
 
     const currentCustomer = getCurrentCustomer();
+    const token = getAuthToken();
+
+    if (!currentCustomer.id || !token) {
+      setCheckoutError('Vui long dang nhap de dat hang.');
+      return;
+    }
+
     const deliveryAddress =
       deliveryLocation.address?.trim() ||
       currentCustomer.address ||
       'Thu Duc, TP.HCM';
     const payload = {
-      customer_id: Number(currentCustomer.id || DEFAULT_CUSTOMER_ID),
       store_id: Number(primaryStoreId),
       voucher_id: selectedDiscountVoucher?.id,
       shipping_voucher_id: selectedFreeshipVoucher?.id,
@@ -278,6 +275,7 @@ export default function ShoppingCart() {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`,
         },
         body: JSON.stringify(payload),
       });

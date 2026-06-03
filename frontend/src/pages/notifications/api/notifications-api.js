@@ -1,4 +1,4 @@
-import { getStoredAuthUser } from "../../../services/authApi";
+import { getAuthToken } from "../../../services/authApi";
 import {
   getDueFlashSaleNotifications,
   isFlashSaleReminderNotification,
@@ -8,9 +8,10 @@ import {
 
 const API_BASE_URL = "http://localhost:8000/api";
 
-function getCurrentUserId() {
-  const user = getStoredAuthUser();
-  return user?.id ? Number(user.id) : null;
+function authHeaders() {
+  const token = getAuthToken();
+
+  return token ? { Authorization: `Bearer ${token}` } : {};
 }
 
 function formatNotificationTime(value) {
@@ -42,15 +43,12 @@ function mapNotification(item) {
 }
 
 export async function fetchNotifications() {
-  const params = new URLSearchParams();
-  const userId = getCurrentUserId();
-
-  if (userId) {
-    params.set("user_id", String(userId));
-  }
-
-  const query = params.toString();
-  const response = await fetch(`${API_BASE_URL}/notifications${query ? `?${query}` : ""}`);
+  const response = await fetch(`${API_BASE_URL}/notifications`, {
+    headers: {
+      Accept: "application/json",
+      ...authHeaders(),
+    },
+  });
   const payload = await response.json().catch(() => ({}));
 
   if (!response.ok) {
@@ -75,6 +73,7 @@ export async function markOneRead(id) {
     headers: {
       Accept: "application/json",
       "Content-Type": "application/json",
+      ...authHeaders(),
     },
     body: "{}",
   });
@@ -86,7 +85,6 @@ export async function markOneRead(id) {
 }
 
 export async function markAllRead() {
-  const userId = getCurrentUserId();
   markAllDueFlashSaleRemindersRead();
 
   const response = await fetch(`${API_BASE_URL}/notifications/read-all`, {
@@ -94,8 +92,9 @@ export async function markAllRead() {
     headers: {
       Accept: "application/json",
       "Content-Type": "application/json",
+      ...authHeaders(),
     },
-    body: JSON.stringify(userId ? { user_id: userId } : {}),
+    body: "{}",
   });
 
   if (!response.ok) {

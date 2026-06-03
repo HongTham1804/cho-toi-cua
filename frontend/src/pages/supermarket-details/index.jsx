@@ -21,17 +21,6 @@ import winmartLogo from '../../assets/logos/Winmart.jpg';
 import goLogo from '../../assets/logos/GO.png';
 
 const DEFAULT_CATEGORY = 'Tất cả sản phẩm';
-const DEFAULT_CUSTOMER_ID = 4;
-
-const getCurrentCustomerId = () => {
-  try {
-    const user = JSON.parse(window.localStorage.getItem('auth_user')) || {};
-    return Number(user.id || DEFAULT_CUSTOMER_ID);
-  } catch {
-    return DEFAULT_CUSTOMER_ID;
-  }
-};
-
 const getStoreLogo = (store) => {
   if (store?.logo_url?.includes('Winmart') || store?.name?.includes('WinMart')) return winmartLogo;
   if (store?.logo_url?.includes('GO') || store?.name?.includes('GO')) return goLogo;
@@ -304,25 +293,6 @@ export default function SupermarketDetails() {
   }, [storeId]);
 
   useEffect(() => {
-    let isMounted = true;
-
-    return undefined;
-
-    setVouchers([]);
-    fetchVouchers({ storeId, userId: getCurrentCustomerId() })
-      .then((apiVouchers) => {
-        if (isMounted) setVouchers(apiVouchers);
-      })
-      .catch(() => {
-        if (isMounted) setVouchers([]);
-      });
-
-    return () => {
-      isMounted = false;
-    };
-  }, [storeId]);
-
-  useEffect(() => {
     setFlashVisibleCount(4);
     setProductVisibleCount(8);
   }, [storeId]);
@@ -422,7 +392,7 @@ export default function SupermarketDetails() {
     setSavingVoucherIds((ids) => [...ids, voucherId]);
 
     try {
-      const savedVoucher = await saveVoucher({ voucherId: voucher.id, userId: getCurrentCustomerId() });
+      const savedVoucher = await saveVoucher({ voucherId: voucher.id });
 
       setVouchers((items) =>
         items.map((item) => {

@@ -37,24 +37,30 @@ Route::prefix('auth')->group(function () {
     Route::middleware('auth:sanctum')->patch('/profile', [AuthController::class, 'updateProfile']);
 });
 
-Route::get('/orders', [OrderController::class, 'index']);
-Route::post('/orders', [OrderController::class, 'checkout']);
-Route::get('/orders/{order}/tracking', [TrackingController::class, 'show']);
-Route::get('/orders/{order}/review', [ReviewController::class, 'showOrder']);
-Route::post('/orders/{order}/reviews', [ReviewController::class, 'storeOrderReviews']);
-Route::patch('/orders/{id}/arrived', [OrderController::class, 'arrived']);
-Route::patch('/orders/{id}/complete', [OrderController::class, 'complete']);
-Route::post('/orders/{order}/payos-payment', [PayosController::class, 'create']);
-Route::get('/orders/{id}', [OrderController::class, 'show']);
-Route::patch('/orders/{id}/cancel', [OrderController::class, 'cancel']);
+Route::middleware(['auth:sanctum', 'role:customer,admin,partner'])->group(function () {
+    Route::get('/orders', [OrderController::class, 'index']);
+    Route::post('/orders', [OrderController::class, 'checkout']);
+    Route::get('/orders/{order}/tracking', [TrackingController::class, 'show']);
+    Route::get('/orders/{order}/review', [ReviewController::class, 'showOrder']);
+    Route::post('/orders/{order}/reviews', [ReviewController::class, 'storeOrderReviews']);
+    Route::patch('/orders/{id}/arrived', [OrderController::class, 'arrived']);
+    Route::patch('/orders/{id}/complete', [OrderController::class, 'complete']);
+    Route::post('/orders/{order}/payos-payment', [PayosController::class, 'create']);
+    Route::get('/orders/{id}', [OrderController::class, 'show']);
+    Route::patch('/orders/{id}/cancel', [OrderController::class, 'cancel']);
+});
 Route::post('/payos/webhook', [PayosController::class, 'webhook']);
 
-Route::get('/notifications', [NotificationController::class, 'index']);
-Route::patch('/notifications/read-all', [NotificationController::class, 'markAllRead']);
-Route::patch('/notifications/{notification}/read', [NotificationController::class, 'markRead']);
+Route::middleware(['auth:sanctum', 'role:customer,admin,partner'])->group(function () {
+    Route::get('/notifications', [NotificationController::class, 'index']);
+    Route::patch('/notifications/read-all', [NotificationController::class, 'markAllRead']);
+    Route::patch('/notifications/{notification}/read', [NotificationController::class, 'markRead']);
+});
 
-Route::get('/wallet', [WalletController::class, 'show']);
-Route::post('/wallet/top-up', [WalletController::class, 'topUp']);
+Route::middleware(['auth:sanctum', 'role:customer'])->group(function () {
+    Route::get('/wallet', [WalletController::class, 'show']);
+    Route::post('/wallet/top-up', [WalletController::class, 'topUp']);
+});
 
 Route::apiResource('categories', CategoryController::class)->only(['index', 'show']);
 Route::get('/stores/{store}/catalog', [StoreController::class, 'catalog']);
@@ -86,10 +92,14 @@ Route::middleware('auth:sanctum')->prefix('favorites')->group(function () {
     Route::delete('/{product}', [FavoriteProductController::class, 'destroy']);
 });
 Route::get('/vouchers', [VoucherController::class, 'index']);
-Route::post('/vouchers/{voucher}/save', [VoucherController::class, 'save']);
-Route::delete('/vouchers/{voucher}/save', [VoucherController::class, 'unsave']);
-Route::get('/user-vouchers', [VoucherController::class, 'userVouchers']);
+Route::middleware(['auth:sanctum', 'role:customer'])->group(function () {
+    Route::post('/vouchers/{voucher}/save', [VoucherController::class, 'save']);
+    Route::delete('/vouchers/{voucher}/save', [VoucherController::class, 'unsave']);
+    Route::get('/user-vouchers', [VoucherController::class, 'userVouchers']);
+});
 Route::get('/flash-sales', [FlashSaleController::class, 'index']);
 
-Route::get('/shippers', [ShipperSimulationController::class, 'index']);
-Route::match(['post', 'patch'], '/orders/{id}/assign-shipper', [ShipperSimulationController::class, 'assignShipper']);
+Route::middleware(['auth:sanctum', 'role:admin,partner'])->group(function () {
+    Route::get('/shippers', [ShipperSimulationController::class, 'index']);
+    Route::match(['post', 'patch'], '/orders/{id}/assign-shipper', [ShipperSimulationController::class, 'assignShipper']);
+});

@@ -1,6 +1,14 @@
 const API_BASE_URL = "http://localhost:8000/api";
 const OSRM_BASE_URL = "https://router.project-osrm.org/route/v1/driving";
 
+const getAuthToken = () => window.localStorage.getItem("auth_token");
+
+const authHeaders = () => {
+  const token = getAuthToken();
+
+  return token ? { Authorization: `Bearer ${token}` } : {};
+};
+
 export function getOrderIdFromUrl() {
   return new URLSearchParams(window.location.search).get("orderId");
 }
@@ -11,7 +19,12 @@ export async function fetchOrderTracking(orderId) {
   }
 
   const normalizedOrderId = String(orderId).replace(/^ORD-/i, "").replace(/^0+/, "") || orderId;
-  const response = await fetch(`${API_BASE_URL}/orders/${encodeURIComponent(normalizedOrderId)}/tracking`);
+  const response = await fetch(`${API_BASE_URL}/orders/${encodeURIComponent(normalizedOrderId)}/tracking`, {
+    headers: {
+      Accept: "application/json",
+      ...authHeaders(),
+    },
+  });
   const payload = await response.json().catch(() => ({}));
 
   if (!response.ok) {
@@ -54,6 +67,7 @@ export async function markOrderArrived(orderId) {
     headers: {
       "Content-Type": "application/json",
       Accept: "application/json",
+      ...authHeaders(),
     },
     body: "{}",
   });

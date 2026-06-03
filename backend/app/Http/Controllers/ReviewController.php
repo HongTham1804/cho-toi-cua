@@ -11,8 +11,12 @@ use Illuminate\Support\Facades\Validator;
 
 class ReviewController extends Controller
 {
-    public function showOrder(Order $order): JsonResponse
+    public function showOrder(Request $request, Order $order): JsonResponse
     {
+        if ($guard = $this->guardOrderAccess($request, $order)) {
+            return $guard;
+        }
+
         if ($order->status !== 'completed') {
             return response()->json([
                 'message' => 'Chỉ có thể đánh giá đơn hàng đã hoàn thành.',
@@ -62,6 +66,12 @@ class ReviewController extends Controller
 
     public function storeOrderReviews(Request $request, Order $order): JsonResponse
     {
+        if ((int) $order->customer_id !== (int) $request->user()?->id) {
+            return response()->json([
+                'message' => 'Ban khong co quyen danh gia don hang nay.',
+            ], 403);
+        }
+
         if ($order->status !== 'completed') {
             return response()->json([
                 'message' => 'Chỉ có thể đánh giá đơn hàng đã hoàn thành.',
@@ -118,5 +128,32 @@ class ReviewController extends Controller
             'success' => true,
             'message' => 'Đánh giá đã được ghi nhận. Cảm ơn bạn!',
         ]);
+    }
+
+    private function guardOrderAccess(Request $request, Order $order): ?JsonResponse
+    {
+        $user = $request->user();
+
+        if (! $user) {
+            return response()->json([
+                'message' => 'Vui long dang nhap de xem don hang.',
+            ], 401);
+        }
+
+        if ($user->role === 'admin') {
+            return null;
+        }
+
+        if ($user->role === 'customer' && (int) $order->customer_id === (int) $user->id) {
+            return null;
+        }
+
+        if ($user->role === 'partner' && $user->stores()->whereKey($order->store_id)->exists()) {
+            return null;
+        }
+
+        return response()->json([
+            'message' => 'Ban khong co quyen xem don hang nay.',
+        ], 403);
     }
 }

@@ -13,7 +13,6 @@ class StoreOrderRequest extends FormRequest
 public function rules(): array
 {
     return [
-        'customer_id' => ['required', 'exists:users,id'],
         'store_id' => ['required', 'exists:stores,id'],
         'voucher_id' => ['nullable', 'exists:vouchers,id'],
         'shipping_voucher_id' => ['nullable', 'exists:vouchers,id'],
@@ -35,9 +34,6 @@ public function rules(): array
     public function messages(): array
     {
         return [
-            'customer_id.required' => 'Vui lòng chọn khách hàng.',
-            'customer_id.exists' => 'Khách hàng không tồn tại.',
-
             'store_id.required' => 'Vui lòng chọn siêu thị.',
             'store_id.exists' => 'Siêu thị không tồn tại.',
 

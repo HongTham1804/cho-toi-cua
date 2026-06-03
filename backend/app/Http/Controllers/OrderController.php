@@ -18,6 +18,7 @@ class OrderController extends Controller
 {
     public function index(Request $request): JsonResponse
     {
+        $user = $request->user();
         $perPage = (int) $request->query('per_page', 15);
         $perPage = min(max($perPage, 1), 100);
         $relations = $request->boolean('summary')
@@ -30,7 +31,13 @@ class OrderController extends Controller
             : ['customer', 'store', 'shipper', 'shipment', 'details.product'];
 
         $orders = Order::with($relations)
-            ->when($request->filled('customer_id'), function ($query) use ($request) {
+            ->when($user?->role === 'customer', function ($query) use ($user) {
+                $query->where('customer_id', $user->id);
+            })
+            ->when($user?->role === 'partner', function ($query) use ($user) {
+                $query->whereIn('store_id', $user->stores()->pluck('id'));
+            })
+            ->when($user?->role === 'admin' && $request->filled('customer_id'), function ($query) use ($request) {
                 $query->where('customer_id', $request->query('customer_id'));
             })
             ->when($request->filled('store_id'), function ($query) use ($request) {
@@ -63,6 +70,15 @@ class OrderController extends Controller
     public function checkout(StoreOrderRequest $request): JsonResponse
     {
         $data = $request->validated();
+        $user = $request->user();
+
+        if (! $user || $user->role !== 'customer') {
+            return response()->json([
+                'message' => 'Chi khach hang moi co the tao don hang.',
+            ], 403);
+        }
+
+        $data['customer_id'] = $user->id;
 
         try {
             $order = DB::transaction(function () use ($data) {
@@ -279,7 +295,7 @@ class OrderController extends Controller
     {
         $order = Order::with(['customer', 'store', 'shipper', 'shipment', 'details.product'])->find($id);
 
-        if ($guard = $this->guardCustomerOrder($order, $request)) {
+        if ($guard = $this->guardOrderAccess($order, $request)) {
             return $guard;
         }
 
@@ -299,8 +315,14 @@ class OrderController extends Controller
     {
         $order = Order::with(['details.product'])->find($id);
 
-        if ($guard = $this->guardCustomerOrder($order, $request)) {
+        if ($guard = $this->guardOrderAccess($order, $request)) {
             return $guard;
+        }
+
+        if (! in_array($request->user()?->role, ['customer', 'admin'], true)) {
+            return response()->json([
+                'message' => 'Ban khong co quyen huy don hang nay.',
+            ], 403);
         }
 
         if (! $order) {
@@ -406,9 +428,13 @@ class OrderController extends Controller
         }
     }
 
-    public function arrived(int $id): JsonResponse
+    public function arrived(Request $request, int $id): JsonResponse
     {
         $order = Order::with(['customer', 'store', 'shipper', 'shipment', 'details.product'])->find($id);
+
+        if ($guard = $this->guardOrderAccess($order, $request)) {
+            return $guard;
+        }
 
         if (! $order) {
             return response()->json([
@@ -460,8 +486,14 @@ class OrderController extends Controller
     {
         $order = Order::with(['customer', 'store', 'shipper', 'shipment', 'details.product'])->find($id);
 
-        if ($guard = $this->guardCustomerOrder($order, $request)) {
+        if ($guard = $this->guardOrderAccess($order, $request)) {
             return $guard;
+        }
+
+        if (! in_array($request->user()?->role, ['customer', 'admin'], true)) {
+            return response()->json([
+                'message' => 'Ban khong co quyen xac nhan hoan thanh don hang nay.',
+            ], 403);
         }
 
         if (! $order) {
@@ -515,13 +547,29 @@ class OrderController extends Controller
         ]);
     }
 
-    private function guardCustomerOrder(?Order $order, Request $request): ?JsonResponse
+    private function guardOrderAccess(?Order $order, Request $request): ?JsonResponse
     {
-        if (! $order || ! $request->filled('customer_id')) {
+        if (! $order) {
             return null;
         }
 
-        if ((int) $order->customer_id === (int) $request->query('customer_id')) {
+        $user = $request->user();
+
+        if (! $user) {
+            return response()->json([
+                'message' => 'Vui long dang nhap de xem hoac thao tac don hang.',
+            ], 401);
+        }
+
+        if ($user->role === 'admin') {
+            return null;
+        }
+
+        if ($user->role === 'customer' && (int) $order->customer_id === (int) $user->id) {
+            return null;
+        }
+
+        if ($user->role === 'partner' && $user->stores()->whereKey($order->store_id)->exists()) {
             return null;
         }
 
