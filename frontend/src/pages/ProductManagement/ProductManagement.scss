@@ -83,7 +83,7 @@ $color-danger: #BA1A1A; // <--- THÊM DÒNG NÀY VÀO
   background: $color-white;
   position: relative;
 
-  .top-header {
+    .top-header {
     display: flex;
     justify-content: space-between;
     align-items: center;
@@ -96,6 +96,7 @@ $color-danger: #BA1A1A; // <--- THÊM DÒNG NÀY VÀO
       display: flex;
       align-items: center;
       gap: 24px;
+      flex-wrap: wrap;
 
       .search-box {
         position: relative;
@@ -162,6 +163,17 @@ $color-danger: #BA1A1A; // <--- THÊM DÒNG NÀY VÀO
       background: $color-primary; color: $color-white; border: none; border-radius: 8px;
       font-size: 16px; font-weight: 500; cursor: pointer;
       &:hover { background: #00583b; }
+      &:disabled { opacity: 0.72; cursor: not-allowed; }
+    }
+
+    .page-error {
+      margin-bottom: 16px;
+      padding: 12px 16px;
+      color: $color-danger;
+      background: #FFF1F1;
+      border: 1px solid #F5B5B5;
+      border-radius: 8px;
+      font-weight: 600;
     }
   }
 
@@ -170,7 +182,7 @@ $color-danger: #BA1A1A; // <--- THÊM DÒNG NÀY VÀO
     background: $color-bg; border: 1px solid $color-border; border-radius: 8px;
     .product-table {
       width: 100%; border-collapse: collapse;
-      th, td { padding: 16px 24px; text-align: left; border-bottom: 1px solid $color-border; }
+      th, td { padding: 16px 20px; text-align: left; border-bottom: 1px solid $color-border; }
       th { background: #F0F3FF; color: $color-text-muted; font-weight: 700; text-transform: uppercase; }
       td {
         color: $color-text-dark; font-size: 16px; vertical-align: middle;
@@ -199,16 +211,16 @@ $color-danger: #BA1A1A; // <--- THÊM DÒNG NÀY VÀO
         }
 
         .action-buttons {
-          display: flex; justify-content: flex-end; gap: 8px; opacity: 0; transition: opacity 0.2s;
+          display: flex; justify-content: flex-end; gap: 8px; opacity: 1;
           .btn-icon {
             padding: 8px; border: none; border-radius: 4px; cursor: pointer;
+            &.btn-view { background: transparent; color: $color-primary; }
             &.btn-edit { background: transparent; color: #0058BE; }
             &.btn-delete { background: transparent; color: #BA1A1A; }
             &:hover { background: #F0F3FF; }
           }
         }
       }
-      tr:hover td .action-buttons { opacity: 1; }
       .empty-state { padding: 48px; color: $color-text-light; }
     }
 
@@ -228,17 +240,39 @@ $color-danger: #BA1A1A; // <--- THÊM DÒNG NÀY VÀO
     position: fixed; top: 0; left: 0; right: 0; bottom: 0;
     background: rgba(11, 28, 48, 0.6); backdrop-filter: blur(2px);
     display: flex; align-items: center; justify-content: center; z-index: 100;
+    padding: 24px;
+    box-sizing: border-box;
 
     .modal-content {
-      background: $color-white; width: 600px; border-radius: 12px;
-      box-shadow: 0 10px 25px rgba(0,0,0,0.1); overflow: hidden;
+      background: $color-white;
+      width: min(760px, 100%);
+      max-height: calc(100vh - 48px);
+      border-radius: 12px;
+      box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+      overflow-y: auto;
       animation: modalFadeIn 0.3s ease;
 
       .modal-header {
+        position: sticky;
+        top: 0;
+        z-index: 2;
         display: flex; justify-content: space-between; align-items: center;
-        padding: 24px; border-bottom: 1px solid $color-border;
+        padding: 18px 24px;
+        border-bottom: 1px solid $color-border;
+        background: $color-white;
         h3 { margin: 0; font-size: 20px; color: $color-text-dark; font-weight: 700; }
-        .close-btn { background: none; border: none; cursor: pointer; color: $color-text-light; &:hover { color: $color-danger; } }
+        .close-btn {
+          width: 36px;
+          height: 36px;
+          display: grid;
+          place-items: center;
+          background: #F0F3FF;
+          border: 1px solid $color-border;
+          border-radius: 8px;
+          cursor: pointer;
+          color: $color-text-muted;
+          &:hover { color: $color-danger; border-color: #F5B5B5; background: #FFF1F1; }
+        }
       }
 
       .modal-form {
@@ -249,16 +283,59 @@ $color-danger: #BA1A1A; // <--- THÊM DÒNG NÀY VÀO
         .form-group {
           display: flex; flex-direction: column; gap: 8px;
           label { font-size: 14px; font-weight: 600; color: $color-text-dark; }
-          input, select {
+          input, select, textarea {
             padding: 10px 12px; border: 1px solid $color-border; border-radius: 8px;
             font-family: $font-family; font-size: 15px; outline: none;
             &:focus { border-color: $color-primary; }
           }
+          textarea { resize: vertical; }
         }
 
         .modal-footer {
           display: flex; justify-content: flex-end; gap: 12px; margin-top: 16px; padding-top: 24px; border-top: 1px solid $color-border;
           .btn-cancel { padding: 10px 24px; background: transparent; border: 1px solid $color-border; border-radius: 8px; cursor: pointer; font-weight: 600; &:hover { background: #f3f4f6; } }
+        }
+      }
+
+      .product-detail-panel {
+        padding: 24px;
+        display: grid;
+        grid-template-columns: 160px minmax(0, 1fr);
+        gap: 20px;
+
+        .detail-image {
+          width: 160px;
+          height: 160px;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          border: 1px solid $color-border;
+          border-radius: 8px;
+          background: #F0F3FF;
+          overflow: hidden;
+
+          img { width: 100%; height: 100%; object-fit: cover; }
+          span { color: $color-text-light; font-size: 13px; }
+        }
+
+        .detail-grid {
+          display: grid;
+          grid-template-columns: 130px minmax(0, 1fr);
+          gap: 10px 16px;
+          align-items: start;
+
+          span {
+            color: $color-text-light;
+            font-size: 13px;
+            font-weight: 700;
+          }
+
+          strong {
+            color: $color-text-dark;
+            font-size: 14px;
+            line-height: 1.45;
+            word-break: break-word;
+          }
         }
       }
     }
@@ -267,5 +344,19 @@ $color-danger: #BA1A1A; // <--- THÊM DÒNG NÀY VÀO
   @keyframes modalFadeIn {
     from { opacity: 0; transform: translateY(-20px); }
     to { opacity: 1; transform: translateY(0); }
+  }
+
+  .pm-toast {
+    position: fixed;
+    right: 28px;
+    bottom: 28px;
+    z-index: 120;
+    max-width: 320px;
+    padding: 12px 16px;
+    color: $color-white;
+    background: $color-primary;
+    border-radius: 8px;
+    box-shadow: 0 12px 28px rgba(0, 0, 0, 0.18);
+    font-weight: 700;
   }
 }

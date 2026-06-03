@@ -10,15 +10,21 @@ class StoreSeeder extends Seeder
 {
     public function run(): void
     {
-        $partners = User::where('role', 'partner')->get()->values();
-        $fallbackPartnerId = $partners->first()?->id ?? User::query()->value('id');
+        $fallbackPartnerId = User::where('role', 'partner')->value('id') ?? User::query()->value('id');
+        $partnerIdsByEmail = User::where('role', 'partner')
+            ->whereIn('email', array_filter([
+                env('PARTNER_BHX_EMAIL'),
+                env('PARTNER_WINMART_EMAIL'),
+                env('PARTNER_GO_EMAIL'),
+            ]))
+            ->pluck('id', 'email');
 
         $stores = [
             [
                 'id' => 1,
-                'partner_id' => $partners->get(0)?->id ?? $fallbackPartnerId,
-                'name' => 'Bách Hóa Xanh Lê Văn Chí',
-                'address' => 'Bách Hóa Xanh Lê Văn Chí, TP. Thủ Đức',
+                'partner_id' => $partnerIdsByEmail->get(env('PARTNER_BHX_EMAIL'), $fallbackPartnerId),
+                'name' => 'Bach Hoa Xanh Le Van Chi',
+                'address' => 'Bach Hoa Xanh Le Van Chi, TP. Thu Duc',
                 'logo_url' => 'logos/BHX.webp',
                 'status' => 'active',
                 'latitude' => 10.856496093453933,
@@ -26,9 +32,9 @@ class StoreSeeder extends Seeder
             ],
             [
                 'id' => 2,
-                'partner_id' => $partners->get(1)?->id ?? $fallbackPartnerId,
-                'name' => 'WinMart Lê Văn Việt',
-                'address' => 'WinMart Lê Văn Việt, TP. Thủ Đức',
+                'partner_id' => $partnerIdsByEmail->get(env('PARTNER_WINMART_EMAIL'), $fallbackPartnerId),
+                'name' => 'WinMart Le Van Viet',
+                'address' => 'WinMart Le Van Viet, TP. Thu Duc',
                 'logo_url' => 'logos/Winmart.jpg',
                 'status' => 'active',
                 'latitude' => 10.845183433582347,
@@ -36,9 +42,9 @@ class StoreSeeder extends Seeder
             ],
             [
                 'id' => 3,
-                'partner_id' => $partners->get(2)?->id ?? $fallbackPartnerId,
-                'name' => 'GO! Dĩ An',
-                'address' => 'GO! Dĩ An, TP. Dĩ An',
+                'partner_id' => $partnerIdsByEmail->get(env('PARTNER_GO_EMAIL'), $fallbackPartnerId),
+                'name' => 'GO! Di An',
+                'address' => 'GO! Di An, TP. Di An',
                 'logo_url' => 'logos/GO.png',
                 'status' => 'active',
                 'latitude' => 10.889120952863461,

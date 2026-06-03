@@ -571,6 +571,7 @@ body {
   cursor: pointer;
   display: flex;
   flex-direction: column;
+  height: 100%;
   transition: box-shadow 0.2s, transform 0.2s;
 }
 
@@ -618,6 +619,12 @@ body {
 .p-img-flash--safe-fit img {
   width: 100%;
   transform: none;
+}
+
+.p-info-flash {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
 }
 
 .p-info-flash h3 {

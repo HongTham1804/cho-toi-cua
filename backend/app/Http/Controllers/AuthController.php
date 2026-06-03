@@ -37,16 +37,16 @@ class AuthController extends Controller
                 Rule::unique('users', 'phone')->ignore($user->id),
             ],
         ], [
-            'name.required' => 'Vui lòng nhập họ và tên.',
-            'phone.required' => 'Vui lòng nhập số điện thoại.',
-            'phone.regex' => 'Số điện thoại phải nhập đúng 10 chữ số.',
-            'phone.unique' => 'Số điện thoại này đã được đăng ký.',
+            'name.required' => 'Vui lÃ²ng nháº­p há» vÃ  tÃªn.',
+            'phone.required' => 'Vui lÃ²ng nháº­p sá»‘ Ä‘iá»‡n thoáº¡i.',
+            'phone.regex' => 'Sá»‘ Ä‘iá»‡n thoáº¡i pháº£i nháº­p Ä‘Ãºng 10 chá»¯ sá»‘.',
+            'phone.unique' => 'Sá»‘ Ä‘iá»‡n thoáº¡i nÃ y Ä‘Ã£ Ä‘Æ°á»£c Ä‘Äƒng kÃ½.',
         ]);
 
         $user->forceFill($validated)->save();
 
         return response()->json([
-            'message' => 'Cập nhật tài khoản thành công.',
+            'message' => 'Cáº­p nháº­t tÃ i khoáº£n thÃ nh cÃ´ng.',
             'user' => $user->fresh(),
         ]);
     }
@@ -59,16 +59,16 @@ class AuthController extends Controller
             'email' => ['required', 'email', 'max:255', 'unique:users,email'],
             'password' => ['required', 'string', 'min:8', 'confirmed'],
         ], [
-            'name.required' => 'Vui lòng nhập họ và tên.',
-            'phone.required' => 'Vui lòng nhập số điện thoại.',
-            'phone.regex' => 'Số điện thoại phải nhập đúng 10 chữ số.',
-            'phone.unique' => 'Số điện thoại này đã được đăng ký.',
-            'email.required' => 'Vui lòng nhập email.',
-            'email.email' => 'Email không hợp lệ.',
-            'email.unique' => 'Email này đã được đăng ký.',
-            'password.required' => 'Vui lòng nhập mật khẩu.',
-            'password.min' => 'Mật khẩu phải có ít nhất 8 ký tự.',
-            'password.confirmed' => 'Xác nhận mật khẩu không khớp.',
+            'name.required' => 'Vui lÃ²ng nháº­p há» vÃ  tÃªn.',
+            'phone.required' => 'Vui lÃ²ng nháº­p sá»‘ Ä‘iá»‡n thoáº¡i.',
+            'phone.regex' => 'Sá»‘ Ä‘iá»‡n thoáº¡i pháº£i nháº­p Ä‘Ãºng 10 chá»¯ sá»‘.',
+            'phone.unique' => 'Sá»‘ Ä‘iá»‡n thoáº¡i nÃ y Ä‘Ã£ Ä‘Æ°á»£c Ä‘Äƒng kÃ½.',
+            'email.required' => 'Vui lÃ²ng nháº­p email.',
+            'email.email' => 'Email khÃ´ng há»£p lá»‡.',
+            'email.unique' => 'Email nÃ y Ä‘Ã£ Ä‘Æ°á»£c Ä‘Äƒng kÃ½.',
+            'password.required' => 'Vui lÃ²ng nháº­p máº­t kháº©u.',
+            'password.min' => 'Máº­t kháº©u pháº£i cÃ³ Ã­t nháº¥t 8 kÃ½ tá»±.',
+            'password.confirmed' => 'XÃ¡c nháº­n máº­t kháº©u khÃ´ng khá»›p.',
         ]);
 
         $pendingWithPhone = PendingRegistration::query()
@@ -78,7 +78,7 @@ class AuthController extends Controller
 
         if ($pendingWithPhone) {
             throw ValidationException::withMessages([
-                'phone' => ['Số điện thoại này đang chờ xác minh OTP.'],
+                'phone' => ['Sá»‘ Ä‘iá»‡n thoáº¡i nÃ y Ä‘ang chá» xÃ¡c minh OTP.'],
             ]);
         }
 
@@ -98,23 +98,23 @@ class AuthController extends Controller
 
         try {
             Mail::raw(
-                "Mã OTP đăng ký Chợ Tới Cửa của bạn là: {$otp}\n\nMã này có hiệu lực trong 10 phút. Vui lòng không chia sẻ mã này cho người khác.",
+                "MÃ£ OTP Ä‘Äƒng kÃ½ Chá»£ Tá»›i Cá»­a cá»§a báº¡n lÃ : {$otp}\n\nMÃ£ nÃ y cÃ³ hiá»‡u lá»±c trong 10 phÃºt. Vui lÃ²ng khÃ´ng chia sáº» mÃ£ nÃ y cho ngÆ°á»i khÃ¡c.",
                 function ($message) use ($validated): void {
                     $message
                         ->to($validated['email'], $validated['name'])
-                        ->subject('Mã OTP đăng ký Chợ Tới Cửa');
+                        ->subject('MÃ£ OTP Ä‘Äƒng kÃ½ Chá»£ Tá»›i Cá»­a');
                 }
             );
         } catch (Throwable $exception) {
             report($exception);
 
             return response()->json([
-                'message' => 'Không gửi được OTP. Vui lòng kiểm tra cấu hình Gmail trong file .env.',
+                'message' => 'KhÃ´ng gá»­i Ä‘Æ°á»£c OTP. Vui lÃ²ng kiá»ƒm tra cáº¥u hÃ¬nh Gmail trong file .env.',
             ], 500);
         }
 
         return response()->json([
-            'message' => 'OTP đã được gửi đến email của bạn.',
+            'message' => 'OTP Ä‘Ã£ Ä‘Æ°á»£c gá»­i Ä‘áº¿n email cá»§a báº¡n.',
             'email' => $validated['email'],
             'expires_in_minutes' => 10,
         ]);
@@ -126,17 +126,17 @@ class AuthController extends Controller
             'email' => ['required', 'email'],
             'otp' => ['required', 'digits:6'],
         ], [
-            'email.required' => 'Thiếu email xác minh.',
-            'email.email' => 'Email không hợp lệ.',
-            'otp.required' => 'Vui lòng nhập mã OTP.',
-            'otp.digits' => 'Mã OTP phải gồm 6 số.',
+            'email.required' => 'Thiáº¿u email xÃ¡c minh.',
+            'email.email' => 'Email khÃ´ng há»£p lá»‡.',
+            'otp.required' => 'Vui lÃ²ng nháº­p mÃ£ OTP.',
+            'otp.digits' => 'MÃ£ OTP pháº£i gá»“m 6 sá»‘.',
         ]);
 
         $pending = PendingRegistration::where('email', $validated['email'])->first();
 
         if (! $pending) {
             return response()->json([
-                'message' => 'Không tìm thấy yêu cầu đăng ký đang chờ xác minh.',
+                'message' => 'KhÃ´ng tÃ¬m tháº¥y yÃªu cáº§u Ä‘Äƒng kÃ½ Ä‘ang chá» xÃ¡c minh.',
             ], 404);
         }
 
@@ -144,7 +144,7 @@ class AuthController extends Controller
             $pending->delete();
 
             return response()->json([
-                'message' => 'Mã OTP đã hết hạn. Vui lòng đăng ký lại để nhận mã mới.',
+                'message' => 'MÃ£ OTP Ä‘Ã£ háº¿t háº¡n. Vui lÃ²ng Ä‘Äƒng kÃ½ láº¡i Ä‘á»ƒ nháº­n mÃ£ má»›i.',
             ], 422);
         }
 
@@ -152,7 +152,7 @@ class AuthController extends Controller
             $pending->delete();
 
             return response()->json([
-                'message' => 'Bạn đã nhập sai OTP quá nhiều lần. Vui lòng đăng ký lại.',
+                'message' => 'Báº¡n Ä‘Ã£ nháº­p sai OTP quÃ¡ nhiá»u láº§n. Vui lÃ²ng Ä‘Äƒng kÃ½ láº¡i.',
             ], 422);
         }
 
@@ -160,7 +160,7 @@ class AuthController extends Controller
             $pending->increment('attempts');
 
             return response()->json([
-                'message' => 'Mã OTP không đúng.',
+                'message' => 'MÃ£ OTP khÃ´ng Ä‘Ãºng.',
             ], 422);
         }
 
@@ -168,7 +168,7 @@ class AuthController extends Controller
             $pending->delete();
 
             return response()->json([
-                'message' => 'Email hoặc số điện thoại đã được đăng ký.',
+                'message' => 'Email hoáº·c sá»‘ Ä‘iá»‡n thoáº¡i Ä‘Ã£ Ä‘Æ°á»£c Ä‘Äƒng kÃ½.',
             ], 422);
         }
 
@@ -184,7 +184,7 @@ class AuthController extends Controller
         $pending->delete();
 
         return response()->json([
-            'message' => 'Đăng ký thành công. Vui lòng đăng nhập lại.',
+            'message' => 'ÄÄƒng kÃ½ thÃ nh cÃ´ng. Vui lÃ²ng Ä‘Äƒng nháº­p láº¡i.',
             'user' => $user,
         ], 201);
     }
@@ -200,21 +200,21 @@ class AuthController extends Controller
             'email' => ['required', 'email', 'max:255', 'unique:users,email'],
             'password' => ['required', 'string', 'min:8', 'confirmed'],
         ], [
-            'store_name.required' => 'Vui lòng nhập tên siêu thị.',
-            'name.required' => 'Vui lòng nhập họ tên người đại diện.',
-            'phone.regex' => 'Số điện thoại phải nhập đúng 10 chữ số.',
-            'phone.unique' => 'Số điện thoại này đã được đăng ký.',
-            'email.email' => 'Email không hợp lệ.',
-            'email.unique' => 'Email này đã được đăng ký.',
-            'password.min' => 'Mật khẩu phải có ít nhất 8 ký tự.',
-            'password.confirmed' => 'Xác nhận mật khẩu không khớp.',
+            'store_name.required' => 'Vui lÃ²ng nháº­p tÃªn siÃªu thá»‹.',
+            'name.required' => 'Vui lÃ²ng nháº­p há» tÃªn ngÆ°á»i Ä‘áº¡i diá»‡n.',
+            'phone.regex' => 'Sá»‘ Ä‘iá»‡n thoáº¡i pháº£i nháº­p Ä‘Ãºng 10 chá»¯ sá»‘.',
+            'phone.unique' => 'Sá»‘ Ä‘iá»‡n thoáº¡i nÃ y Ä‘Ã£ Ä‘Æ°á»£c Ä‘Äƒng kÃ½.',
+            'email.email' => 'Email khÃ´ng há»£p lá»‡.',
+            'email.unique' => 'Email nÃ y Ä‘Ã£ Ä‘Æ°á»£c Ä‘Äƒng kÃ½.',
+            'password.min' => 'Máº­t kháº©u pháº£i cÃ³ Ã­t nháº¥t 8 kÃ½ tá»±.',
+            'password.confirmed' => 'XÃ¡c nháº­n máº­t kháº©u khÃ´ng khá»›p.',
         ]);
 
         $store = $this->resolvePartnerStore($validated['store_name'], $validated['store_address'] ?? null);
 
         if (! $store) {
             return response()->json([
-                'message' => 'Hiện hệ thống chỉ nhận đăng ký cho Bách Hóa Xanh Lê Văn Chí, WinMart Lê Văn Việt hoặc GO! Dĩ An.',
+                'message' => 'Hiá»‡n há»‡ thá»‘ng chá»‰ nháº­n Ä‘Äƒng kÃ½ cho BÃ¡ch HÃ³a Xanh LÃª VÄƒn ChÃ­, WinMart LÃª VÄƒn Viá»‡t hoáº·c GO! DÄ© An.',
             ], 422);
         }
 
@@ -225,7 +225,7 @@ class AuthController extends Controller
 
         if ($pendingWithPhone) {
             throw ValidationException::withMessages([
-                'phone' => ['Số điện thoại này đang chờ xác minh OTP.'],
+                'phone' => ['Sá»‘ Ä‘iá»‡n thoáº¡i nÃ y Ä‘ang chá» xÃ¡c minh OTP.'],
             ]);
         }
 
@@ -249,23 +249,23 @@ class AuthController extends Controller
 
         try {
             Mail::raw(
-                "Mã OTP đăng ký đối tác Chợ Tới Cửa của bạn là: {$otp}\n\nMã này có hiệu lực trong 10 phút. Vui lòng không chia sẻ mã này cho người khác.",
+                "MÃ£ OTP Ä‘Äƒng kÃ½ Ä‘á»‘i tÃ¡c Chá»£ Tá»›i Cá»­a cá»§a báº¡n lÃ : {$otp}\n\nMÃ£ nÃ y cÃ³ hiá»‡u lá»±c trong 10 phÃºt. Vui lÃ²ng khÃ´ng chia sáº» mÃ£ nÃ y cho ngÆ°á»i khÃ¡c.",
                 function ($message) use ($validated): void {
                     $message
                         ->to($validated['email'], $validated['name'])
-                        ->subject('Mã OTP đăng ký đối tác Chợ Tới Cửa');
+                        ->subject('MÃ£ OTP Ä‘Äƒng kÃ½ Ä‘á»‘i tÃ¡c Chá»£ Tá»›i Cá»­a');
                 }
             );
         } catch (Throwable $exception) {
             report($exception);
 
             return response()->json([
-                'message' => 'Không gửi được OTP. Vui lòng kiểm tra cấu hình Gmail trong file .env.',
+                'message' => 'KhÃ´ng gá»­i Ä‘Æ°á»£c OTP. Vui lÃ²ng kiá»ƒm tra cáº¥u hÃ¬nh Gmail trong file .env.',
             ], 500);
         }
 
         return response()->json([
-            'message' => 'OTP đã được gửi đến email đối tác.',
+            'message' => 'OTP Ä‘Ã£ Ä‘Æ°á»£c gá»­i Ä‘áº¿n email Ä‘á»‘i tÃ¡c.',
             'email' => $validated['email'],
             'expires_in_minutes' => 10,
         ]);
@@ -284,7 +284,7 @@ class AuthController extends Controller
 
         if (! $pending) {
             return response()->json([
-                'message' => 'Không tìm thấy yêu cầu đăng ký đối tác đang chờ xác minh.',
+                'message' => 'KhÃ´ng tÃ¬m tháº¥y yÃªu cáº§u Ä‘Äƒng kÃ½ Ä‘á»‘i tÃ¡c Ä‘ang chá» xÃ¡c minh.',
             ], 404);
         }
 
@@ -292,7 +292,7 @@ class AuthController extends Controller
             $pending->delete();
 
             return response()->json([
-                'message' => 'Mã OTP đã hết hạn. Vui lòng đăng ký lại để nhận mã mới.',
+                'message' => 'MÃ£ OTP Ä‘Ã£ háº¿t háº¡n. Vui lÃ²ng Ä‘Äƒng kÃ½ láº¡i Ä‘á»ƒ nháº­n mÃ£ má»›i.',
             ], 422);
         }
 
@@ -300,7 +300,7 @@ class AuthController extends Controller
             $pending->delete();
 
             return response()->json([
-                'message' => 'Bạn đã nhập sai OTP quá nhiều lần. Vui lòng đăng ký lại.',
+                'message' => 'Báº¡n Ä‘Ã£ nháº­p sai OTP quÃ¡ nhiá»u láº§n. Vui lÃ²ng Ä‘Äƒng kÃ½ láº¡i.',
             ], 422);
         }
 
@@ -308,7 +308,7 @@ class AuthController extends Controller
             $pending->increment('attempts');
 
             return response()->json([
-                'message' => 'Mã OTP không đúng.',
+                'message' => 'MÃ£ OTP khÃ´ng Ä‘Ãºng.',
             ], 422);
         }
 
@@ -316,7 +316,7 @@ class AuthController extends Controller
             $pending->delete();
 
             return response()->json([
-                'message' => 'Email hoặc số điện thoại đã được đăng ký.',
+                'message' => 'Email hoáº·c sá»‘ Ä‘iá»‡n thoáº¡i Ä‘Ã£ Ä‘Æ°á»£c Ä‘Äƒng kÃ½.',
             ], 422);
         }
 
@@ -324,7 +324,7 @@ class AuthController extends Controller
 
         if (! $store) {
             return response()->json([
-                'message' => 'Siêu thị đăng ký không hợp lệ.',
+                'message' => 'SiÃªu thá»‹ Ä‘Äƒng kÃ½ khÃ´ng há»£p lá»‡.',
             ], 422);
         }
 
@@ -347,7 +347,7 @@ class AuthController extends Controller
         $pending->delete();
 
         return response()->json([
-            'message' => 'Đăng ký đối tác thành công. Vui lòng đăng nhập lại.',
+            'message' => 'ÄÄƒng kÃ½ Ä‘á»‘i tÃ¡c thÃ nh cÃ´ng. Vui lÃ²ng Ä‘Äƒng nháº­p láº¡i.',
             'user' => $user,
             'store' => $store->fresh(),
         ], 201);
@@ -359,8 +359,8 @@ class AuthController extends Controller
             'identifier' => ['required', 'string'],
             'password' => ['required', 'string'],
         ], [
-            'identifier.required' => 'Vui lòng nhập email hoặc số điện thoại.',
-            'password.required' => 'Vui lòng nhập mật khẩu.',
+            'identifier.required' => 'Vui long nhap email hoac so dien thoai.',
+            'password.required' => 'Vui long nhap mat khau.',
         ]);
 
         $identifier = $validated['identifier'];
@@ -369,12 +369,18 @@ class AuthController extends Controller
 
         if (! $user || ! Hash::check($validated['password'], $user->password)) {
             return response()->json([
-                'message' => 'Thông tin đăng nhập không đúng.',
+                'message' => 'Thong tin dang nhap khong dung.',
             ], 422);
         }
 
+        if ($user->isLocked()) {
+            return response()->json([
+                'message' => 'Tai khoan dang bi khoa den ' . $user->locked_until->format('d/m/Y') . '.',
+            ], 423);
+        }
+
         return response()->json([
-            'message' => 'Đăng nhập thành công.',
+            'message' => 'Dang nhap thanh cong.',
             'token' => $user->createToken('customer-web')->plainTextToken,
             'user' => $user,
         ]);
@@ -386,8 +392,8 @@ class AuthController extends Controller
             'identifier' => ['required', 'string'],
             'password' => ['required', 'string'],
         ], [
-            'identifier.required' => 'Vui lòng nhập email hoặc số điện thoại.',
-            'password.required' => 'Vui lòng nhập mật khẩu.',
+            'identifier.required' => 'Vui long nhap email hoac so dien thoai.',
+            'password.required' => 'Vui long nhap mat khau.',
         ]);
 
         $identifier = $validated['identifier'];
@@ -396,16 +402,41 @@ class AuthController extends Controller
 
         if (! $user || ! Hash::check($validated['password'], $user->password) || $user->role !== 'partner') {
             return response()->json([
-                'message' => 'Thông tin đăng nhập đối tác không đúng.',
+                'message' => 'Thong tin dang nhap doi tac khong dung.',
             ], 422);
         }
 
+        $fixedPartnerEmails = $this->fixedPartnerEmails();
+        if ($fixedPartnerEmails !== [] && ! in_array(strtolower($user->email), $fixedPartnerEmails, true)) {
+            return response()->json([
+                'message' => 'Tai khoan doi tac khong thuoc 3 sieu thi duoc cau hinh.',
+            ], 422);
+        }
+
+        if ($user->isLocked()) {
+            return response()->json([
+                'message' => 'Tai khoan doi tac dang bi khoa den ' . $user->locked_until->format('d/m/Y') . '.',
+            ], 423);
+        }
+
         return response()->json([
-            'message' => 'Đăng nhập đối tác thành công.',
+            'message' => 'Dang nhap doi tac thanh cong.',
             'token' => $user->createToken('partner-web')->plainTextToken,
             'user' => $user,
             'store' => $user->stores->first(),
         ]);
+    }
+
+    private function fixedPartnerEmails(): array
+    {
+        return array_values(array_filter(array_map(
+            fn ($email) => strtolower(trim((string) $email)),
+            [
+                env('PARTNER_BHX_EMAIL'),
+                env('PARTNER_WINMART_EMAIL'),
+                env('PARTNER_GO_EMAIL'),
+            ]
+        )));
     }
 
     public function adminLogin(Request $request): JsonResponse
@@ -414,8 +445,8 @@ class AuthController extends Controller
             'identifier' => ['required', 'string'],
             'password' => ['required', 'string'],
         ], [
-            'identifier.required' => 'Vui lòng nhập email hoặc số điện thoại.',
-            'password.required' => 'Vui lòng nhập mật khẩu.',
+            'identifier.required' => 'Vui lÃ²ng nháº­p email hoáº·c sá»‘ Ä‘iá»‡n thoáº¡i.',
+            'password.required' => 'Vui lÃ²ng nháº­p máº­t kháº©u.',
         ]);
 
         $identifier = $validated['identifier'];
@@ -424,12 +455,18 @@ class AuthController extends Controller
 
         if (! $user || ! Hash::check($validated['password'], $user->password) || $user->role !== 'admin') {
             return response()->json([
-                'message' => 'Thông tin đăng nhập quản trị không đúng.',
+                'message' => 'ThÃ´ng tin Ä‘Äƒng nháº­p quáº£n trá»‹ khÃ´ng Ä‘Ãºng.',
             ], 422);
         }
 
+        if ($user->isLocked()) {
+            return response()->json([
+                'message' => 'TÃ i khoáº£n quáº£n trá»‹ Ä‘ang bá»‹ khÃ³a Ä‘áº¿n ' . $user->locked_until->format('d/m/Y') . '.',
+            ], 423);
+        }
+
         return response()->json([
-            'message' => 'Đăng nhập quản trị thành công.',
+            'message' => 'ÄÄƒng nháº­p quáº£n trá»‹ thÃ nh cÃ´ng.',
             'token' => $user->createToken('admin-web')->plainTextToken,
             'user' => $user,
         ]);
@@ -441,7 +478,7 @@ class AuthController extends Controller
 
         if (! $user || $user->role !== 'admin') {
             return response()->json([
-                'message' => 'Bạn không có quyền truy cập trang quản trị.',
+                'message' => 'Báº¡n khÃ´ng cÃ³ quyá»n truy cáº­p trang quáº£n trá»‹.',
             ], 403);
         }
 
@@ -455,15 +492,15 @@ class AuthController extends Controller
         $validated = $request->validate([
             'email' => ['required', 'email'],
         ], [
-            'email.required' => 'Vui lòng nhập email.',
-            'email.email' => 'Email không hợp lệ.',
+            'email.required' => 'Vui lÃ²ng nháº­p email.',
+            'email.email' => 'Email khÃ´ng há»£p lá»‡.',
         ]);
 
         $user = User::where('email', $validated['email'])->first();
 
         if (! $user) {
             return response()->json([
-                'message' => 'Không tìm thấy tài khoản với email này.',
+                'message' => 'KhÃ´ng tÃ¬m tháº¥y tÃ i khoáº£n vá»›i email nÃ y.',
             ], 404);
         }
 
@@ -482,23 +519,23 @@ class AuthController extends Controller
 
         try {
             Mail::raw(
-                "Mã OTP đặt lại mật khẩu Chợ Tới Cửa của bạn là: {$otp}\n\nMã này có hiệu lực trong 10 phút. Vui lòng không chia sẻ mã này cho người khác.",
+                "MÃ£ OTP Ä‘áº·t láº¡i máº­t kháº©u Chá»£ Tá»›i Cá»­a cá»§a báº¡n lÃ : {$otp}\n\nMÃ£ nÃ y cÃ³ hiá»‡u lá»±c trong 10 phÃºt. Vui lÃ²ng khÃ´ng chia sáº» mÃ£ nÃ y cho ngÆ°á»i khÃ¡c.",
                 function ($message) use ($user): void {
                     $message
                         ->to($user->email, $user->name)
-                        ->subject('Mã OTP đặt lại mật khẩu Chợ Tới Cửa');
+                        ->subject('MÃ£ OTP Ä‘áº·t láº¡i máº­t kháº©u Chá»£ Tá»›i Cá»­a');
                 }
             );
         } catch (Throwable $exception) {
             report($exception);
 
             return response()->json([
-                'message' => 'Không gửi được OTP. Vui lòng kiểm tra cấu hình Gmail trong file .env.',
+                'message' => 'KhÃ´ng gá»­i Ä‘Æ°á»£c OTP. Vui lÃ²ng kiá»ƒm tra cáº¥u hÃ¬nh Gmail trong file .env.',
             ], 500);
         }
 
         return response()->json([
-            'message' => 'OTP đặt lại mật khẩu đã được gửi đến email của bạn.',
+            'message' => 'OTP Ä‘áº·t láº¡i máº­t kháº©u Ä‘Ã£ Ä‘Æ°á»£c gá»­i Ä‘áº¿n email cá»§a báº¡n.',
             'email' => $validated['email'],
             'expires_in_minutes' => 10,
         ]);
@@ -509,8 +546,8 @@ class AuthController extends Controller
         $validated = $request->validate([
             'email' => ['required', 'email'],
         ], [
-            'email.required' => 'Vui lòng nhập email.',
-            'email.email' => 'Email không hợp lệ.',
+            'email.required' => 'Vui lÃ²ng nháº­p email.',
+            'email.email' => 'Email khÃ´ng há»£p lá»‡.',
         ]);
 
         $user = User::where('email', $validated['email'])
@@ -519,7 +556,7 @@ class AuthController extends Controller
 
         if (! $user) {
             return response()->json([
-                'message' => 'Không tìm thấy tài khoản đối tác với email này.',
+                'message' => 'KhÃ´ng tÃ¬m tháº¥y tÃ i khoáº£n Ä‘á»‘i tÃ¡c vá»›i email nÃ y.',
             ], 404);
         }
 
@@ -538,23 +575,23 @@ class AuthController extends Controller
 
         try {
             Mail::raw(
-                "Mã OTP đặt lại mật khẩu đối tác Chợ Tới Cửa của bạn là: {$otp}\n\nMã này có hiệu lực trong 10 phút. Vui lòng không chia sẻ mã này cho người khác.",
+                "MÃ£ OTP Ä‘áº·t láº¡i máº­t kháº©u Ä‘á»‘i tÃ¡c Chá»£ Tá»›i Cá»­a cá»§a báº¡n lÃ : {$otp}\n\nMÃ£ nÃ y cÃ³ hiá»‡u lá»±c trong 10 phÃºt. Vui lÃ²ng khÃ´ng chia sáº» mÃ£ nÃ y cho ngÆ°á»i khÃ¡c.",
                 function ($message) use ($user): void {
                     $message
                         ->to($user->email, $user->name)
-                        ->subject('Mã OTP đặt lại mật khẩu đối tác Chợ Tới Cửa');
+                        ->subject('MÃ£ OTP Ä‘áº·t láº¡i máº­t kháº©u Ä‘á»‘i tÃ¡c Chá»£ Tá»›i Cá»­a');
                 }
             );
         } catch (Throwable $exception) {
             report($exception);
 
             return response()->json([
-                'message' => 'Không gửi được OTP. Vui lòng kiểm tra cấu hình Gmail trong file .env.',
+                'message' => 'KhÃ´ng gá»­i Ä‘Æ°á»£c OTP. Vui lÃ²ng kiá»ƒm tra cáº¥u hÃ¬nh Gmail trong file .env.',
             ], 500);
         }
 
         return response()->json([
-            'message' => 'OTP đặt lại mật khẩu đối tác đã được gửi đến email.',
+            'message' => 'OTP Ä‘áº·t láº¡i máº­t kháº©u Ä‘á»‘i tÃ¡c Ä‘Ã£ Ä‘Æ°á»£c gá»­i Ä‘áº¿n email.',
             'email' => $validated['email'],
             'expires_in_minutes' => 10,
         ]);
@@ -566,17 +603,17 @@ class AuthController extends Controller
             'email' => ['required', 'email'],
             'otp' => ['required', 'digits:6'],
         ], [
-            'email.required' => 'Thiếu email xác minh.',
-            'email.email' => 'Email không hợp lệ.',
-            'otp.required' => 'Vui lòng nhập mã OTP.',
-            'otp.digits' => 'Mã OTP phải gồm 6 số.',
+            'email.required' => 'Thiáº¿u email xÃ¡c minh.',
+            'email.email' => 'Email khÃ´ng há»£p lá»‡.',
+            'otp.required' => 'Vui lÃ²ng nháº­p mÃ£ OTP.',
+            'otp.digits' => 'MÃ£ OTP pháº£i gá»“m 6 sá»‘.',
         ]);
 
         $passwordResetOtp = PasswordResetOtp::where('email', $validated['email'])->first();
 
         if (! $passwordResetOtp) {
             return response()->json([
-                'message' => 'Không tìm thấy yêu cầu đặt lại mật khẩu.',
+                'message' => 'KhÃ´ng tÃ¬m tháº¥y yÃªu cáº§u Ä‘áº·t láº¡i máº­t kháº©u.',
             ], 404);
         }
 
@@ -584,7 +621,7 @@ class AuthController extends Controller
             $passwordResetOtp->delete();
 
             return response()->json([
-                'message' => 'Mã OTP đã hết hạn. Vui lòng yêu cầu mã mới.',
+                'message' => 'MÃ£ OTP Ä‘Ã£ háº¿t háº¡n. Vui lÃ²ng yÃªu cáº§u mÃ£ má»›i.',
             ], 422);
         }
 
@@ -592,7 +629,7 @@ class AuthController extends Controller
             $passwordResetOtp->delete();
 
             return response()->json([
-                'message' => 'Bạn đã nhập sai OTP quá nhiều lần. Vui lòng yêu cầu mã mới.',
+                'message' => 'Báº¡n Ä‘Ã£ nháº­p sai OTP quÃ¡ nhiá»u láº§n. Vui lÃ²ng yÃªu cáº§u mÃ£ má»›i.',
             ], 422);
         }
 
@@ -600,7 +637,7 @@ class AuthController extends Controller
             $passwordResetOtp->increment('attempts');
 
             return response()->json([
-                'message' => 'Mã OTP không đúng.',
+                'message' => 'MÃ£ OTP khÃ´ng Ä‘Ãºng.',
             ], 422);
         }
 
@@ -612,7 +649,7 @@ class AuthController extends Controller
         ]);
 
         return response()->json([
-            'message' => 'Xác minh OTP thành công. Bạn có thể đặt lại mật khẩu.',
+            'message' => 'XÃ¡c minh OTP thÃ nh cÃ´ng. Báº¡n cÃ³ thá»ƒ Ä‘áº·t láº¡i máº­t kháº©u.',
             'email' => $validated['email'],
             'reset_token' => $resetToken,
         ]);
@@ -625,19 +662,19 @@ class AuthController extends Controller
             'reset_token' => ['required', 'string'],
             'password' => ['required', 'string', 'min:8', 'confirmed'],
         ], [
-            'email.required' => 'Thiếu email đặt lại mật khẩu.',
-            'email.email' => 'Email không hợp lệ.',
-            'reset_token.required' => 'Phiên đặt lại mật khẩu không hợp lệ.',
-            'password.required' => 'Vui lòng nhập mật khẩu mới.',
-            'password.min' => 'Mật khẩu phải có ít nhất 8 ký tự.',
-            'password.confirmed' => 'Xác nhận mật khẩu không khớp.',
+            'email.required' => 'Thiáº¿u email Ä‘áº·t láº¡i máº­t kháº©u.',
+            'email.email' => 'Email khÃ´ng há»£p lá»‡.',
+            'reset_token.required' => 'PhiÃªn Ä‘áº·t láº¡i máº­t kháº©u khÃ´ng há»£p lá»‡.',
+            'password.required' => 'Vui lÃ²ng nháº­p máº­t kháº©u má»›i.',
+            'password.min' => 'Máº­t kháº©u pháº£i cÃ³ Ã­t nháº¥t 8 kÃ½ tá»±.',
+            'password.confirmed' => 'XÃ¡c nháº­n máº­t kháº©u khÃ´ng khá»›p.',
         ]);
 
         $passwordResetOtp = PasswordResetOtp::where('email', $validated['email'])->first();
 
         if (! $passwordResetOtp || ! $passwordResetOtp->verified_at || ! $passwordResetOtp->reset_token_hash) {
             return response()->json([
-                'message' => 'Vui lòng xác minh OTP trước khi đặt lại mật khẩu.',
+                'message' => 'Vui lÃ²ng xÃ¡c minh OTP trÆ°á»›c khi Ä‘áº·t láº¡i máº­t kháº©u.',
             ], 422);
         }
 
@@ -645,13 +682,13 @@ class AuthController extends Controller
             $passwordResetOtp->delete();
 
             return response()->json([
-                'message' => 'Phiên đặt lại mật khẩu đã hết hạn. Vui lòng yêu cầu mã OTP mới.',
+                'message' => 'PhiÃªn Ä‘áº·t láº¡i máº­t kháº©u Ä‘Ã£ háº¿t háº¡n. Vui lÃ²ng yÃªu cáº§u mÃ£ OTP má»›i.',
             ], 422);
         }
 
         if (! Hash::check($validated['reset_token'], $passwordResetOtp->reset_token_hash)) {
             return response()->json([
-                'message' => 'Phiên đặt lại mật khẩu không hợp lệ.',
+                'message' => 'PhiÃªn Ä‘áº·t láº¡i máº­t kháº©u khÃ´ng há»£p lá»‡.',
             ], 422);
         }
 
@@ -661,7 +698,7 @@ class AuthController extends Controller
             $passwordResetOtp->delete();
 
             return response()->json([
-                'message' => 'Không tìm thấy tài khoản với email này.',
+                'message' => 'KhÃ´ng tÃ¬m tháº¥y tÃ i khoáº£n vá»›i email nÃ y.',
             ], 404);
         }
 
@@ -672,7 +709,7 @@ class AuthController extends Controller
         $passwordResetOtp->delete();
 
         return response()->json([
-            'message' => 'Đặt lại mật khẩu thành công. Vui lòng đăng nhập lại.',
+            'message' => 'Äáº·t láº¡i máº­t kháº©u thÃ nh cÃ´ng. Vui lÃ²ng Ä‘Äƒng nháº­p láº¡i.',
         ]);
     }
 

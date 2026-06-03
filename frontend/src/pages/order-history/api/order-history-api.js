@@ -1,8 +1,11 @@
 import { addCartItem } from "../../../services/cartStorage";
+import { getStoredAuthUser } from "../../../services/authApi";
 import { mapApiProduct } from "../../../services/productApi";
 
 const API_BASE_URL = "http://localhost:8000/api";
 const API_ORIGIN = API_BASE_URL.replace(/\/api$/, "");
+
+const getCurrentCustomerId = () => Number(getStoredAuthUser()?.id || 0);
 
 const normalizePageItems = (payload) => {
   if (Array.isArray(payload?.data?.data)) return payload.data.data;
@@ -68,6 +71,7 @@ export const mapOrder = (order) => {
 
   return {
     id: String(order.id),
+    customerId: Number(order.customer_id || order.customer?.id || 0),
     storeId: Number(order.store_id),
     storeName: order.store?.name || "Siêu thị",
     customerName: order.customer?.name || "Khách hàng",
@@ -94,6 +98,13 @@ export const mapOrder = (order) => {
 
 export async function fetchOrders(status = "all") {
   const params = new URLSearchParams({ per_page: "100" });
+  const customerId = getCurrentCustomerId();
+
+  if (!customerId) {
+    return [];
+  }
+
+  params.set("customer_id", String(customerId));
 
   if (status && status !== "all") {
     params.set("status", status);
@@ -112,7 +123,11 @@ export async function fetchOrders(status = "all") {
 }
 
 export async function fetchOrderById(orderId) {
-  const response = await fetch(`${API_BASE_URL}/orders/${orderId}`);
+  const customerId = getCurrentCustomerId();
+  const params = new URLSearchParams();
+  if (customerId) params.set("customer_id", String(customerId));
+
+  const response = await fetch(`${API_BASE_URL}/orders/${orderId}?${params.toString()}`);
 
   if (!response.ok) {
     throw new Error("Không thể lấy chi tiết đơn hàng.");
@@ -123,7 +138,11 @@ export async function fetchOrderById(orderId) {
 }
 
 export async function cancelOrder(orderId) {
-  const response = await fetch(`${API_BASE_URL}/orders/${orderId}/cancel`, {
+  const customerId = getCurrentCustomerId();
+  const params = new URLSearchParams();
+  if (customerId) params.set("customer_id", String(customerId));
+
+  const response = await fetch(`${API_BASE_URL}/orders/${orderId}/cancel?${params.toString()}`, {
     method: "PATCH",
     headers: { "Content-Type": "application/json" },
     body: "{}",
@@ -139,7 +158,11 @@ export async function cancelOrder(orderId) {
 }
 
 export async function completeOrder(orderId) {
-  const response = await fetch(`${API_BASE_URL}/orders/${orderId}/complete`, {
+  const customerId = getCurrentCustomerId();
+  const params = new URLSearchParams();
+  if (customerId) params.set("customer_id", String(customerId));
+
+  const response = await fetch(`${API_BASE_URL}/orders/${orderId}/complete?${params.toString()}`, {
     method: "PATCH",
     headers: { "Content-Type": "application/json" },
     body: "{}",

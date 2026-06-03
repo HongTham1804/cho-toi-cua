@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\AuthController;
+use App\Http\Controllers\AdminUserController;
 use App\Http\Controllers\CategoryController;
 use App\Http\Controllers\FavoriteProductController;
 use App\Http\Controllers\FlashSaleController;
@@ -65,6 +66,12 @@ Route::middleware('auth:sanctum')->prefix('partner')->group(function () {
     Route::match(['post', 'patch'], '/orders/{order}/start-delivery', [PartnerOrderController::class, 'startDelivery']);
     Route::get('/products', [PartnerProductController::class, 'index']);
     Route::patch('/products/{product}', [PartnerProductController::class, 'update']);
+});
+Route::middleware('auth:sanctum')->prefix('admin/users')->group(function () {
+    Route::get('/', [AdminUserController::class, 'index']);
+    Route::get('/{type}/{id}', [AdminUserController::class, 'show']);
+    Route::patch('/{type}/{id}/lock', [AdminUserController::class, 'lock']);
+    Route::delete('/{type}/{id}', [AdminUserController::class, 'destroy']);
 });
 Route::middleware('auth:sanctum')->prefix('favorites')->group(function () {
     Route::get('/', [FavoriteProductController::class, 'index']);

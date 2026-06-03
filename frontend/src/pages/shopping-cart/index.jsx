@@ -4,7 +4,14 @@ import '@fortawesome/fontawesome-free/css/all.min.css';
 import { Link, useNavigate } from 'react-router-dom';
 import DeliveryLocationModal from '../../components/DeliveryLocationModal/DeliveryLocationModal';
 import { addCartItem, readCartItems, writeCartItems } from '../../services/cartStorage';
-import { clearVoucherCache, fetchProducts, fetchStores, fetchUserVouchers, fetchVouchers } from '../../services/productApi';
+import {
+  clearProductCache,
+  clearVoucherCache,
+  fetchProducts,
+  fetchStores,
+  fetchUserVouchers,
+  fetchVouchers,
+} from '../../services/productApi';
 import { fetchWallet } from '../../services/walletApi';
 
 const API_BASE_URL = 'http://localhost:8000/api';
@@ -282,6 +289,7 @@ export default function ShoppingCart() {
       }
 
       writeCartItems([]);
+      clearProductCache();
       clearVoucherCache();
       setCartItems([]);
       setSavedVouchers([]);

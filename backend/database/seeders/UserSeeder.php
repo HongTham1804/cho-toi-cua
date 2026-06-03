@@ -10,6 +10,47 @@ class UserSeeder extends Seeder
 {
     public function run(): void
     {
+        $fixedPartners = [
+            [
+                'name' => 'Bach Hoa Xanh Le Van Chi',
+                'email' => env('PARTNER_BHX_EMAIL'),
+                'password' => env('PARTNER_BHX_PASSWORD'),
+                'phone' => '0901111111',
+                'address' => 'Thu Duc, TP.HCM',
+            ],
+            [
+                'name' => 'WinMart Le Van Viet',
+                'email' => env('PARTNER_WINMART_EMAIL'),
+                'password' => env('PARTNER_WINMART_PASSWORD'),
+                'phone' => '0987654321',
+                'address' => 'Thu Duc, TP.HCM',
+            ],
+            [
+                'name' => 'GO Di An',
+                'email' => env('PARTNER_GO_EMAIL'),
+                'password' => env('PARTNER_GO_PASSWORD'),
+                'phone' => '0903333333',
+                'address' => 'Di An, Binh Duong',
+            ],
+        ];
+
+        foreach ($fixedPartners as $partner) {
+            if (blank($partner['email']) || blank($partner['password'])) {
+                continue;
+            }
+
+            User::updateOrCreate(
+                ['email' => $partner['email']],
+                [
+                    'name' => $partner['name'],
+                    'phone' => $partner['phone'],
+                    'address' => $partner['address'],
+                    'role' => 'partner',
+                    'password' => Hash::make($partner['password']),
+                ]
+            );
+        }
+
         $users = [
             [
                 'name' => env('ADMIN_NAME', 'Admin'),
@@ -17,20 +58,7 @@ class UserSeeder extends Seeder
                 'phone' => env('ADMIN_PHONE', '0901234567'),
                 'address' => 'TP.HCM',
                 'role' => 'admin',
-            ],
-            [
-                'name' => 'Bach Hoa Xanh Thu Duc',
-                'email' => 'bhx@example.com',
-                'phone' => '0901111111',
-                'address' => 'Thủ Đức, TP.HCM',
-                'role' => 'partner',
-            ],
-            [
-                'name' => 'WinMart Thu Duc',
-                'email' => 'partner@example.com',
-                'phone' => '0987654321',
-                'address' => 'Thu Duc, TP.HCM',
-                'role' => 'partner',
+                'password' => env('ADMIN_PASSWORD', 'chotoicua12345@@'),
             ],
             [
                 'name' => 'Nguyen Van A',
@@ -38,34 +66,39 @@ class UserSeeder extends Seeder
                 'phone' => '0912345678',
                 'address' => 'Thu Duc, TP.HCM',
                 'role' => 'customer',
+                'password' => '123456',
             ],
             [
                 'name' => 'Tran Thi B',
                 'email' => 'customer2@example.com',
                 'phone' => '0922222222',
-                'address' => 'Quận 3, TP.HCM',
+                'address' => 'Quan 3, TP.HCM',
                 'role' => 'customer',
+                'password' => '123456',
             ],
             [
                 'name' => 'Le Van C',
                 'email' => 'customer3@example.com',
                 'phone' => '0933333333',
-                'address' => 'Thủ Đức, TP.HCM',
+                'address' => 'Thu Duc, TP.HCM',
                 'role' => 'customer',
+                'password' => '123456',
             ],
             [
                 'name' => 'Pham Thi D',
                 'email' => 'customer4@example.com',
                 'phone' => '0944444444',
-                'address' => 'Bình Thạnh, TP.HCM',
+                'address' => 'Binh Thanh, TP.HCM',
                 'role' => 'customer',
+                'password' => '123456',
             ],
             [
                 'name' => 'Hoang Van E',
                 'email' => 'customer5@example.com',
                 'phone' => '0955555555',
-                'address' => 'Gò Vấp, TP.HCM',
+                'address' => 'Go Vap, TP.HCM',
                 'role' => 'customer',
+                'password' => '123456',
             ],
             [
                 'name' => 'Nguyen Van F',
@@ -73,6 +106,7 @@ class UserSeeder extends Seeder
                 'phone' => '0940842192',
                 'address' => 'Thu Duc, TP.HCM',
                 'role' => 'customer',
+                'password' => '123456',
             ],
         ];
 
@@ -80,8 +114,11 @@ class UserSeeder extends Seeder
             User::updateOrCreate(
                 ['email' => $user['email']],
                 [
-                    ...$user,
-                    'password' => Hash::make($user['role'] === 'admin' ? env('ADMIN_PASSWORD', 'chotoicua12345@@') : '123456'),
+                    'name' => $user['name'],
+                    'phone' => $user['phone'],
+                    'address' => $user['address'],
+                    'role' => $user['role'],
+                    'password' => Hash::make($user['password']),
                 ]
             );
         }

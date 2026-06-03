@@ -28,6 +28,8 @@ class User extends Authenticatable
         'phone',
         'address',
         'role',
+        'locked_until',
+        'locked_reason',
         'email_verified_at',
     ];
 
@@ -49,6 +51,7 @@ class User extends Authenticatable
         return [
             'password' => 'hashed',
             'email_verified_at' => 'datetime',
+            'locked_until' => 'datetime',
         ];
     }
 
@@ -84,5 +87,15 @@ class User extends Authenticatable
     public function wallet()
     {
         return $this->hasOne(Wallet::class);
+    }
+
+    public function orders(): HasMany
+    {
+        return $this->hasMany(Order::class, 'customer_id');
+    }
+
+    public function isLocked(): bool
+    {
+        return $this->locked_until && $this->locked_until->isFuture();
     }
 }
