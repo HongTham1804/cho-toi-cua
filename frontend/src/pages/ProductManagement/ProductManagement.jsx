@@ -1,6 +1,5 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import {
-  Bell,
   ChevronDown,
   Edit,
   Eye,
@@ -10,6 +9,7 @@ import {
   X,
 } from 'lucide-react';
 import './ProductManagement.scss';
+import logoMain from '../../assets/logo-main.png';
 
 const API_BASE_URL = 'http://localhost:8000/api';
 const API_ORIGIN = API_BASE_URL.replace(/\/api$/, '');
@@ -389,14 +389,12 @@ const ProductManagement = () => {
           </div>
 
           <div className="header-right">
-            <div className="notification"><Bell size={20} className="icon-bell" /><span className="dot-red"></span></div>
-            <div className="divider"></div>
             <div className="user-profile">
               <div className="user-info">
                 <span className="user-name">Admin</span>
                 <span className="user-role">Quản lý chợ</span>
               </div>
-              <img src="https://i.pravatar.cc/150?img=11" alt="Avatar" className="avatar" />
+              <img src={logoMain} alt="Cho Toi Cua" className="avatar" />
             </div>
           </div>
         </header>

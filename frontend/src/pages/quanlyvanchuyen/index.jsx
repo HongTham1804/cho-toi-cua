@@ -1,13 +1,14 @@
 import { useEffect, useMemo, useState } from 'react';
 import './index.css';
 import { Search, ChevronDown, MapPin, User } from 'lucide-react';
+import logoMain from '../../assets/logo-main.png';
 
 const API_BASE_URL = 'http://localhost:8000/api';
 
 const STORE_SYSTEMS = [
-  'GO! Dĩ An',
-  'WinMart Lê Văn Việt',
-  'Bách Hóa Xanh Lê Văn Chí',
+  { id: '3', label: 'GO! Dĩ An' },
+  { id: '2', label: 'WinMart Lê Văn Việt' },
+  { id: '1', label: 'Bách Hóa Xanh Lê Văn Chí' },
 ];
 
 const DELIVERY_STATUSES = [
@@ -52,6 +53,7 @@ function mapOrderToDelivery(order) {
   return {
     orderId: formatOrderId(order.id),
     rawOrderId: String(order.id),
+    storeId: String(order.store_id || order.store?.id || ''),
     searchableOrderId: `${order.id} ${formatOrderId(order.id)}`.toLowerCase(),
     shopper: {
       name: shipper.name || 'Chưa phân công',
@@ -120,11 +122,26 @@ export default function DeliveryManagement() {
     };
   }, []);
 
+  const storeOptions = useMemo(() => {
+    const optionsById = new Map(STORE_SYSTEMS.map((store) => [store.id, store]));
+
+    deliveries.forEach((delivery) => {
+      if (delivery.storeId && !optionsById.has(delivery.storeId)) {
+        optionsById.set(delivery.storeId, {
+          id: delivery.storeId,
+          label: delivery.route.from,
+        });
+      }
+    });
+
+    return Array.from(optionsById.values());
+  }, [deliveries]);
+
   const filteredDeliveries = useMemo(() => {
     const keyword = searchQuery.trim().toLowerCase();
 
     return deliveries.filter((delivery) => {
-      const matchesStore = selectedStore === 'all' || delivery.route.from === selectedStore;
+      const matchesStore = selectedStore === 'all' || delivery.storeId === selectedStore;
       const matchesStatus = selectedStatus === 'all' || delivery.statusValue === selectedStatus;
       const matchesSearch =
         !keyword ||
@@ -201,8 +218,8 @@ export default function DeliveryManagement() {
                 onChange={(event) => handleStoreChange(event.target.value)}
               >
                 <option value="all">Tất cả siêu thị</option>
-                {STORE_SYSTEMS.map((store) => (
-                  <option key={store} value={store}>{store}</option>
+                {storeOptions.map((store) => (
+                  <option key={store.id} value={store.id}>{store.label}</option>
                 ))}
               </select>
               <ChevronDown size={16} className="ctc-chevron" />
@@ -216,8 +233,8 @@ export default function DeliveryManagement() {
             <span className="ctc-user-role">Quản lý chợ</span>
           </div>
           <img
-            src="https://i.pravatar.cc/150?img=11"
-            alt="Admin Profile"
+            src={logoMain}
+            alt="Cho Toi Cua"
             className="ctc-admin-avatar"
           />
         </div>

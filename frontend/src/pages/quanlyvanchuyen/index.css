@@ -151,11 +151,13 @@
   width: 40px;
   height: 40px;
   border-radius: 12px;
-  object-fit: cover;
-  border: 1px solid #E2E8F0;
+  object-fit: contain;
+  border: 1px solid #BBCABF;
+  background: #ffffff;
 }
 
 .ctc-main-content {
+  box-sizing: border-box;
   padding: 32px;
   max-width: none;
   margin: 0 auto;

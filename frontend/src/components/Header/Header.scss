@@ -100,6 +100,7 @@ $color-border: #bbcabf;
     display: flex;
     align-items: center;
     gap: 16px;
+    flex-shrink: 0;
 
     .notification {
       position: relative;
@@ -156,7 +157,8 @@ $color-border: #bbcabf;
         height: 40px;
         border-radius: 12px;
         border: 1px solid $color-border;
-        object-fit: cover;
+        object-fit: contain;
+        background: #ffffff;
       }
     }
   }

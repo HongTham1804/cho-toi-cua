@@ -76,7 +76,25 @@
 .dashboard-topbar-actions {
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
+.dashboard-user-info {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  line-height: 1.15;
+}
+
+.dashboard-user-name {
+  color: var(--dashboard-text);
+  font-size: 16px;
+}
+
+.dashboard-user-role {
+  color: #3c4a42;
+  font-size: 13px;
 }
 
 .dashboard-refresh-btn,
@@ -177,14 +195,15 @@
   width: 40px;
   height: 40px;
   border-radius: 12px;
-  object-fit: cover;
+  object-fit: contain;
   border: 1px solid #bbcabf;
+  background: #ffffff;
 }
 
 .dashboard-content {
-  max-width: 1180px;
+  max-width: none;
   margin: 0 auto;
-  padding: 24px;
+  padding: 32px;
 }
 
 .dashboard-title-row {
@@ -196,18 +215,18 @@
 }
 
 .dashboard-eyebrow {
-  margin: 0 0 4px;
-  color: #475569;
-  font-size: 12px;
+  margin: 0 0 8px;
+  color: #3c4a42;
+  font-size: 16px;
 }
 
 .dashboard-title-row h1 {
-  max-width: 540px;
+  max-width: 900px;
   margin: 0;
   color: var(--dashboard-text);
-  font-size: 18px;
-  line-height: 1.35;
-  font-weight: 800;
+  font-size: 32px;
+  line-height: 1.25;
+  font-weight: 700;
   letter-spacing: 0;
 }
 

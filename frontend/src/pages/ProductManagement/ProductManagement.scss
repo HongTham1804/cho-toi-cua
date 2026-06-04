@@ -96,7 +96,7 @@ $color-danger: #BA1A1A; // <--- THÊM DÒNG NÀY VÀO
       display: flex;
       align-items: center;
       gap: 24px;
-      flex-wrap: wrap;
+      min-width: 0;
 
       .search-box {
         position: relative;
@@ -135,12 +135,13 @@ $color-danger: #BA1A1A; // <--- THÊM DÒNG NÀY VÀO
 
     .header-right {
       display: flex; align-items: center; gap: 16px;
+      flex-shrink: 0;
       .notification { position: relative; cursor: pointer; padding: 8px; color: $color-text-muted; .dot-red { position: absolute; top: 8px; right: 8px; width: 8px; height: 8px; background: #BA1A1A; border: 2px solid $color-bg; border-radius: 50%; } }
       .divider { width: 1px; height: 32px; background: $color-border; }
       .user-profile {
         display: flex; align-items: center; gap: 8px; cursor: pointer;
         .user-info { display: flex; flex-direction: column; align-items: flex-end; .user-name { font-size: 16px; color: $color-text-dark; } .user-role { font-size: 13px; color: $color-text-muted; } }
-        .avatar { width: 40px; height: 40px; border-radius: 12px; border: 1px solid $color-border; }
+        .avatar { width: 40px; height: 40px; border-radius: 12px; border: 1px solid $color-border; object-fit: contain; background: #ffffff; }
       }
     }
   }
