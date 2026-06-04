@@ -305,6 +305,9 @@ class OrderController extends Controller
             ], 404);
         }
 
+        $order = $this->syncPayosPaymentBeforeCancel($order)
+            ->load(['customer', 'store', 'shipper', 'shipment', 'details.product']);
+
         return response()->json([
             'message' => 'Lấy chi tiết đơn hàng thành công.',
             'data' => $order,
@@ -418,6 +421,7 @@ class OrderController extends Controller
             $order->update([
                 'payment_status' => 'paid',
                 'payment_reference' => $paymentInfo['paymentLinkId'] ?? $order->payment_reference,
+                'payos_order_code' => $paymentInfo['orderCode'] ?? $order->payos_order_code,
                 'paid_at' => now(),
                 'status' => $order->status === 'pending_payment' ? 'pending' : $order->status,
             ]);

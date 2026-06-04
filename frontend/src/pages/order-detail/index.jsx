@@ -88,12 +88,11 @@ export default function OrderDetail() {
         const searchOrderId = new URLSearchParams(location.search).get("orderId");
         const decodedId = decodeURIComponent(orderId ?? searchOrderId ?? "");
         let nextOrder = await fetchOrderById(decodedId);
-        const paymentResult = new URLSearchParams(location.search).get("payment");
 
         if (
-          paymentResult === "payos_success"
-          && nextOrder.paymentMethodKey === "payos"
+          nextOrder.paymentMethodKey === "payos"
           && nextOrder.paymentStatus === "pending"
+          && nextOrder.status === "pending_payment"
         ) {
           try {
             nextOrder = await syncPayosOrder(nextOrder.id);

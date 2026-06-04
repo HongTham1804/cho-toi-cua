@@ -40,8 +40,16 @@ class PayosController extends Controller
         ]);
     }
 
-    public function sync(Order $order, PayosService $payos): JsonResponse
+    public function sync(Request $request, Order $order, PayosService $payos): JsonResponse
     {
+        $user = $request->user();
+
+        if ($user?->role !== 'admin' && (int) $order->customer_id !== (int) $user?->id) {
+            return response()->json([
+                'message' => 'Bạn không có quyền đồng bộ thanh toán cho đơn hàng này.',
+            ], 403);
+        }
+
         if ($order->payment_method !== 'payos') {
             return response()->json([
                 'message' => 'Don hang nay khong dung thanh toan PayOS.',
@@ -49,6 +57,8 @@ class PayosController extends Controller
         }
 
         if ($order->payment_status === 'paid') {
+            $order = $this->normalizePaidOrderStatus($order);
+
             return response()->json([
                 'message' => 'Don hang da duoc thanh toan.',
                 'data' => $order->load(['customer', 'store', 'shipper', 'shipment', 'details.product']),
@@ -156,5 +166,16 @@ class PayosController extends Controller
         );
 
         return $order->fresh();
+    }
+
+    private function normalizePaidOrderStatus(Order $order): Order
+    {
+        if ($order->payment_status === 'paid' && $order->status === 'pending_payment') {
+            $order->update(['status' => 'pending']);
+
+            return $order->fresh();
+        }
+
+        return $order;
     }
 }

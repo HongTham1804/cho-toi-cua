@@ -148,7 +148,11 @@ export async function syncPayosOrder(orderId) {
 
   const response = await fetch(`${API_BASE_URL}/orders/${orderId}/payos-sync?${params.toString()}`, {
     method: "POST",
-    headers: { "Content-Type": "application/json" },
+    headers: {
+      Accept: "application/json",
+      "Content-Type": "application/json",
+      ...authHeaders(),
+    },
     body: "{}",
   });
 
