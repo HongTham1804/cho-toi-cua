@@ -10,7 +10,7 @@
 }
 
 .delivery-location-modal {
-  width: min(980px, 100%);
+  width: min(1224px, calc(100vw - 48px));
   max-height: calc(100vh - 36px);
   display: flex;
   flex-direction: column;
@@ -25,14 +25,14 @@
   align-items: center;
   justify-content: space-between;
   gap: 18px;
-  padding: 18px 22px;
+  padding: 20px 28px;
   border-bottom: 1px solid #e2e8f0;
 }
 
 .delivery-location-head p {
   margin: 0 0 4px;
   color: #007a4d;
-  font-size: 0.78rem;
+  font-size: 0.95rem;
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0;
@@ -41,13 +41,13 @@
 .delivery-location-head h2 {
   margin: 0;
   color: #0f172a;
-  font-size: 1.25rem;
+  font-size: 1.75rem;
   line-height: 1.25;
 }
 
 .delivery-location-close {
-  width: 36px;
-  height: 36px;
+  width: 44px;
+  height: 44px;
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -65,14 +65,14 @@
 .delivery-location-body {
   min-height: 0;
   display: grid;
-  grid-template-columns: minmax(0, 1fr) 300px;
-  gap: 18px;
-  padding: 18px 22px;
+  grid-template-columns: minmax(0, 1fr) 375px;
+  gap: 24px;
+  padding: 24px 28px 74px;
   overflow-y: auto;
 }
 
 .delivery-location-map-wrap {
-  min-height: 430px;
+  min-height: 540px;
   overflow: hidden;
   border: 1px solid #d8e2ef;
   border-radius: 8px;
@@ -82,7 +82,7 @@
 .delivery-location-map {
   width: 100%;
   height: 100%;
-  min-height: 430px;
+  min-height: 540px;
 }
 
 .delivery-map-marker {
@@ -120,7 +120,7 @@
 }
 
 .delivery-location-current {
-  min-height: 42px;
+  min-height: 52px;
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -141,19 +141,19 @@
 
 .delivery-location-field span {
   color: #334155;
-  font-size: 0.85rem;
+  font-size: 1rem;
   font-weight: 700;
 }
 
 .delivery-location-field textarea {
   width: 100%;
-  min-height: 128px;
-  padding: 10px 12px;
+  min-height: 160px;
+  padding: 14px 16px;
   border: 1px solid #cbd5e1;
   border-radius: 8px;
   color: #0f172a;
   font-family: inherit;
-  font-size: 0.9rem;
+  font-size: 1rem;
   line-height: 1.45;
   resize: vertical;
   outline: none;
@@ -178,15 +178,16 @@
   display: flex;
   justify-content: flex-end;
   gap: 10px;
-  padding: 16px 22px;
+  padding: 20px 28px;
   border-top: 1px solid #e2e8f0;
   background: #f8fafc;
 }
 
 .delivery-location-secondary,
 .delivery-location-primary {
-  min-width: 132px;
-  padding: 10px 18px;
+  min-width: 165px;
+  padding: 13px 22px;
+  font-size: 1rem;
 }
 
 .delivery-location-secondary {

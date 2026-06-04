@@ -21,6 +21,7 @@ class Order extends Model
         'payment_method',
         'payment_status',
         'payment_reference',
+        'payos_order_code',
         'paid_at',
         'refunded_at',
         'note',
@@ -37,6 +38,7 @@ class Order extends Model
         'total_amount' => 'decimal:2',
         'delivery_latitude' => 'float',
         'delivery_longitude' => 'float',
+        'payos_order_code' => 'integer',
         'paid_at' => 'datetime',
         'refunded_at' => 'datetime',
     ];

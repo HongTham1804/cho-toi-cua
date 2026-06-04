@@ -79,6 +79,7 @@ export const mapOrder = (order) => {
     shippingAddress: order.shipping_address || order.customer?.address || "",
     paymentMethod: PAYMENT_METHOD_LABELS[order.payment_method] || order.payment_method || "Thanh toán khi nhận hàng",
     paymentStatus: order.payment_status || "unpaid",
+    paymentMethodKey: order.payment_method || "cod",
     paidAt: order.paid_at,
     paymentReference: order.payment_reference,
     note: order.note || "",
@@ -134,6 +135,26 @@ export async function fetchOrderById(orderId) {
   }
 
   const payload = await response.json();
+  return mapOrder(payload.data);
+}
+
+export async function syncPayosOrder(orderId) {
+  const customerId = getCurrentCustomerId();
+  const params = new URLSearchParams();
+  if (customerId) params.set("customer_id", String(customerId));
+
+  const response = await fetch(`${API_BASE_URL}/orders/${orderId}/payos-sync?${params.toString()}`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: "{}",
+  });
+
+  const payload = await response.json().catch(() => ({}));
+
+  if (!response.ok) {
+    throw new Error(payload.message || "Khong the dong bo thanh toan PayOS.");
+  }
+
   return mapOrder(payload.data);
 }
 

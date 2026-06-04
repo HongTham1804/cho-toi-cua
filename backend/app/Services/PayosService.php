@@ -10,7 +10,7 @@ class PayosService
 {
     public function getPaymentLinkInfo(Order $order): array
     {
-        $paymentId = $order->payment_reference ?: $order->id;
+        $paymentId = $order->payment_reference ?: $order->payos_order_code ?: $order->id;
         $response = Http::timeout(20)
             ->acceptJson()
             ->withHeaders([
@@ -42,12 +42,13 @@ class PayosService
         $order->loadMissing(['details.product']);
 
         $amount = (int) round((float) $order->total_amount);
+        $orderCode = $this->resolveOrderCode($order);
         $frontendUrl = rtrim((string) config('services.payos.frontend_url'), '/');
         $returnUrl = "{$frontendUrl}/order-detail/{$order->id}?payment=payos_success";
         $cancelUrl = "{$frontendUrl}/order-detail/{$order->id}?payment=payos_cancel";
 
         $body = [
-            'orderCode' => (int) $order->id,
+            'orderCode' => $orderCode,
             'amount' => $amount,
             'description' => 'DH' . str_pad((string) $order->id, 6, '0', STR_PAD_LEFT),
             'returnUrl' => $returnUrl,
@@ -82,14 +83,15 @@ class PayosService
 
         $paymentData = $payload['data'] ?? [];
         $order->update([
-            'payment_reference' => $paymentData['paymentLinkId'] ?? (string) $order->id,
+            'payment_reference' => $paymentData['paymentLinkId'] ?? (string) $orderCode,
+            'payos_order_code' => $paymentData['orderCode'] ?? $orderCode,
         ]);
 
         return [
             'paymentLinkId' => $paymentData['paymentLinkId'] ?? null,
             'checkoutUrl' => $paymentData['checkoutUrl'] ?? null,
             'qrCode' => $paymentData['qrCode'] ?? null,
-            'orderCode' => $paymentData['orderCode'] ?? $order->id,
+            'orderCode' => $paymentData['orderCode'] ?? $orderCode,
             'amount' => $paymentData['amount'] ?? $amount,
         ];
     }
@@ -128,5 +130,20 @@ class PayosService
         }
 
         return (string) $value;
+    }
+
+    private function resolveOrderCode(Order $order): int
+    {
+        if ($order->payos_order_code) {
+            return (int) $order->payos_order_code;
+        }
+
+        do {
+            $code = (int) (now()->format('ymdHis') . random_int(100, 999));
+        } while (Order::where('payos_order_code', $code)->whereKeyNot($order->id)->exists());
+
+        $order->forceFill(['payos_order_code' => $code])->save();
+
+        return $code;
     }
 }

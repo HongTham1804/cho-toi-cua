@@ -15,20 +15,61 @@ class PayosController extends Controller
     {
         if ($order->payment_method !== 'payos') {
             return response()->json([
-                'message' => 'Đơn hàng này không dùng thanh toán PayOS.',
+                'message' => 'Don hang nay khong dung thanh toan PayOS.',
             ], 422);
         }
 
         if ($order->payment_status === 'paid') {
             return response()->json([
-                'message' => 'Đơn hàng đã được thanh toán.',
+                'message' => 'Don hang da duoc thanh toan.',
                 'data' => $order,
             ]);
         }
 
         return response()->json([
-            'message' => 'Tạo thanh toán PayOS thành công.',
+            'message' => 'Tao thanh toan PayOS thanh cong.',
             'data' => $payos->createPaymentLink($order),
+        ]);
+    }
+
+    public function sync(Order $order, PayosService $payos): JsonResponse
+    {
+        if ($order->payment_method !== 'payos') {
+            return response()->json([
+                'message' => 'Don hang nay khong dung thanh toan PayOS.',
+            ], 422);
+        }
+
+        if ($order->payment_status === 'paid') {
+            return response()->json([
+                'message' => 'Don hang da duoc thanh toan.',
+                'data' => $order->load(['customer', 'store', 'shipper', 'shipment', 'details.product']),
+            ]);
+        }
+
+        try {
+            $paymentInfo = $payos->getPaymentLinkInfo($order);
+        } catch (\Throwable $e) {
+            return response()->json([
+                'message' => 'Chua the dong bo trang thai PayOS: ' . $e->getMessage(),
+                'data' => $order->load(['customer', 'store', 'shipper', 'shipment', 'details.product']),
+            ], 502);
+        }
+
+        if (! $payos->isPaymentPaid($order, $paymentInfo)) {
+            return response()->json([
+                'message' => 'Thanh toan PayOS chua hoan tat.',
+                'data' => $order->load(['customer', 'store', 'shipper', 'shipment', 'details.product']),
+            ]);
+        }
+
+        $updatedOrder = DB::transaction(function () use ($order, $paymentInfo) {
+            return $this->markOrderPaid($order, $paymentInfo, (int) ($paymentInfo['orderCode'] ?? 0));
+        });
+
+        return response()->json([
+            'message' => 'Dong bo thanh toan PayOS thanh cong.',
+            'data' => $updatedOrder->load(['customer', 'store', 'shipper', 'shipment', 'details.product']),
         ]);
     }
 
@@ -49,44 +90,63 @@ class PayosController extends Controller
 
         if ($orderCode > 0 && $isPaid) {
             DB::transaction(function () use ($data, $orderCode) {
-                $order = Order::lockForUpdate()->find($orderCode);
+                $order = Order::where('payos_order_code', $orderCode)
+                    ->orWhere(function ($query) use ($orderCode) {
+                        $query->whereNull('payos_order_code')->whereKey($orderCode);
+                    })
+                    ->lockForUpdate()
+                    ->first();
 
-                if (! $order || $order->payment_method !== 'payos' || $order->payment_status === 'paid') {
+                if (! $order) {
                     return;
                 }
 
-                $paidAmount = (int) round((float) ($data['amount'] ?? 0));
-                $orderAmount = (int) round((float) $order->total_amount);
-
-                if ($paidAmount !== $orderAmount) {
-                    return;
-                }
-
-                $order->update([
-                    'payment_status' => 'paid',
-                    'payment_reference' => $data['paymentLinkId'] ?? $order->payment_reference,
-                    'paid_at' => now(),
-                    'status' => 'pending',
-                ]);
-
-                AppNotification::updateOrCreate(
-                    [
-                        'user_id' => $order->customer_id,
-                        'order_id' => $order->id,
-                        'type' => 'payment',
-                    ],
-                    [
-                        'title' => sprintf('Đơn hàng #%s đã thanh toán', str_pad((string) $order->id, 4, '0', STR_PAD_LEFT)),
-                        'message' => 'PayOS đã xác nhận chuyển khoản thành công. Đơn hàng của bạn đã chuyển sang mục chờ xử lý.',
-                        'link' => "/order-detail/{$order->id}",
-                        'is_read' => false,
-                    ]
-                );
+                $this->markOrderPaid($order, $data, $orderCode);
             });
         }
 
         return response()->json([
             'success' => true,
         ]);
+    }
+
+    private function markOrderPaid(Order $order, array $paymentData, int $orderCode = 0): Order
+    {
+        $order = Order::whereKey($order->id)->lockForUpdate()->firstOrFail();
+
+        if ($order->payment_method !== 'payos' || $order->payment_status === 'paid') {
+            return $order;
+        }
+
+        $paidAmount = (int) round((float) ($paymentData['amountPaid'] ?? $paymentData['amount'] ?? 0));
+        $orderAmount = (int) round((float) $order->total_amount);
+
+        if ($paidAmount > 0 && $paidAmount < $orderAmount) {
+            return $order;
+        }
+
+        $order->update([
+            'payment_status' => 'paid',
+            'payment_reference' => $paymentData['paymentLinkId'] ?? $order->payment_reference,
+            'payos_order_code' => $orderCode ?: ($paymentData['orderCode'] ?? $order->payos_order_code),
+            'paid_at' => now(),
+            'status' => $order->status === 'pending_payment' ? 'pending' : $order->status,
+        ]);
+
+        AppNotification::updateOrCreate(
+            [
+                'user_id' => $order->customer_id,
+                'order_id' => $order->id,
+                'type' => 'payment',
+            ],
+            [
+                'title' => sprintf('Don hang #%s da thanh toan', str_pad((string) $order->id, 4, '0', STR_PAD_LEFT)),
+                'message' => 'PayOS da xac nhan chuyen khoan thanh cong. Don hang cua ban da chuyen sang muc cho xu ly.',
+                'link' => "/order-detail/{$order->id}",
+                'is_read' => false,
+            ]
+        );
+
+        return $order->fresh();
     }
 }

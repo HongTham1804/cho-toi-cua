@@ -2,13 +2,33 @@ import '@fortawesome/fontawesome-free/css/all.min.css';
 import logoMain from '../../assets/logo-main.png'; 
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
+import DeliveryLocationModal from '../DeliveryLocationModal/DeliveryLocationModal';
 import { CART_CHANGED_EVENT, getCartTotalQuantity } from '../../services/cartStorage';
-import { fetchCategories, fetchProducts } from '../../services/productApi';
+import { fetchCategories, fetchProducts, fetchStores } from '../../services/productApi';
 import bachHoaXanhLogo from '../../assets/logos/BHX.webp';
 import winmartLogo from '../../assets/logos/Winmart.jpg';
 import goLogo from '../../assets/logos/GO.png';
 
 const DEFAULT_CATEGORY = 'Tất cả sản phẩm';
+
+const DELIVERY_LOCATION_STORAGE_KEY = 'ctc_delivery_location';
+
+const readDeliveryLocation = () => {
+  try {
+    const saved = JSON.parse(window.localStorage.getItem(DELIVERY_LOCATION_STORAGE_KEY));
+    if (!saved || !Number.isFinite(Number(saved.lat)) || !Number.isFinite(Number(saved.lng))) {
+      return null;
+    }
+
+    return {
+      address: saved.address || '',
+      lat: Number(saved.lat),
+      lng: Number(saved.lng),
+    };
+  } catch {
+    return null;
+  }
+};
 
 const getStoreLogo = (storeName, logoUrl = '') => {
   if (storeName?.includes('WinMart') || logoUrl.includes('Winmart')) return winmartLogo;
@@ -26,11 +46,14 @@ export default function CustomerHeader({ onMenuClick, onLoginClick, onRegisterCl
     const [cartQuantity, setCartQuantity] = useState(0);
     const [products, setProducts] = useState([]);
     const [categories, setCategories] = useState([DEFAULT_CATEGORY]);
+    const [stores, setStores] = useState([]);
+    const [deliveryLocation, setDeliveryLocation] = useState(() => readDeliveryLocation());
     const [hasLoadedSearchData, setHasLoadedSearchData] = useState(false);
     const isGuest = variant === 'guest';
     const navigate = useNavigate();
     const location = useLocation();
     const searchWrapperRef = useRef(null);
+    const storePanelRef = useRef(null);
 
     const scopedStoreId = useMemo(() => {
       const params = new URLSearchParams(location.search);
@@ -58,6 +81,26 @@ export default function CustomerHeader({ onMenuClick, onLoginClick, onRegisterCl
         window.removeEventListener('storage', syncCartQuantity);
       };
     }, [isGuest]);
+
+    useEffect(() => {
+      if (isGuest || !isAddressModalOpen || stores.length > 0) {
+        return undefined;
+      }
+
+      let isMounted = true;
+
+      fetchStores()
+        .then((apiStores) => {
+          if (isMounted) setStores(apiStores);
+        })
+        .catch(() => {
+          if (isMounted) setStores([]);
+        });
+
+      return () => {
+        isMounted = false;
+      };
+    }, [isAddressModalOpen, isGuest, stores.length]);
 
     useEffect(() => {
       setProducts([]);
@@ -207,6 +250,33 @@ export default function CustomerHeader({ onMenuClick, onLoginClick, onRegisterCl
       setSelectedProduct(product);
     };
 
+    useEffect(() => {
+      if (!selectedProduct || isStoreScopedSearch) {
+        return undefined;
+      }
+
+      const scrollTimer = window.setTimeout(() => {
+        storePanelRef.current?.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+      }, 0);
+
+      return () => window.clearTimeout(scrollTimer);
+    }, [isStoreScopedSearch, selectedProduct]);
+
+    const handleConfirmDeliveryLocation = (nextLocation) => {
+      const normalizedLocation = {
+        address: nextLocation.address || '',
+        lat: Number(nextLocation.lat),
+        lng: Number(nextLocation.lng),
+      };
+
+      setDeliveryLocation(normalizedLocation);
+      window.localStorage.setItem(
+        DELIVERY_LOCATION_STORAGE_KEY,
+        JSON.stringify(normalizedLocation)
+      );
+      setIsAddressModalOpen(false);
+    };
+
     return (
     <header className={`header-core ${isGuest ? 'guest-header-core' : ''}`}>
       <div className="header-container">
@@ -273,7 +343,7 @@ export default function CustomerHeader({ onMenuClick, onLoginClick, onRegisterCl
           <i className="fa-solid fa-magnifying-glass search-icon"></i>
 
           {isSearchOpen && (
-            <div className="search-dropdown-core">
+            <div className={`search-dropdown-core ${selectedProduct ? 'has-store-panel' : ''}`}>
               <div className="search-dropdown-title">Sản phẩm phù hợp</div>
               {productResults.length > 0 ? (
                 <div className="search-result-list">
@@ -297,7 +367,7 @@ export default function CustomerHeader({ onMenuClick, onLoginClick, onRegisterCl
               )}
 
               {selectedProduct && !isStoreScopedSearch && (
-                <div className="search-store-panel">
+                <div className="search-store-panel" ref={storePanelRef}>
                   <div className="search-dropdown-title">Chọn siêu thị có sản phẩm này</div>
                   <div className="search-store-list">
                     {storesForSelectedProduct.map((store) => (
@@ -366,38 +436,12 @@ export default function CustomerHeader({ onMenuClick, onLoginClick, onRegisterCl
         )}
       </div>
       {!isGuest && isAddressModalOpen && (
-        <div className="address-overlay-core" onClick={() => setIsAddressModalOpen(false)}>
-          {/* Dùng stopPropagation để khi click vào khung trắng không bị đóng modal */}
-          <div className="address-box-core" onClick={(e) => e.stopPropagation()}>
-            <button className="address-close-btn-core" onClick={() => setIsAddressModalOpen(false)}>
-              <i className="fa-solid fa-xmark"></i>
-            </button>
-            
-            <h2 className="address-title-core">Chọn địa chỉ giao hàng</h2>
-            
-            <div className="address-search-core">
-              <input type="text" placeholder="Nhập địa chỉ của bạn..." autoFocus />
-              <i className="fa-solid fa-magnifying-glass search-icon-core"></i>
-            </div>
-
-            <div className="address-list-core">
-              {/* Đây là giao diện ví dụ 1 địa chỉ, sau này bạn có thể dùng map() để render */}
-              <div className="address-item-core">
-                <i className="fa-solid fa-location-crosshairs target-icon-core"></i>
-                <div className="address-info-core">
-                  <h4>Sử dụng vị trí hiện tại</h4>
-                </div>
-              </div>
-              <div className="address-item-core">
-                <i className="fa-solid fa-building"></i>
-                <div className="address-info-core">
-                  <h4>Khu Công Nghệ Cao</h4>
-                  <p>Thành phố Thủ Đức, TP. Hồ Chí Minh</p>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
+        <DeliveryLocationModal
+          currentLocation={deliveryLocation}
+          stores={stores}
+          onClose={() => setIsAddressModalOpen(false)}
+          onConfirm={handleConfirmDeliveryLocation}
+        />
       )}
     </header>
   );
