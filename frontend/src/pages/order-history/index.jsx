@@ -3,7 +3,7 @@ import { useNavigate, useSearchParams } from "react-router-dom";
 import CustomerHeader from "../../components/CustomerHeader/CustomerHeader";
 import Footer from "../../components/Footer/Footer";
 import "./order-history.css";
-import { fetchOrders, reorder } from "./api/order-history-api";
+import { fetchOrders, reorder, syncPayosOrder } from "./api/order-history-api";
 
 const STATUS_MAP = {
   pending_payment: { label: "Chờ thanh toán", className: "pending-payment" },
@@ -23,6 +23,50 @@ const TABS = [
   { value: "completed", label: "Đã hoàn thành" },
   { value: "cancelled", label: "Đã hủy" },
 ];
+
+const isPendingPayosOrder = (order) => (
+  order.paymentMethodKey === "payos"
+  && order.paymentStatus === "pending"
+  && order.status === "pending_payment"
+);
+
+const sortNewestFirst = (orders) => [...orders].sort((first, second) => (
+  new Date(second.createdAt || 0).getTime() - new Date(first.createdAt || 0).getTime()
+));
+
+const uniqueOrders = (orders) => {
+  const ordersById = new Map();
+  orders.forEach((order) => ordersById.set(order.id, order));
+  return Array.from(ordersById.values());
+};
+
+const filterByActiveStatus = (orders, activeStatus) => {
+  if (activeStatus === "all") return orders;
+  return orders.filter((order) => order.status === activeStatus);
+};
+
+async function syncPendingPayosOrders(orders) {
+  const pendingPayosOrders = orders.filter(isPendingPayosOrder);
+
+  if (!pendingPayosOrders.length) {
+    return orders;
+  }
+
+  const syncedOrders = await Promise.all(
+    pendingPayosOrders.map(async (order) => {
+      try {
+        return await syncPayosOrder(order.id);
+      } catch {
+        return order;
+      }
+    })
+  );
+
+  const orderById = new Map(orders.map((order) => [order.id, order]));
+  syncedOrders.forEach((order) => orderById.set(order.id, order));
+
+  return Array.from(orderById.values());
+}
 
 function formatCurrency(value) {
   return `${Number(value).toLocaleString("vi-VN")}đ`;
@@ -54,7 +98,13 @@ export default function OrderHistory() {
       setIsLoading(true);
       try {
         const orderData = await fetchOrders(activeStatus);
-        if (isMounted) setOrders(orderData);
+        const syncSource = activeStatus === "pending"
+          ? uniqueOrders([...orderData, ...(await fetchOrders("pending_payment"))])
+          : orderData;
+        const syncedOrders = await syncPendingPayosOrders(syncSource);
+        const visibleOrders = sortNewestFirst(filterByActiveStatus(syncedOrders, activeStatus));
+
+        if (isMounted) setOrders(visibleOrders);
       } catch {
         if (isMounted) showToast("Không thể tải danh sách đơn hàng.");
       } finally {

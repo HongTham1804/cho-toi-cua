@@ -46,6 +46,7 @@ Route::middleware(['auth:sanctum', 'role:customer,admin,partner'])->group(functi
     Route::patch('/orders/{id}/arrived', [OrderController::class, 'arrived']);
     Route::patch('/orders/{id}/complete', [OrderController::class, 'complete']);
     Route::post('/orders/{order}/payos-payment', [PayosController::class, 'create']);
+    Route::post('/orders/{order}/payos-sync', [PayosController::class, 'sync']);
     Route::get('/orders/{id}', [OrderController::class, 'show']);
     Route::patch('/orders/{id}/cancel', [OrderController::class, 'cancel']);
 });

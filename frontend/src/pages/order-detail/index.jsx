@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { Link, useLocation, useNavigate, useParams } from "react-router-dom";
 import "./order-detail.css";
-import { cancelOrder, completeOrder, fetchOrderById, reorder } from "../order-history/api/order-history-api";
+import { cancelOrder, completeOrder, fetchOrderById, reorder, syncPayosOrder } from "../order-history/api/order-history-api";
 
 const STATUS_LABELS = {
   pending_payment: "Chờ thanh toán",
@@ -87,7 +87,20 @@ export default function OrderDetail() {
       try {
         const searchOrderId = new URLSearchParams(location.search).get("orderId");
         const decodedId = decodeURIComponent(orderId ?? searchOrderId ?? "");
-        const nextOrder = await fetchOrderById(decodedId);
+        let nextOrder = await fetchOrderById(decodedId);
+        const paymentResult = new URLSearchParams(location.search).get("payment");
+
+        if (
+          paymentResult === "payos_success"
+          && nextOrder.paymentMethodKey === "payos"
+          && nextOrder.paymentStatus === "pending"
+        ) {
+          try {
+            nextOrder = await syncPayosOrder(nextOrder.id);
+          } catch {
+            // Keep the existing order if PayOS is temporarily unavailable.
+          }
+        }
 
         if (active) setOrder(nextOrder);
       } catch {

@@ -8,6 +8,7 @@ import goLogo from '../../assets/logos/GO.png';
 import logoMain from '../../assets/logo-main.png';
 
 const API_BASE_URL = 'http://localhost:8000/api';
+const MANAGED_STORE_IDS = [1, 2, 3];
 const MANAGED_STORE_NAMES = ['Bách Hóa Xanh Lê Văn Chí', 'WinMart Lê Văn Việt', 'GO! Dĩ An'];
 
 function getStoreLogo(storeName = '') {
@@ -79,16 +80,18 @@ export default function PartnerPricing() {
   const managedStores = useMemo(() => {
     const keyword = searchQuery.trim().toLowerCase();
 
-    return stores
-      .filter((store) => MANAGED_STORE_NAMES.includes(store.name))
-      .sort((a, b) => MANAGED_STORE_NAMES.indexOf(a.name) - MANAGED_STORE_NAMES.indexOf(b.name))
+    const defaultStores = stores
+      .filter((store) => MANAGED_STORE_IDS.includes(Number(store.id)))
+      .sort((a, b) => MANAGED_STORE_IDS.indexOf(Number(a.id)) - MANAGED_STORE_IDS.indexOf(Number(b.id)));
+
+    return defaultStores
       .filter((store) => {
         if (!keyword) return true;
         return `${store.name} ${store.address || ''}`.toLowerCase().includes(keyword);
       });
   }, [searchQuery, stores]);
 
-  const totalPartners = MANAGED_STORE_NAMES.length;
+  const totalPartners = stores.filter((store) => MANAGED_STORE_IDS.includes(Number(store.id))).length;
   const activePartners = isOpen ? totalPartners : 0;
   const inactivePartners = totalPartners - activePartners;
 
