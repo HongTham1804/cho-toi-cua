@@ -163,7 +163,7 @@ export const fetchProducts = async ({ storeId, search, perPage = 40 } = {}) => {
     const response = await fetch(`${API_BASE_URL}/products?${params.toString()}`);
 
     if (!response.ok) {
-      throw new Error('Kh?ng l?y ???c s?n ph?m t? backend');
+      throw new Error('Không lấy được sản phẩm từ backend');
     }
 
     const payload = await response.json();
@@ -176,7 +176,7 @@ export const fetchProductById = async (productId) => {
     const response = await fetch(`${API_BASE_URL}/products/${productId}`);
 
     if (!response.ok) {
-      throw new Error('Kh?ng l?y ???c chi ti?t s?n ph?m t? backend');
+      throw new Error('Không lấy được chi tiết sản phẩm từ backend');
     }
 
     const payload = await response.json();
@@ -189,7 +189,7 @@ export const fetchStores = async () => {
     const response = await fetch(`${API_BASE_URL}/stores`);
 
     if (!response.ok) {
-      throw new Error('Kh?ng l?y ???c si?u th? t? backend');
+      throw new Error('Không lấy được siêu thị từ backend');
     }
 
     const payload = await response.json();
@@ -202,7 +202,7 @@ export const fetchCategories = async () => {
     const response = await fetch(`${API_BASE_URL}/categories`);
 
     if (!response.ok) {
-      throw new Error('Kh?ng l?y ???c danh m?c t? backend');
+      throw new Error('Không lấy được danh mục từ backend');
     }
 
     const payload = await response.json();
@@ -223,7 +223,7 @@ export const fetchStoreCatalog = async ({ storeId, userId } = {}) => {
     const response = await fetch(`${API_BASE_URL}/stores/${storeId}/catalog${query ? `?${query}` : ''}`);
 
     if (!response.ok) {
-      throw new Error('Kh?ng l?y ???c d? li?u si?u th?');
+      throw new Error('Không lấy được dữ liệu siêu thị');
     }
 
     const payload = await response.json();
@@ -255,7 +255,7 @@ export const fetchVouchers = async ({ storeId, userId } = {}) => {
     const response = await fetch(`${API_BASE_URL}/vouchers?${params.toString()}`);
 
     if (!response.ok) {
-      throw new Error('Kh?ng l?y ???c voucher t? backend');
+      throw new Error('Không lấy được voucher từ backend');
     }
 
     const payload = await response.json();
@@ -318,7 +318,7 @@ export const fetchUserVouchers = async ({ storeId } = {}) => {
     });
 
     if (!response.ok) {
-      throw new Error('Kh?ng l?y ???c v? voucher');
+      throw new Error('Không lấy được ví voucher');
     }
 
     const payload = await response.json();
@@ -337,7 +337,7 @@ export const fetchFlashSales = async ({ storeId, status = 'active' } = {}) => {
     const response = await fetch(`${API_BASE_URL}/flash-sales?${params.toString()}`);
 
     if (!response.ok) {
-      throw new Error('Kh?ng l?y ???c flash sale');
+      throw new Error('Không lấy được flash sale');
     }
 
     const payload = await response.json();

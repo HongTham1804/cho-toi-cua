@@ -34,7 +34,7 @@ const PartnerPricing = React.lazy(() => import("./pages/quanlydoitac-gia"));
 const FavoriteProducts = React.lazy(() => import("./pages/spyeuthich"));
 
 const lazyPage = (Page) => (
-  <Suspense fallback={<div className="route-loading">Dang tai...</div>}>
+  <Suspense fallback={<div className="route-loading">Đang tải...</div>}>
     <Page />
   </Suspense>
 );
@@ -154,6 +154,7 @@ function App() {
         <Route path="/" element={<GuestHomepage />} />
         <Route path="/guest-homepage" element={<GuestHomepage />} />
         <Route path="/select-role" element={<SelectRole />} />
+        <Route path="/register-store" element={<Navigate to="/partner-login" replace />} />
 
         <Route element={<CustomerLayout onMenuClick={toggleCustomerMenu} />}>
           <Route path="/shopping-cart" element={lazyPage(ShoppingCart)} />
@@ -161,7 +162,7 @@ function App() {
           <Route
             path="/logged-in-homepage"
             element={(
-              <Suspense fallback={<div className="route-loading">Dang tai...</div>}>
+              <Suspense fallback={<div className="route-loading">Đang tải...</div>}>
                 <LoggedInHomepage onAccountClick={toggleCustomerMenu} />
               </Suspense>
             )}
@@ -202,6 +203,7 @@ function App() {
           </Route>
         </Route>
         <Route path="/UserDetail" element={lazyPage(UserDetail)} />
+        <Route path="/UserDetail/:type/:id" element={lazyPage(UserDetail)} />
         <Route path="/inventory" element={lazyPage(Inventory)} />
       </Routes>
     </div>

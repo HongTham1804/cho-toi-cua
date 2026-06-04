@@ -232,7 +232,7 @@ class TrackingController extends Controller
 
         if (! $user) {
             return response()->json([
-                'message' => 'Vui long dang nhap de theo doi don hang.',
+                'message' => 'Vui lòng đăng nhập để theo dõi đơn hàng.',
             ], 401);
         }
 
@@ -249,7 +249,7 @@ class TrackingController extends Controller
         }
 
         return response()->json([
-            'message' => 'Ban khong co quyen theo doi don hang nay.',
+            'message' => 'Bạn không có quyền theo dõi đơn hàng này.',
         ], 403);
     }
 }

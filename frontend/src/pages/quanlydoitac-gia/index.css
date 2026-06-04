@@ -8,24 +8,27 @@
   font-family: "Be Vietnam Pro", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
   font-size: 12px;
   -webkit-font-smoothing: antialiased;
+  overflow-x: hidden;
 }
 
 .ctc-top-header {
   position: sticky;
   top: 0;
   z-index: 10;
-  height: 56px;
-  padding: 0 24px;
-  display: flex;
+  min-height: 64px;
+  padding: 0 32px;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
   align-items: center;
-  justify-content: space-between;
-  background-color: #ffffff;
-  border-bottom: 1px solid #e2e8f0;
+  gap: 24px;
+  background-color: #f9f9ff;
+  border-bottom: 1px solid #bbcabf;
 }
 
 .ctc-search-box {
   position: relative;
-  width: min(360px, 50vw);
+  width: min(448px, 100%);
+  min-width: 0;
 }
 
 .ctc-search-icon {
@@ -40,17 +43,19 @@
 
 .ctc-search-input {
   width: 100%;
-  padding: 8px 16px 8px 36px;
-  background-color: #f8fafc;
-  border: 1px solid #e2e8f0;
-  border-radius: 999px;
-  font-size: 12px;
-  color: #334155;
+  box-sizing: border-box;
+  padding: 10px 16px 10px 40px;
+  background-color: #f0f3ff;
+  border: 1px solid #bbcabf;
+  border-radius: 12px;
+  font: inherit;
+  font-size: 16px;
+  color: #151c27;
 }
 
 .ctc-search-input:focus {
   outline: none;
-  border-color: #047857;
+  border-color: #006c49;
   background-color: #ffffff;
 }
 
@@ -64,7 +69,28 @@
 }
 
 .ctc-header-actions {
-  gap: 12px;
+  justify-content: flex-end;
+  gap: 10px;
+  min-width: 180px;
+  flex-shrink: 0;
+}
+
+.ctc-user-info {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  line-height: 1.15;
+}
+
+.ctc-user-name {
+  color: #151c27;
+  font-size: 16px;
+  font-weight: 600;
+}
+
+.ctc-user-role {
+  color: #3c4a42;
+  font-size: 13px;
 }
 
 .ctc-action-buttons,
@@ -110,20 +136,23 @@
 }
 
 .ctc-admin-avatar {
-  object-fit: cover;
-  border-radius: 50%;
-  border: 1px solid #e2e8f0;
-}
-
-.ctc-admin-avatar {
-  width: 32px;
-  height: 32px;
+  width: 40px;
+  height: 40px;
+  border-radius: 12px;
+  object-fit: contain;
+  border: 1px solid #bbcabf;
+  background: #ffffff;
+  padding: 5px;
+  box-sizing: border-box;
 }
 
 .ctc-main-content {
-  width: min(1600px, 100%);
+  width: 100%;
+  max-width: 100%;
   margin: 0 auto;
   padding: 24px;
+  box-sizing: border-box;
+  overflow-x: hidden;
 }
 
 .ctc-page-header {
@@ -208,6 +237,7 @@
 .ctc-tab-panel {
   display: grid;
   gap: 16px;
+  min-width: 0;
 }
 
 .ctc-stats-grid {
@@ -221,6 +251,7 @@
   align-items: center;
   justify-content: space-between;
   gap: 16px;
+  min-width: 0;
   padding: 18px;
   background-color: #ffffff;
   border: 1px solid #e2e8f0;
@@ -319,6 +350,7 @@
 
 .ctc-data-table {
   width: 100%;
+  min-width: 720px;
   border-collapse: collapse;
   text-align: left;
 }
@@ -631,7 +663,7 @@
   .ctc-top-header {
     height: auto;
     padding: 12px;
-    flex-direction: column;
+    grid-template-columns: 1fr;
     align-items: stretch;
     gap: 12px;
   }

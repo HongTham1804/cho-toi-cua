@@ -68,7 +68,7 @@ class ReviewController extends Controller
     {
         if ((int) $order->customer_id !== (int) $request->user()?->id) {
             return response()->json([
-                'message' => 'Ban khong co quyen danh gia don hang nay.',
+                'message' => 'Bạn không có quyền đánh giá đơn hàng này.',
             ], 403);
         }
 
@@ -136,7 +136,7 @@ class ReviewController extends Controller
 
         if (! $user) {
             return response()->json([
-                'message' => 'Vui long dang nhap de xem don hang.',
+                'message' => 'Vui lòng đăng nhập để xem đơn hàng.',
             ], 401);
         }
 
@@ -153,7 +153,7 @@ class ReviewController extends Controller
         }
 
         return response()->json([
-            'message' => 'Ban khong co quyen xem don hang nay.',
+            'message' => 'Bạn không có quyền xem đơn hàng này.',
         ], 403);
     }
 }

@@ -53,7 +53,7 @@ class PayosService
             'returnUrl' => $returnUrl,
             'cancelUrl' => $cancelUrl,
             'items' => $order->details->map(fn ($detail) => [
-                'name' => mb_substr($detail->product?->name ?? 'San pham', 0, 80),
+                'name' => mb_substr($detail->product?->name ?? 'Sản phẩm', 0, 80),
                 'quantity' => (int) $detail->quantity,
                 'price' => (int) round((float) $detail->unit_price),
             ])->values()->all(),

@@ -11,6 +11,7 @@ import {
   Wallet,
 } from "lucide-react";
 import { getAdminToken } from "../../services/adminAuthApi";
+import logoMain from "../../assets/logo-main.png";
 
 const API_BASE_URL = "http://localhost:8000/api";
 const REPORT_FONT_FAMILY = '"Segoe UI", "Arial", sans-serif';
@@ -657,10 +658,14 @@ export default function Dashboard() {
         </div>
 
         <div className="dashboard-topbar-actions">
+          <div className="dashboard-user-info">
+            <span className="dashboard-user-name">Admin</span>
+            <span className="dashboard-user-role">Quản lý chợ</span>
+          </div>
           <img
             className="dashboard-avatar"
-            src="https://ui-avatars.com/api/?name=Admin&background=047857&color=fff"
-            alt="Admin"
+            src={logoMain}
+            alt="Chợ Tới Cửa"
           />
         </div>
       </header>

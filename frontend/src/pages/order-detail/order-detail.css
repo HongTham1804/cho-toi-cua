@@ -5,6 +5,12 @@
   font-family: 'Be Vietnam Pro', 'Inter', system-ui, sans-serif;
 }
 
+.order-detail-page *,
+.order-detail-page *::before,
+.order-detail-page *::after {
+  box-sizing: border-box;
+}
+
 .order-detail-shell {
   width: 100%;
   max-width: 960px;
@@ -30,9 +36,16 @@
   border-radius: 8px;
   background: #ffffff;
   color: #007a53;
+  font-family: inherit;
   font-size: 16px;
   font-weight: 800;
+  line-height: 1;
+  text-decoration: none;
   box-shadow: 0 1px 3px rgba(15, 23, 42, 0.04);
+}
+
+.order-back-btn:hover {
+  text-decoration: none;
 }
 
 .order-detail-title {
@@ -491,10 +504,17 @@
   justify-content: center;
   border-radius: 9px;
   padding: 0 18px;
+  font-family: inherit;
   font-size: 16px;
   font-weight: 800;
+  line-height: 1;
+  text-decoration: none;
   border: 1px solid transparent;
   transition: transform 140ms ease, box-shadow 140ms ease, border-color 140ms ease;
+}
+
+.od-btn:hover {
+  text-decoration: none;
 }
 
 .od-btn:active {

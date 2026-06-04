@@ -12,25 +12,25 @@ class UserSeeder extends Seeder
     {
         $fixedPartners = [
             [
-                'name' => 'Bach Hoa Xanh Le Van Chi',
+                'name' => 'Bách Hóa Xanh Lê Văn Chí',
                 'email' => env('PARTNER_BHX_EMAIL'),
                 'password' => env('PARTNER_BHX_PASSWORD'),
                 'phone' => '0901111111',
                 'address' => 'Thu Duc, TP.HCM',
             ],
             [
-                'name' => 'WinMart Le Van Viet',
+                'name' => 'WinMart Lê Văn Việt',
                 'email' => env('PARTNER_WINMART_EMAIL'),
                 'password' => env('PARTNER_WINMART_PASSWORD'),
                 'phone' => '0987654321',
                 'address' => 'Thu Duc, TP.HCM',
             ],
             [
-                'name' => 'GO Di An',
+                'name' => 'GO! Dĩ An',
                 'email' => env('PARTNER_GO_EMAIL'),
                 'password' => env('PARTNER_GO_PASSWORD'),
                 'phone' => '0903333333',
-                'address' => 'Di An, Binh Duong',
+                'address' => 'Dĩ An, Bình Dương',
             ],
         ];
 
@@ -75,7 +75,7 @@ class UserSeeder extends Seeder
         $users = [
             ...$users,
             [
-                'name' => 'Nguyen Van A',
+                'name' => 'Nguyễn Văn A',
                 'email' => 'customer@example.com',
                 'phone' => '0912345678',
                 'address' => 'Thu Duc, TP.HCM',
@@ -83,7 +83,7 @@ class UserSeeder extends Seeder
                 'password' => '123456',
             ],
             [
-                'name' => 'Tran Thi B',
+                'name' => 'Trần Thị B',
                 'email' => 'customer2@example.com',
                 'phone' => '0922222222',
                 'address' => 'Quan 3, TP.HCM',
@@ -91,7 +91,7 @@ class UserSeeder extends Seeder
                 'password' => '123456',
             ],
             [
-                'name' => 'Le Van C',
+                'name' => 'Lê Văn C',
                 'email' => 'customer3@example.com',
                 'phone' => '0933333333',
                 'address' => 'Thu Duc, TP.HCM',
@@ -99,23 +99,23 @@ class UserSeeder extends Seeder
                 'password' => '123456',
             ],
             [
-                'name' => 'Pham Thi D',
+                'name' => 'Phạm Thị D',
                 'email' => 'customer4@example.com',
                 'phone' => '0944444444',
-                'address' => 'Binh Thanh, TP.HCM',
+                'address' => 'Bình Thạnh, TP.HCM',
                 'role' => 'customer',
                 'password' => '123456',
             ],
             [
-                'name' => 'Hoang Van E',
+                'name' => 'Hoàng Văn E',
                 'email' => 'customer5@example.com',
                 'phone' => '0955555555',
-                'address' => 'Go Vap, TP.HCM',
+                'address' => 'Gò Vấp, TP.HCM',
                 'role' => 'customer',
                 'password' => '123456',
             ],
             [
-                'name' => 'Nguyen Van F',
+                'name' => 'Nguyễn Văn F',
                 'email' => 'customer6@example.com',
                 'phone' => '0940842192',
                 'address' => 'Thu Duc, TP.HCM',

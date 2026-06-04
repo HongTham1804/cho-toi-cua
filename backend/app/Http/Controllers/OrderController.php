@@ -74,7 +74,7 @@ class OrderController extends Controller
 
         if (! $user || $user->role !== 'customer') {
             return response()->json([
-                'message' => 'Chi khach hang moi co the tao don hang.',
+                'message' => 'Chỉ khách hàng mới có thể tạo đơn hàng.',
             ], 403);
         }
 
@@ -321,7 +321,7 @@ class OrderController extends Controller
 
         if (! in_array($request->user()?->role, ['customer', 'admin'], true)) {
             return response()->json([
-                'message' => 'Ban khong co quyen huy don hang nay.',
+                'message' => 'Bạn không có quyền hủy đơn hàng này.',
             ], 403);
         }
 
@@ -492,7 +492,7 @@ class OrderController extends Controller
 
         if (! in_array($request->user()?->role, ['customer', 'admin'], true)) {
             return response()->json([
-                'message' => 'Ban khong co quyen xac nhan hoan thanh don hang nay.',
+                'message' => 'Bạn không có quyền xác nhận hoàn thành đơn hàng này.',
             ], 403);
         }
 
@@ -557,7 +557,7 @@ class OrderController extends Controller
 
         if (! $user) {
             return response()->json([
-                'message' => 'Vui long dang nhap de xem hoac thao tac don hang.',
+                'message' => 'Vui lòng đăng nhập để xem hoặc thao tác đơn hàng.',
             ], 401);
         }
 

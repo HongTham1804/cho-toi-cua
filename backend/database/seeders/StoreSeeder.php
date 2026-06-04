@@ -23,8 +23,8 @@ class StoreSeeder extends Seeder
             [
                 'id' => 1,
                 'partner_id' => $partnerIdsByEmail->get(env('PARTNER_BHX_EMAIL'), $fallbackPartnerId),
-                'name' => 'Bach Hoa Xanh Le Van Chi',
-                'address' => 'Bach Hoa Xanh Le Van Chi, TP. Thu Duc',
+                'name' => 'Bách Hóa Xanh Lê Văn Chí',
+                'address' => 'Bách Hóa Xanh Lê Văn Chí, TP. Thủ Đức',
                 'logo_url' => 'logos/BHX.webp',
                 'status' => 'active',
                 'latitude' => 10.856496093453933,
@@ -33,8 +33,8 @@ class StoreSeeder extends Seeder
             [
                 'id' => 2,
                 'partner_id' => $partnerIdsByEmail->get(env('PARTNER_WINMART_EMAIL'), $fallbackPartnerId),
-                'name' => 'WinMart Le Van Viet',
-                'address' => 'WinMart Le Van Viet, TP. Thu Duc',
+                'name' => 'WinMart Lê Văn Việt',
+                'address' => 'WinMart Lê Văn Việt, TP. Thủ Đức',
                 'logo_url' => 'logos/Winmart.jpg',
                 'status' => 'active',
                 'latitude' => 10.845183433582347,
@@ -43,8 +43,8 @@ class StoreSeeder extends Seeder
             [
                 'id' => 3,
                 'partner_id' => $partnerIdsByEmail->get(env('PARTNER_GO_EMAIL'), $fallbackPartnerId),
-                'name' => 'GO! Di An',
-                'address' => 'GO! Di An, TP. Di An',
+                'name' => 'GO! Dĩ An',
+                'address' => 'GO! Dĩ An, TP. Dĩ An',
                 'logo_url' => 'logos/GO.png',
                 'status' => 'active',
                 'latitude' => 10.889120952863461,

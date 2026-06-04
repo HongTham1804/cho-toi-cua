@@ -19,7 +19,7 @@ class NotificationController extends Controller
             ->get();
 
         return response()->json([
-            'message' => 'Lay danh sach thong bao thanh cong.',
+            'message' => 'Lấy danh sách thông báo thành công.',
             'data' => $notifications,
         ]);
     }
@@ -30,7 +30,7 @@ class NotificationController extends Controller
 
         if ($user?->role !== 'admin' && (int) $notification->user_id !== (int) $user?->id) {
             return response()->json([
-                'message' => 'Ban khong co quyen cap nhat thong bao nay.',
+                'message' => 'Bạn không có quyền cập nhật thông báo này.',
             ], 403);
         }
 
@@ -39,7 +39,7 @@ class NotificationController extends Controller
         ]);
 
         return response()->json([
-            'message' => 'Da danh dau thong bao la da doc.',
+            'message' => 'Đã đánh dấu thông báo là đã đọc.',
             'data' => $notification->fresh(),
         ]);
     }
@@ -54,7 +54,7 @@ class NotificationController extends Controller
             ->update(['is_read' => true]);
 
         return response()->json([
-            'message' => 'Da danh dau tat ca thong bao la da doc.',
+            'message' => 'Đã đánh dấu tất cả thông báo là đã đọc.',
         ]);
     }
 }

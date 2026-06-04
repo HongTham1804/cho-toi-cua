@@ -240,15 +240,15 @@ export default function ShoppingCart() {
     const currentCustomer = getCurrentCustomer();
     const token = getAuthToken();
 
-    if (!currentCustomer.id || !token) {
-      setCheckoutError('Vui long dang nhap de dat hang.');
+    if (!currentCustomer.id || !token || currentCustomer.role !== 'customer') {
+      setCheckoutError('Vui lòng đăng nhập bằng tài khoản khách hàng để đặt hàng.');
       return;
     }
 
     const deliveryAddress =
       deliveryLocation.address?.trim() ||
       currentCustomer.address ||
-      'Thu Duc, TP.HCM';
+      'Thủ Đức, TP.HCM';
     const payload = {
       store_id: Number(primaryStoreId),
       voucher_id: selectedDiscountVoucher?.id,

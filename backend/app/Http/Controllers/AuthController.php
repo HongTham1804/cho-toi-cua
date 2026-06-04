@@ -359,8 +359,8 @@ class AuthController extends Controller
             'identifier' => ['required', 'string'],
             'password' => ['required', 'string'],
         ], [
-            'identifier.required' => 'Vui long nhap email hoac so dien thoai.',
-            'password.required' => 'Vui long nhap mat khau.',
+            'identifier.required' => 'Vui lòng nhập email hoặc số điện thoại.',
+            'password.required' => 'Vui lòng nhập mật khẩu.',
         ]);
 
         $identifier = $validated['identifier'];
@@ -369,18 +369,18 @@ class AuthController extends Controller
 
         if (! $user || ! Hash::check($validated['password'], $user->password)) {
             return response()->json([
-                'message' => 'Thong tin dang nhap khong dung.',
+                'message' => 'Thông tin đăng nhập không đúng.',
             ], 422);
         }
 
         if ($user->isLocked()) {
             return response()->json([
-                'message' => 'Tai khoan dang bi khoa den ' . $user->locked_until->format('d/m/Y') . '.',
+                'message' => 'Tài khoản đang bị khóa đến ' . $user->locked_until->format('d/m/Y') . '.',
             ], 423);
         }
 
         return response()->json([
-            'message' => 'Dang nhap thanh cong.',
+            'message' => 'Đăng nhập thành công.',
             'token' => $user->createToken('customer-web')->plainTextToken,
             'user' => $user,
         ]);
@@ -392,8 +392,8 @@ class AuthController extends Controller
             'identifier' => ['required', 'string'],
             'password' => ['required', 'string'],
         ], [
-            'identifier.required' => 'Vui long nhap email hoac so dien thoai.',
-            'password.required' => 'Vui long nhap mat khau.',
+            'identifier.required' => 'Vui lòng nhập email hoặc số điện thoại.',
+            'password.required' => 'Vui lòng nhập mật khẩu.',
         ]);
 
         $identifier = $validated['identifier'];
@@ -402,25 +402,25 @@ class AuthController extends Controller
 
         if (! $user || ! Hash::check($validated['password'], $user->password) || $user->role !== 'partner') {
             return response()->json([
-                'message' => 'Thong tin dang nhap doi tac khong dung.',
+                'message' => 'Thông tin đăng nhập đối tác không đúng.',
             ], 422);
         }
 
         $fixedPartnerEmails = $this->fixedPartnerEmails();
         if ($fixedPartnerEmails !== [] && ! in_array(strtolower($user->email), $fixedPartnerEmails, true)) {
             return response()->json([
-                'message' => 'Tai khoan doi tac khong thuoc 3 sieu thi duoc cau hinh.',
+                'message' => 'Tài khoản đối tác không thuộc 3 siêu thị được cấu hình.',
             ], 422);
         }
 
         if ($user->isLocked()) {
             return response()->json([
-                'message' => 'Tai khoan doi tac dang bi khoa den ' . $user->locked_until->format('d/m/Y') . '.',
+                'message' => 'Tài khoản đối tác đang bị khóa đến ' . $user->locked_until->format('d/m/Y') . '.',
             ], 423);
         }
 
         return response()->json([
-            'message' => 'Dang nhap doi tac thanh cong.',
+            'message' => 'Đăng nhập đối tác thành công.',
             'token' => $user->createToken('partner-web')->plainTextToken,
             'user' => $user,
             'store' => $user->stores->first(),

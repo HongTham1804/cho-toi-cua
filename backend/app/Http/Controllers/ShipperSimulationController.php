@@ -36,7 +36,7 @@ class ShipperSimulationController extends Controller
         if ($user?->role === 'partner' && ! $user->stores()->whereKey($order->store_id)->exists()) {
             return response()->json([
                 'success' => false,
-                'message' => 'Ban khong co quyen gan shipper cho don hang cua sieu thi nay.',
+                'message' => 'Bạn không có quyền gán shipper cho đơn hàng của siêu thị này.',
             ], 403);
         }
 

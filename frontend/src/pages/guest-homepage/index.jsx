@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import CustomerHeader from '../../components/CustomerHeader/CustomerHeader';
 import Footer from '../../components/Footer/Footer';
@@ -9,23 +9,57 @@ import goLogo from '../../assets/logos/GO.png';
 import './guest-homepage.css';
 
 const API_BASE_URL = 'http://localhost:8000/api';
+const API_ORIGIN = API_BASE_URL.replace(/\/api$/, '');
 const PHONE_REGEX = /^\d{10}$/;
 const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
-const partnerStores = [
+const fallbackPartnerStores = [
   { id: 1, name: 'Bách Hóa Xanh', time: '15-20 phút', image: bachHoaXanhLogo },
   { id: 2, name: 'WinMart', time: '15-20 phút', image: winmartLogo },
   { id: 3, name: 'GO!', time: '20-25 phút', image: goLogo },
 ];
 
 const expandedPartnerStores = Array.from({ length: 9 }, (_, index) => {
-  const store = partnerStores[index % partnerStores.length];
+  const store = fallbackPartnerStores[index % fallbackPartnerStores.length];
   return {
     ...store,
     id: index + 1,
     time: index % 3 === 0 ? '15-20 phút' : index % 3 === 1 ? '20-25 phút' : '10-15 phút',
   };
 });
+
+function resolveStoreLogo(store = {}) {
+  const logoUrl = store.logo_url || store.logoUrl || store.image;
+
+  if (logoUrl?.startsWith('http')) return logoUrl;
+  if (logoUrl) return `${API_ORIGIN}${logoUrl.startsWith('/') ? logoUrl : `/${logoUrl}`}`;
+  if ((store.name || '').includes('WinMart')) return winmartLogo;
+  if ((store.name || '').includes('GO')) return goLogo;
+  return bachHoaXanhLogo;
+}
+
+function normalizeStores(payload) {
+  const stores = Array.isArray(payload?.data) ? payload.data : [];
+
+  return stores.map((store) => ({
+    id: store.id,
+    name: store.name,
+    time: store.estimated_delivery_time || store.delivery_time || ((store.name || '').includes('GO') ? '20-25 phút' : '15-20 phút'),
+    image: resolveStoreLogo(store),
+  }));
+}
+
+async function fetchPartnerStores() {
+  const response = await fetch(`${API_BASE_URL}/stores`, {
+    headers: { Accept: 'application/json' },
+  });
+
+  if (!response.ok) {
+    throw new Error('Không lấy được danh sách siêu thị.');
+  }
+
+  return normalizeStores(await response.json());
+}
 
 function getApiError(result, fallback) {
   if (result?.message) return result.message;
@@ -63,11 +97,40 @@ export default function GuestHomepage({ initialAuth = null }) {
   const [pendingEmail, setPendingEmail] = useState('');
   const [authNotice, setAuthNotice] = useState('');
   const [showAllStores, setShowAllStores] = useState(false);
+  const [partnerStores, setPartnerStores] = useState(fallbackPartnerStores);
   const isRegisterOpen = authMode === 'register';
   const isLoginOpen = authMode === 'login';
   const isOtpOpen = authMode === 'otp';
   const isForgotPasswordOpen = authMode === 'forgot-password';
+  const expandedPartnerStores = useMemo(
+    () => Array.from({ length: 9 }, (_, index) => {
+      const store = partnerStores[index % partnerStores.length] || fallbackPartnerStores[0];
+      return {
+        ...store,
+        repeatKey: `${store.id}-${index}`,
+        time: index % 3 === 0 ? store.time : index % 3 === 1 ? '20-25 phút' : '10-15 phút',
+      };
+    }),
+    [partnerStores]
+  );
   const visibleStores = showAllStores ? expandedPartnerStores : partnerStores;
+
+  useEffect(() => {
+    let isMounted = true;
+
+    fetchPartnerStores()
+      .then((stores) => {
+        if (!isMounted || stores.length === 0) return;
+        setPartnerStores(stores);
+      })
+      .catch(() => {
+        if (isMounted) setPartnerStores(fallbackPartnerStores);
+      });
+
+    return () => {
+      isMounted = false;
+    };
+  }, []);
 
   function openLogin(message = '') {
     setAuthNotice(message);
@@ -125,7 +188,7 @@ export default function GuestHomepage({ initialAuth = null }) {
 
           <div className="guest-store-grid">
             {visibleStores.map((store) => (
-              <article className="guest-store-card" key={store.id}>
+              <article className="guest-store-card" key={store.repeatKey || store.id}>
                 <div className="guest-store-logo-wrap">
                   <img src={store.image} alt={store.name} />
                 </div>

@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from 'react';
 import './index.css';
 import { Search, ChevronDown, MapPin, User } from 'lucide-react';
 import { getAdminToken } from '../../services/adminAuthApi';
+import logoMain from '../../assets/logo-main.png';
 
 const API_BASE_URL = 'http://localhost:8000/api';
 
@@ -223,8 +224,8 @@ export default function DeliveryManagement() {
             <span className="ctc-user-role">Quản lý chợ</span>
           </div>
           <img
-            src="https://i.pravatar.cc/150?img=11"
-            alt="Admin Profile"
+            src={logoMain}
+            alt="Chợ Tới Cửa"
             className="ctc-admin-avatar"
           />
         </div>

@@ -3,6 +3,7 @@ import { useLocation, useNavigate, useSearchParams } from 'react-router-dom';
 import './supermarket-details.css';
 import '@fortawesome/fontawesome-free/css/all.min.css';
 import { addCartItem } from '../../services/cartStorage';
+import { getStoredAuthUser } from '../../services/authApi';
 import {
   getFlashSaleReminderIds,
   saveFlashSaleReminder,
@@ -167,6 +168,8 @@ const getProductImageBoxClass = (product) =>
 
 const getFlashImageBoxClass = (product) =>
   `p-img-flash ${SAFE_FIT_PRODUCT_NAMES.has(product.name) ? 'p-img-flash--safe-fit' : ''}`;
+
+const getCurrentCustomerId = () => Number(getStoredAuthUser()?.id || 0);
 
 export default function SupermarketDetails() {
   const [activeCategory, setActiveCategory] = useState(DEFAULT_CATEGORY);

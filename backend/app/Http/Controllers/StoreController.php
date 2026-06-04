@@ -107,7 +107,7 @@ class StoreController extends Controller
         if (! $data) {
             return response()->json([
                 'success' => false,
-                'message' => 'Khong tim thay sieu thi.',
+                'message' => 'Không tìm thấy siêu thị.',
             ], 404);
         }
 

@@ -18,7 +18,7 @@ class PartnerOrderController extends Controller
         if (! $this->isConfiguredPartner($user)) {
             return response()->json([
                 'success' => false,
-                'message' => 'Ban khong co quyen truy cap don hang cua sieu thi.',
+                'message' => 'Bạn không có quyền truy cập đơn hàng của siêu thị.',
             ], 403);
         }
 
@@ -30,7 +30,7 @@ class PartnerOrderController extends Controller
         if ($stores->isEmpty()) {
             return response()->json([
                 'success' => false,
-                'message' => 'Khong tim thay sieu thi thuoc tai khoan doi tac nay.',
+                'message' => 'Không tìm thấy siêu thị thuộc tài khoản đối tác này.',
             ], 404);
         }
 
@@ -43,7 +43,7 @@ class PartnerOrderController extends Controller
             if (! $storeIds->contains($requestedStoreId)) {
                 return response()->json([
                     'success' => false,
-                    'message' => 'Ban khong co quyen xem don hang cua sieu thi nay.',
+                    'message' => 'Bạn không có quyền xem đơn hàng của siêu thị này.',
                 ], 403);
             }
 
@@ -77,7 +77,7 @@ class PartnerOrderController extends Controller
         if (! in_array($order->status, ['pending', 'preparing'], true)) {
             return response()->json([
                 'success' => false,
-                'message' => 'Chi co the chuan bi don dang cho xu ly.',
+                'message' => 'Chỉ có thể chuẩn bị đơn đang chờ xử lý.',
             ], 422);
         }
 
@@ -89,7 +89,7 @@ class PartnerOrderController extends Controller
 
         return response()->json([
             'success' => true,
-            'message' => 'Sieu thi dang chuan bi hang cho don nay.',
+            'message' => 'Siêu thị đang chuẩn bị hàng cho đơn này.',
             'data' => [
                 'order' => $order,
                 'shipper' => $order->shipper,
@@ -109,7 +109,7 @@ class PartnerOrderController extends Controller
         if (! in_array($order->status, ['preparing', 'shipping'], true)) {
             return response()->json([
                 'success' => false,
-                'message' => 'Chi co the chuyen don dang cho ban giao sang dang giao.',
+                'message' => 'Chỉ có thể chuyển đơn đang chờ bàn giao sang đang giao.',
             ], 422);
         }
 
@@ -118,14 +118,14 @@ class PartnerOrderController extends Controller
         if (! $order->store?->latitude || ! $order->store?->longitude) {
             return response()->json([
                 'success' => false,
-                'message' => 'Sieu thi chua co toa do de bat dau tracking.',
+                'message' => 'Siêu thị chưa có tọa độ để bắt đầu tracking.',
             ], 422);
         }
 
         if (! $order->delivery_latitude || ! $order->delivery_longitude) {
             return response()->json([
                 'success' => false,
-                'message' => 'Don hang chua co vi tri nhan hang. Vui long tao don moi co cap nhat vi tri khach hang.',
+                'message' => 'Đơn hàng chưa có vị trí nhận hàng. Vui lòng tạo đơn mới có cập nhật vị trí khách hàng.',
             ], 422);
         }
 
@@ -157,7 +157,7 @@ class PartnerOrderController extends Controller
 
         return response()->json([
             'success' => true,
-            'message' => 'Shipper da nhan don va bat dau giao hang.',
+            'message' => 'Shipper đã nhận đơn và bắt đầu giao hàng.',
             'data' => [
                 'order' => $order,
                 'shipper' => $order->shipper,
@@ -196,7 +196,7 @@ class PartnerOrderController extends Controller
         if (! $this->isConfiguredPartner($user)) {
             return response()->json([
                 'success' => false,
-                'message' => 'Ban khong co quyen xu ly don hang cua sieu thi.',
+                'message' => 'Bạn không có quyền xử lý đơn hàng của siêu thị.',
             ], 403);
         }
 
@@ -205,7 +205,7 @@ class PartnerOrderController extends Controller
         if (! $storeIds->contains((int) $order->store_id)) {
             return response()->json([
                 'success' => false,
-                'message' => 'Ban khong co quyen xu ly don hang cua sieu thi nay.',
+                'message' => 'Bạn không có quyền xử lý đơn hàng của siêu thị này.',
             ], 403);
         }
 

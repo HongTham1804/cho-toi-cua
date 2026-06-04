@@ -1,4 +1,5 @@
-import { FiBell, FiChevronDown, FiSearch } from "react-icons/fi";
+import { FiChevronDown, FiSearch } from "react-icons/fi";
+import logoMain from "../../assets/logo-main.png";
 import "./Header.scss";
 
 const Header = ({
@@ -45,17 +46,12 @@ const Header = ({
       </div>
 
       <div className="header-right">
-        <div className="notification">
-          <FiBell className="icon-bell" />
-          <span className="dot-red"></span>
-        </div>
-        <div className="divider"></div>
         <div className="user-profile">
           <div className="user-info">
             <span className="user-name">Admin</span>
             <span className="user-role">Quản lý chợ</span>
           </div>
-          <img src="https://i.pravatar.cc/150?img=11" alt="Avatar" className="avatar" />
+          <img src={logoMain} alt="Chợ Tới Cửa" className="avatar" />
         </div>
       </div>
     </header>

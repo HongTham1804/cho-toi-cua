@@ -10,6 +10,7 @@
 body,
 .App {
   font-family: 'Be Vietnam Pro', sans-serif;
+  overflow-x: hidden;
 }
 
 .customer-layout {
@@ -29,6 +30,7 @@ body,
   min-height: 100vh;
   background: #ffffff;
   font-family: 'Be Vietnam Pro', sans-serif;
+  overflow-x: hidden;
 }
 
 .admin-layout__content {
@@ -394,6 +396,31 @@ body,
 .icon-item:hover {
   transform: scale(1.1);
   background-color: rgba(0, 108, 73, 0.15);
+}
+
+.header-icons .icon-item {
+  text-decoration: none;
+  border-bottom: none;
+}
+
+.header-icons .icon-item:hover,
+.header-icons .icon-item:focus,
+.header-icons .icon-item:active {
+  text-decoration: none;
+  border-bottom: none;
+}
+
+.header-icons .icon-item i {
+  text-decoration: none;
+}
+
+.header-icons a.icon-item,
+.header-icons a.icon-item:hover,
+.header-icons a.icon-item:focus,
+.header-icons a.icon-item:active,
+.header-icons a.icon-item:visited {
+  text-decoration: none !important;
+  border-bottom: none !important;
 }
 
 .cart-badge-core {

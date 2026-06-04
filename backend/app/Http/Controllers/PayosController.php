@@ -17,7 +17,7 @@ class PayosController extends Controller
 
         if ($user?->role !== 'admin' && (int) $order->customer_id !== (int) $user?->id) {
             return response()->json([
-                'message' => 'Ban khong co quyen tao thanh toan cho don hang nay.',
+                'message' => 'Bạn không có quyền tạo thanh toán cho đơn hàng này.',
             ], 403);
         }
 

@@ -14,7 +14,7 @@ class EnsureRole
 
         if (! $user || ! in_array($user->role, $roles, true)) {
             return response()->json([
-                'message' => 'Ban khong co quyen truy cap chuc nang nay.',
+                'message' => 'Bạn không có quyền truy cập chức năng này.',
             ], 403);
         }
 

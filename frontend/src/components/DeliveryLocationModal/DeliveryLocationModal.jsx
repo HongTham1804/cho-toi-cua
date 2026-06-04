@@ -30,6 +30,29 @@ const STORE_FALLBACKS = [
   },
 ];
 
+const isValidPosition = (location) =>
+  Number.isFinite(Number(location?.lat)) && Number.isFinite(Number(location?.lng));
+
+const getGeolocationErrorMessage = (error) => {
+  if (!window.isSecureContext) {
+    return 'Trình duyệt chỉ cho lấy vị trí khi chạy trên localhost hoặc HTTPS. Hãy mở bằng http://localhost:5174, không dùng IP LAN như http://192.168.x.x:5174.';
+  }
+
+  if (error?.code === 1) {
+    return 'Bạn đang chặn quyền vị trí. Hãy bấm biểu tượng ổ khóa trên thanh địa chỉ Chrome > Site settings > Location > Allow, rồi thử lại.';
+  }
+
+  if (error?.code === 2) {
+    return 'Không xác định được vị trí. Hãy bật GPS/Wi-Fi/location service trên máy rồi thử lại.';
+  }
+
+  if (error?.code === 3) {
+    return 'Lấy vị trí quá lâu. Hãy thử lại hoặc bật độ chính xác vị trí cao hơn.';
+  }
+
+  return 'Không lấy được vị trí hiện tại. Bạn hãy cho phép Chrome truy cập vị trí rồi thử lại.';
+};
+
 const customerIcon = L.divIcon({
   className: 'delivery-map-marker delivery-map-marker--customer',
   html: '<i class="fa-solid fa-location-dot"></i>',
@@ -63,7 +86,12 @@ function RecenterMap({ position }) {
   const map = useMap();
 
   useEffect(() => {
-    map.setView([position.lat, position.lng], Math.max(map.getZoom(), 14));
+    const timer = window.setTimeout(() => {
+      map.invalidateSize();
+      map.setView([position.lat, position.lng], Math.max(map.getZoom(), 16));
+    }, 80);
+
+    return () => window.clearTimeout(timer);
   }, [map, position.lat, position.lng]);
 
   return null;
@@ -76,16 +104,25 @@ export default function DeliveryLocationModal({
   onConfirm,
 }) {
   const [position, setPosition] = useState(
-    currentLocation?.lat && currentLocation?.lng
-      ? { lat: currentLocation.lat, lng: currentLocation.lng }
+    isValidPosition(currentLocation)
+      ? {
+          lat: Number(currentLocation.lat),
+          lng: Number(currentLocation.lng),
+        }
       : DEFAULT_POSITION
   );
+
   const [address, setAddress] = useState(currentLocation?.address || '');
   const [locationStatus, setLocationStatus] = useState('');
+  const [isLocating, setIsLocating] = useState(false);
 
   useEffect(() => {
-    if (currentLocation?.lat && currentLocation?.lng) {
-      setPosition({ lat: currentLocation.lat, lng: currentLocation.lng });
+    if (isValidPosition(currentLocation)) {
+      setPosition({
+        lat: Number(currentLocation.lat),
+        lng: Number(currentLocation.lng),
+      });
+
       setAddress(currentLocation.address || '');
     }
   }, [currentLocation]);
@@ -97,8 +134,8 @@ export default function DeliveryLocationModal({
       .map((store, index) => ({
         id: Number(store.id || index + 1),
         name: store.name || STORE_FALLBACKS[index]?.name || 'Siêu thị',
-        latitude: Number(store.latitude || STORE_FALLBACKS[index]?.latitude),
-        longitude: Number(store.longitude || STORE_FALLBACKS[index]?.longitude),
+        latitude: Number(store.latitude || store.lat || STORE_FALLBACKS[index]?.latitude),
+        longitude: Number(store.longitude || store.lng || STORE_FALLBACKS[index]?.longitude),
       }))
       .filter((store) => Number.isFinite(store.latitude) && Number.isFinite(store.longitude));
   }, [stores]);
@@ -109,22 +146,34 @@ export default function DeliveryLocationModal({
       return;
     }
 
+    if (!window.isSecureContext) {
+      setLocationStatus(getGeolocationErrorMessage());
+      return;
+    }
+
+    setIsLocating(true);
     setLocationStatus('Đang lấy vị trí hiện tại...');
 
     navigator.geolocation.getCurrentPosition(
       (result) => {
-        setPosition({
-          lat: result.coords.latitude,
-          lng: result.coords.longitude,
-        });
-        setLocationStatus('Đã cập nhật vị trí hiện tại. Bạn có thể kéo ghim để chỉnh lại.');
+        const detectedPosition = {
+          lat: Number(result.coords.latitude),
+          lng: Number(result.coords.longitude),
+        };
+
+        setPosition(detectedPosition);
+        setLocationStatus(
+          'Đã cập nhật vị trí hiện tại. Bấm “Xác nhận vị trí” để lưu, hoặc kéo ghim để chỉnh lại.'
+        );
+        setIsLocating(false);
       },
-      () => {
-        setLocationStatus('Không lấy được vị trí hiện tại. Bạn hãy kéo ghim trên bản đồ.');
+      (error) => {
+        setLocationStatus(getGeolocationErrorMessage(error));
+        setIsLocating(false);
       },
       {
         enableHighAccuracy: true,
-        timeout: 10000,
+        timeout: 15000,
         maximumAge: 0,
       }
     );
@@ -146,6 +195,7 @@ export default function DeliveryLocationModal({
             <p>Vị trí nhận hàng</p>
             <h2>Cập nhật địa chỉ giao hàng</h2>
           </div>
+
           <button className="delivery-location-close" type="button" onClick={onClose}>
             <i className="fa-solid fa-xmark" />
           </button>
@@ -163,8 +213,10 @@ export default function DeliveryLocationModal({
                 attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
                 url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
               />
+
               <LocationPicker onPick={setPosition} />
               <RecenterMap position={position} />
+
               {normalizedStores.map((store) => (
                 <Marker
                   key={store.id}
@@ -174,6 +226,7 @@ export default function DeliveryLocationModal({
                   <Popup>{store.name}</Popup>
                 </Marker>
               ))}
+
               <Marker
                 position={[position.lat, position.lng]}
                 icon={customerIcon}
@@ -182,7 +235,11 @@ export default function DeliveryLocationModal({
                   dragend(event) {
                     const marker = event.target;
                     const next = marker.getLatLng();
-                    setPosition({ lat: next.lat, lng: next.lng });
+
+                    setPosition({
+                      lat: next.lat,
+                      lng: next.lng,
+                    });
                   },
                 }}
               >
@@ -196,13 +253,15 @@ export default function DeliveryLocationModal({
               className="delivery-location-current"
               type="button"
               onClick={handleUseCurrentLocation}
+              disabled={isLocating}
             >
               <i className="fa-solid fa-location-crosshairs" />
-              Dùng vị trí hiện tại
+              {isLocating ? 'Đang lấy vị trí...' : 'Dùng vị trí hiện tại'}
             </button>
 
             <label className="delivery-location-field">
               <span>Địa chỉ chi tiết</span>
+
               <textarea
                 value={address}
                 onChange={(event) => setAddress(event.target.value)}
@@ -210,7 +269,15 @@ export default function DeliveryLocationModal({
               />
             </label>
 
-            {locationStatus && <p className="delivery-location-status">{locationStatus}</p>}
+            <p className="delivery-location-coordinate">
+              Tọa độ: {position.lat.toFixed(6)}, {position.lng.toFixed(6)}
+            </p>
+
+            {locationStatus && (
+              <p className="delivery-location-status">
+                {locationStatus}
+              </p>
+            )}
           </div>
         </div>
 
@@ -218,6 +285,7 @@ export default function DeliveryLocationModal({
           <button className="delivery-location-secondary" type="button" onClick={onClose}>
             Hủy
           </button>
+
           <button className="delivery-location-primary" type="button" onClick={handleConfirm}>
             Xác nhận vị trí
           </button>

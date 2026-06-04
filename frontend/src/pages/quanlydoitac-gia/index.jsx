@@ -5,6 +5,7 @@ import { Search, Store as StoreIcon, UserCheck, Lock } from 'lucide-react';
 import bachHoaXanhLogo from '../../assets/logos/BHX.webp';
 import winmartLogo from '../../assets/logos/Winmart.jpg';
 import goLogo from '../../assets/logos/GO.png';
+import logoMain from '../../assets/logo-main.png';
 
 const API_BASE_URL = 'http://localhost:8000/api';
 const MANAGED_STORE_NAMES = ['Bách Hóa Xanh Lê Văn Chí', 'WinMart Lê Văn Việt', 'GO! Dĩ An'];
@@ -106,9 +107,13 @@ export default function PartnerPricing() {
         </div>
 
         <div className="ctc-header-actions">
+          <div className="ctc-user-info">
+            <span className="ctc-user-name">Admin</span>
+            <span className="ctc-user-role">Quản lý chợ</span>
+          </div>
           <img
-            src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=100&auto=format&fit=crop&q=80"
-            alt="Admin Profile"
+            src={logoMain}
+            alt="Chợ Tới Cửa"
             className="ctc-admin-avatar"
           />
         </div>
